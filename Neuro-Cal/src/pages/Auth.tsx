@@ -1,13 +1,17 @@
 import React, { useState } from 'react';
 import { LoginForm } from '@/components/auth/LoginForm';
 import { RegisterForm } from '@/components/auth/RegisterForm';
+import { ToastManager, useToast } from '@/components/ui/toast-notification';
 import { Brain, Calendar, Clock, Zap } from 'lucide-react';
+import '../styles/auth.css';
 
 const Auth: React.FC = () => {
   const [isLogin, setIsLogin] = useState(true);
+  const { toasts, removeToast } = useToast();
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted flex">
+      <ToastManager toasts={toasts} removeToast={removeToast} />
       {/* Left Side - Features */}
       <div className="hidden lg:flex lg:w-1/2 p-12 flex-col justify-center">
         <div className="max-w-lg">
