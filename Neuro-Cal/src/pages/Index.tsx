@@ -371,6 +371,24 @@ const AuthModal = ({
   );
 };
 
+// Error boundary component
+const ErrorBoundary = ({ 
+  children, 
+  fallback, 
+  componentName 
+}: { 
+  children: React.ReactNode; 
+  fallback: React.ReactNode; 
+  componentName: string;
+}) => {
+  try {
+    return <>{children}</>;
+  } catch (error) {
+    console.error(`🚨 Error in ${componentName}:`, error);
+    return <>{fallback}</>;
+  }
+};
+
 const Index = () => {
   console.log("🚀 Index component rendering..."); // Debug log
   
@@ -666,18 +684,34 @@ const Index = () => {
             {/* AI Panel */}
             <div className="space-y-4">
               {!user ? (
-                <FeatureGate 
-                  feature="AI Event Creation" 
-                  plan="basic"
-                  onUpgrade={() => setShowPricingModal(true)}
+                <ErrorBoundary 
+                  componentName="FeatureGate" 
+                  fallback={
+                    <div className="p-4 bg-yellow-100 border border-yellow-300 rounded-lg">
+                      <p className="text-yellow-800">AI Panel temporarily unavailable</p>
+                      <Button 
+                        onClick={() => setShowPricingModal(true)}
+                        className="mt-2"
+                      >
+                        <Crown className="h-4 w-4 mr-2" />
+                        Upgrade Now
+                      </Button>
+                    </div>
+                  }
                 >
-                  <Suspense fallback={<AIPanelFallback />}>
-                    <AIPanel 
-                      upcomingEvents={events}
-                      onCreateEvent={handleAICreateEvent} 
-                    />
-                  </Suspense>
-                </FeatureGate>
+                  <FeatureGate 
+                    feature="AI Event Creation" 
+                    plan="basic"
+                    onUpgrade={() => setShowPricingModal(true)}
+                  >
+                    <Suspense fallback={<AIPanelFallback />}>
+                      <AIPanel 
+                        upcomingEvents={events}
+                        onCreateEvent={handleAICreateEvent} 
+                      />
+                    </Suspense>
+                  </FeatureGate>
+                </ErrorBoundary>
               ) : (
                 <Suspense fallback={<AIPanelFallback />}>
                   <AIPanel 
@@ -709,11 +743,26 @@ const Index = () => {
         />
 
         {/* Pricing Modal */}
-        <PricingModal
-          isOpen={showPricingModal}
-          onClose={() => setShowPricingModal(false)}
-          onSelectPlan={handleSelectPlan}
-        />
+        <ErrorBoundary 
+          componentName="PricingModal" 
+          fallback={
+            showPricingModal ? (
+              <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+                <div className="bg-white rounded-lg p-6 max-w-md text-center">
+                  <h3 className="text-xl font-semibold mb-4">Pricing Temporarily Unavailable</h3>
+                  <p className="text-gray-600 mb-4">Please try again later or contact support.</p>
+                  <Button onClick={() => setShowPricingModal(false)}>Close</Button>
+                </div>
+              </div>
+            ) : null
+          }
+        >
+          <PricingModal
+            isOpen={showPricingModal}
+            onClose={() => setShowPricingModal(false)}
+            onSelectPlan={handleSelectPlan}
+          />
+        </ErrorBoundary>
       </div>
     );
   } catch (error) {
