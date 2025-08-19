@@ -6,6 +6,7 @@ import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { useAuth } from '@/contexts/AuthContext';
 import { 
   Users, 
   Calendar, 
@@ -110,6 +111,7 @@ interface DeveloperAnalyticsData {
 }
 
 export const DeveloperAnalytics = () => {
+  const { user } = useAuth();
   const [analyticsData, setAnalyticsData] = useState<DeveloperAnalyticsData>({
     realTime: {
       activeUsers: 0,
@@ -272,6 +274,12 @@ export const DeveloperAnalytics = () => {
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Developer Analytics</h1>
           <p className="text-gray-600">Comprehensive system monitoring and analytics dashboard</p>
+          {user && (
+            <div className="mt-2 flex items-center gap-2 text-sm text-gray-500">
+              <User className="h-4 w-4" />
+              <span>Authenticated as: {user.firstName} {user.lastName} ({user.email})</span>
+            </div>
+          )}
         </div>
         <div className="flex items-center space-x-4">
           <div className="flex items-center space-x-2">
@@ -302,7 +310,7 @@ export const DeveloperAnalytics = () => {
       </div>
 
       {/* Real-time Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-gray-600">Active Users</CardTitle>
@@ -346,6 +354,15 @@ export const DeveloperAnalytics = () => {
           <CardContent>
             <div className="text-2xl font-bold text-orange-600">{analyticsData.system.health.status}</div>
             <div className="text-xs text-gray-500">{analyticsData.realTime.systemLoad.toFixed(1)}%</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-gray-600">Auth Status</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-blue-600">{user ? 'Authenticated' : 'Guest'}</div>
+            <div className="text-xs text-gray-500">{user ? 'User logged in' : 'No user session'}</div>
           </CardContent>
         </Card>
       </div>
