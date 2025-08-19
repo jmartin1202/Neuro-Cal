@@ -126,9 +126,9 @@ const Auth: React.FC = () => {
 
           {/* Authentication Forms */}
           {isLogin ? (
-            <LoginForm onSwitchToRegister={() => setIsLogin(false)} />
+            <LoginForm />
           ) : (
-            <RegisterForm onSwitchToLogin={() => setIsLogin(true)} />
+            <RegisterForm />
           )}
 
           {/* Footer */}
