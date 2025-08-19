@@ -687,6 +687,29 @@ const Index = () => {
 
         {/* Main Content */}
         <main className="container mx-auto p-4">
+          {/* Analytics Dashboard Link */}
+          <div className="mb-6 p-4 bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-lg">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <BarChart3 className="h-6 w-6 text-blue-600" />
+                <div>
+                  <h3 className="font-semibold text-gray-900">📊 Live Analytics Dashboard</h3>
+                  <p className="text-sm text-gray-600">Monitor your app's performance, user engagement, and AI interactions in real-time</p>
+                </div>
+              </div>
+              <a 
+                href="https://neurocal-analytics-f798adc616ee.herokuapp.com/" 
+                target="_blank" 
+                rel="noopener noreferrer"
+              >
+                <Button className="bg-blue-600 hover:bg-blue-700 text-white">
+                  <BarChart3 className="h-4 w-4 mr-2" />
+                  Open Dashboard
+                </Button>
+              </a>
+            </div>
+          </div>
+
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Calendar Section */}
             <div className="lg:col-span-2">
