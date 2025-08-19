@@ -19,7 +19,6 @@ import {
   TrendingDown,
   MousePointer
 } from 'lucide-react';
-import { trackPerformanceMetric } from '@/lib/analytics';
 
 interface PerformanceMetrics {
   coreWebVitals: {
@@ -72,53 +71,43 @@ export const PerformanceMonitoring = () => {
     severity: 'low' | 'medium' | 'high';
   }>>([]);
 
-  useEffect(() => {
-    if (!isMonitoring) return;
-
-    const interval = setInterval(() => {
-      updatePerformanceMetrics();
-      checkForAlerts();
-    }, 5000); // Update every 5 seconds
-
-    return () => clearInterval(interval);
-  }, [isMonitoring, checkForAlerts]);
-
-  const updatePerformanceMetrics = () => {
-    // Simulate performance data updates
-    setMetrics(prev => ({
-      ...prev,
+  const updatePerformanceMetrics = useCallback(() => {
+    // Simulate performance metrics collection
+    const newMetrics = {
       coreWebVitals: {
-        lcp: Math.random() * 3 + 1, // 1-4 seconds
-        fid: Math.random() * 100 + 10, // 10-110ms
-        cls: Math.random() * 0.2, // 0-0.2
-        ttfb: Math.random() * 500 + 100 // 100-600ms
+        lcp: Math.random() * 3 + 1,
+        fid: Math.random() * 100 + 20,
+        cls: Math.random() * 0.2,
+        ttfb: Math.random() * 500 + 100
       },
       pagePerformance: {
-        loadTime: Math.random() * 2 + 0.5, // 0.5-2.5 seconds
-        domContentLoaded: Math.random() * 1 + 0.2, // 0.2-1.2 seconds
-        firstPaint: Math.random() * 0.5 + 0.1, // 0.1-0.6 seconds
-        firstContentfulPaint: Math.random() * 0.8 + 0.2 // 0.2-1.0 seconds
+        loadTime: Math.random() * 2 + 0.5,
+        domContentLoaded: Math.random() * 1 + 0.2,
+        firstPaint: Math.random() * 1 + 0.1,
+        firstContentfulPaint: Math.random() * 1.5 + 0.3
       },
       resourcePerformance: {
-        totalResources: Math.floor(Math.random() * 50) + 20, // 20-70 resources
-        slowResources: Math.floor(Math.random() * 10), // 0-10 slow resources
-        averageLoadTime: Math.random() * 200 + 50, // 50-250ms
-        largestResource: ['main.js', 'vendor.js', 'styles.css', 'images/hero.jpg'][Math.floor(Math.random() * 4)]
+        totalResources: Math.floor(Math.random() * 50) + 20,
+        slowResources: Math.floor(Math.random() * 10),
+        averageLoadTime: Math.random() * 200 + 50,
+        largestResource: 'main.js'
       },
       errors: {
         total: Math.floor(Math.random() * 5),
         critical: Math.floor(Math.random() * 2),
         warnings: Math.floor(Math.random() * 3),
-        lastError: Math.random() > 0.7 ? 'Network timeout on API call' : undefined
+        lastError: 'Network timeout'
       },
       system: {
-        memoryUsage: Math.random() * 30 + 40, // 40-70%
-        cpuUsage: Math.random() * 40 + 20, // 20-60%
-        networkLatency: Math.random() * 100 + 20, // 20-120ms
-        databaseResponseTime: Math.random() * 50 + 10 // 10-60ms
+        memoryUsage: Math.random() * 30 + 50,
+        cpuUsage: Math.random() * 40 + 30,
+        networkLatency: Math.random() * 100 + 20,
+        databaseResponseTime: Math.random() * 200 + 50
       }
-    }));
-  };
+    };
+
+    setMetrics(newMetrics);
+  }, []);
 
   const checkForAlerts = useCallback(() => {
     const newAlerts: Array<{
@@ -188,446 +177,321 @@ export const PerformanceMonitoring = () => {
     }
   }, [metrics]);
 
+  useEffect(() => {
+    if (!isMonitoring) return;
+
+    const interval = setInterval(() => {
+      updatePerformanceMetrics();
+      checkForAlerts();
+    }, 5000); // Update every 5 seconds
+
+    return () => clearInterval(interval);
+  }, [isMonitoring, updatePerformanceMetrics, checkForAlerts]);
+
   const getPerformanceScore = () => {
     let score = 100;
     
-    // Core Web Vitals scoring
+    // Deduct points for poor performance
     if (metrics.coreWebVitals.lcp > 2.5) score -= 20;
     if (metrics.coreWebVitals.fid > 100) score -= 20;
     if (metrics.coreWebVitals.cls > 0.1) score -= 20;
-    
-    // System resource scoring
     if (metrics.system.memoryUsage > 80) score -= 15;
     if (metrics.system.cpuUsage > 70) score -= 15;
-    
-    // Error scoring
     if (metrics.errors.critical > 0) score -= 20;
     
     return Math.max(score, 0);
   };
 
   const getPerformanceColor = (score: number) => {
-    if (score >= 90) return 'text-green-600';
-    if (score >= 70) return 'text-yellow-600';
+    if (score >= 80) return 'text-green-600';
+    if (score >= 60) return 'text-yellow-600';
     return 'text-red-600';
   };
 
-  const getStatusIcon = (type: string) => {
-    switch (type) {
-      case 'error':
-        return <AlertTriangle className="h-4 w-4 text-red-500" />;
-      case 'warning':
-        return <AlertTriangle className="h-4 w-4 text-yellow-500" />;
-      case 'info':
-        return <CheckCircle className="h-4 w-4 text-blue-500" />;
-      default:
-        return <CheckCircle className="h-4 w-4 text-gray-500" />;
-    }
-  };
-
-  const getSeverityColor = (severity: string) => {
-    switch (severity) {
-      case 'high':
-        return 'bg-red-100 text-red-800 border-red-200';
-      case 'medium':
-        return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-      case 'low':
-        return 'bg-blue-100 text-blue-800 border-blue-200';
-      default:
-        return 'bg-gray-100 text-gray-800 border-gray-200';
-    }
+  const getPerformanceStatus = (score: number) => {
+    if (score >= 80) return 'Excellent';
+    if (score >= 60) return 'Good';
+    if (score >= 40) return 'Fair';
+    return 'Poor';
   };
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">Performance Monitoring</h1>
-          <p className="text-muted-foreground">Real-time monitoring of application performance and system health</p>
-        </div>
-        <div className="flex items-center gap-2">
-          <Badge variant={isMonitoring ? 'default' : 'secondary'}>
-            {isMonitoring ? 'Monitoring Active' : 'Monitoring Paused'}
-          </Badge>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setIsMonitoring(!isMonitoring)}
-          >
-            {isMonitoring ? 'Pause' : 'Resume'} Monitoring
-          </Button>
-        </div>
-      </div>
-
-      {/* Performance Score */}
+      {/* Performance Overview */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Zap className="h-5 w-5" />
-            Overall Performance Score
+            <Activity className="w-5 h-5" />
+            Performance Overview
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex items-center justify-between">
-            <div className="text-6xl font-bold">
-              <span className={getPerformanceColor(getPerformanceScore())}>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+            <div className="text-center">
+              <div className={`text-3xl font-bold ${getPerformanceColor(getPerformanceScore())}`}>
                 {getPerformanceScore()}
-              </span>
-              <span className="text-2xl text-muted-foreground">/100</span>
+              </div>
+              <div className="text-sm text-muted-foreground">Performance Score</div>
+              <div className="text-xs text-muted-foreground">
+                {getPerformanceStatus(getPerformanceScore())}
+              </div>
             </div>
-            <div className="text-right">
-              <div className="text-sm text-muted-foreground">Status</div>
-              <Badge variant={getPerformanceScore() >= 90 ? 'default' : getPerformanceScore() >= 70 ? 'secondary' : 'destructive'}>
-                {getPerformanceScore() >= 90 ? 'Excellent' : getPerformanceScore() >= 70 ? 'Good' : 'Needs Attention'}
-              </Badge>
+            <div className="text-center">
+              <div className="text-3xl font-bold text-blue-600">
+                {metrics.coreWebVitals.lcp.toFixed(1)}s
+              </div>
+              <div className="text-sm text-muted-foreground">LCP</div>
+              <div className="text-xs text-muted-foreground">
+                {metrics.coreWebVitals.lcp > 2.5 ? 'Needs improvement' : 'Good'}
+              </div>
+            </div>
+            <div className="text-center">
+              <div className="text-3xl font-bold text-green-600">
+                {metrics.coreWebVitals.fid.toFixed(0)}ms
+              </div>
+              <div className="text-sm text-muted-foreground">FID</div>
+              <div className="text-xs text-muted-foreground">
+                {metrics.coreWebVitals.fid > 100 ? 'Needs improvement' : 'Good'}
+              </div>
             </div>
           </div>
-          <Progress value={getPerformanceScore()} className="h-3 mt-4" />
+          
+          <div className="space-y-4">
+            <div>
+              <div className="flex justify-between text-sm mb-2">
+                <span>Overall Performance</span>
+                <span>{getPerformanceScore()}%</span>
+              </div>
+              <Progress value={getPerformanceScore()} className="h-2" />
+            </div>
+          </div>
         </CardContent>
       </Card>
 
-      {/* Alerts */}
-      {alerts.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <AlertTriangle className="h-5 w-5" />
-              Active Alerts ({alerts.length})
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {alerts.slice(0, 5).map((alert) => (
-                <div key={alert.id} className="flex items-center gap-3 p-3 border rounded-lg">
-                  {getStatusIcon(alert.type)}
-                  <div className="flex-1">
-                    <p className="text-sm font-medium">{alert.message}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {alert.timestamp.toLocaleTimeString()}
-                    </p>
-                  </div>
-                  <Badge variant="outline" className={getSeverityColor(alert.severity)}>
-                    {alert.severity}
-                  </Badge>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
       {/* Detailed Metrics */}
-      <Tabs defaultValue="core-web-vitals" className="space-y-4">
-        <TabsList>
+      <Tabs defaultValue="core-web-vitals" className="w-full">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="core-web-vitals">Core Web Vitals</TabsTrigger>
-          <TabsTrigger value="page-performance">Page Performance</TabsTrigger>
-          <TabsTrigger value="resources">Resources</TabsTrigger>
+          <TabsTrigger value="performance">Performance</TabsTrigger>
           <TabsTrigger value="system">System</TabsTrigger>
+          <TabsTrigger value="alerts">Alerts</TabsTrigger>
         </TabsList>
 
         <TabsContent value="core-web-vitals" className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Activity className="h-5 w-5" />
-                  Largest Contentful Paint (LCP)
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-3xl font-bold mb-2">
-                  {metrics.coreWebVitals.lcp.toFixed(1)}s
+          <Card>
+            <CardHeader>
+              <CardTitle>Core Web Vitals</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <div className="flex justify-between text-sm">
+                    <span>LCP (Largest Contentful Paint)</span>
+                    <span className={metrics.coreWebVitals.lcp > 2.5 ? 'text-red-600' : 'text-green-600'}>
+                      {metrics.coreWebVitals.lcp.toFixed(2)}s
+                    </span>
+                  </div>
+                  <Progress 
+                    value={Math.min((metrics.coreWebVitals.lcp / 2.5) * 100, 100)} 
+                    className="h-2" 
+                  />
                 </div>
-                <Badge variant={metrics.coreWebVitals.lcp <= 2.5 ? 'default' : 'destructive'}>
-                  {metrics.coreWebVitals.lcp <= 2.5 ? 'Good' : 'Poor'}
-                </Badge>
-                <p className="text-xs text-muted-foreground mt-2">
-                  Target: ≤2.5s
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <MousePointer className="h-5 w-5" />
-                  First Input Delay (FID)
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-3xl font-bold mb-2">
-                  {metrics.coreWebVitals.fid.toFixed(0)}ms
+                <div className="space-y-2">
+                  <div className="flex justify-between text-sm">
+                    <span>FID (First Input Delay)</span>
+                    <span className={metrics.coreWebVitals.fid > 100 ? 'text-red-600' : 'text-green-600'}>
+                      {metrics.coreWebVitals.fid.toFixed(0)}ms
+                    </span>
+                  </div>
+                  <Progress 
+                    value={Math.min((metrics.coreWebVitals.fid / 100) * 100, 100)} 
+                    className="h-2" 
+                  />
                 </div>
-                <Badge variant={metrics.coreWebVitals.fid <= 100 ? 'default' : 'destructive'}>
-                  {metrics.coreWebVitals.fid <= 100 ? 'Good' : 'Poor'}
-                </Badge>
-                <p className="text-xs text-muted-foreground mt-2">
-                  Target: ≤100ms
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <HardDrive className="h-5 w-5" />
-                  Cumulative Layout Shift (CLS)
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-3xl font-bold mb-2">
-                  {metrics.coreWebVitals.cls.toFixed(3)}
+                <div className="space-y-2">
+                  <div className="flex justify-between text-sm">
+                    <span>CLS (Cumulative Layout Shift)</span>
+                    <span className={metrics.coreWebVitals.cls > 0.1 ? 'text-red-600' : 'text-green-600'}>
+                      {metrics.coreWebVitals.cls.toFixed(3)}
+                    </span>
+                  </div>
+                  <Progress 
+                    value={Math.min((metrics.coreWebVitals.cls / 0.1) * 100, 100)} 
+                    className="h-2" 
+                  />
                 </div>
-                <Badge variant={metrics.coreWebVitals.cls <= 0.1 ? 'default' : 'destructive'}>
-                  {metrics.coreWebVitals.cls <= 0.1 ? 'Good' : 'Poor'}
-                </Badge>
-                <p className="text-xs text-muted-foreground mt-2">
-                  Target: ≤0.1
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Globe className="h-5 w-5" />
-                  Time to First Byte (TTFB)
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-3xl font-bold mb-2">
-                  {metrics.coreWebVitals.ttfb.toFixed(0)}ms
+                <div className="space-y-2">
+                  <div className="flex justify-between text-sm">
+                    <span>TTFB (Time to First Byte)</span>
+                    <span className={metrics.coreWebVitals.ttfb > 600 ? 'text-red-600' : 'text-green-600'}>
+                      {metrics.coreWebVitals.ttfb.toFixed(0)}ms
+                    </span>
+                  </div>
+                  <Progress 
+                    value={Math.min((metrics.coreWebVitals.ttfb / 600) * 100, 100)} 
+                    className="h-2" 
+                  />
                 </div>
-                <Badge variant={metrics.coreWebVitals.ttfb <= 600 ? 'default' : 'destructive'}>
-                  {metrics.coreWebVitals.ttfb <= 600 ? 'Good' : 'Poor'}
-                </Badge>
-                <p className="text-xs text-muted-foreground mt-2">
-                  Target: ≤600ms
-                </p>
-              </CardContent>
-            </Card>
-          </div>
+              </div>
+            </CardContent>
+          </Card>
         </TabsContent>
 
-        <TabsContent value="page-performance" className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Card>
-              <CardHeader>
-                <CardTitle>Page Load Timeline</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
+        <TabsContent value="performance" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Page Performance</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <div className="flex items-center justify-between text-sm">
-                    <span>First Paint</span>
-                    <span className="font-medium">{metrics.pagePerformance.firstPaint.toFixed(1)}s</span>
+                  <div className="flex justify-between text-sm">
+                    <span>Page Load Time</span>
+                    <span>{metrics.pagePerformance.loadTime.toFixed(2)}s</span>
                   </div>
-                  <Progress value={(metrics.pagePerformance.firstPaint / 2) * 100} className="h-2" />
+                  <Progress 
+                    value={Math.min((metrics.pagePerformance.loadTime / 3) * 100, 100)} 
+                    className="h-2" 
+                  />
                 </div>
-                
                 <div className="space-y-2">
-                  <div className="flex items-center justify-between text-sm">
-                    <span>First Contentful Paint</span>
-                    <span className="font-medium">{metrics.pagePerformance.firstContentfulPaint.toFixed(1)}s</span>
-                  </div>
-                  <Progress value={(metrics.pagePerformance.firstContentfulPaint / 2) * 100} className="h-2" />
-                </div>
-                
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between text-sm">
+                  <div className="flex justify-between text-sm">
                     <span>DOM Content Loaded</span>
-                    <span className="font-medium">{metrics.pagePerformance.domContentLoaded.toFixed(1)}s</span>
+                    <span>{metrics.pagePerformance.domContentLoaded.toFixed(2)}s</span>
                   </div>
-                  <Progress value={(metrics.pagePerformance.domContentLoaded / 2) * 100} className="h-2" />
+                  <Progress 
+                    value={Math.min((metrics.pagePerformance.domContentLoaded / 1.5) * 100, 100)} 
+                    className="h-2" 
+                  />
                 </div>
-                
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between text-sm">
-                    <span>Full Page Load</span>
-                    <span className="font-medium">{metrics.pagePerformance.loadTime.toFixed(1)}s</span>
-                  </div>
-                  <Progress value={(metrics.pagePerformance.loadTime / 3) * 100} className="h-2" />
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Performance Insights</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  {metrics.pagePerformance.loadTime > 2 && (
-                    <div className="flex items-center gap-2 text-sm text-yellow-600">
-                      <AlertTriangle className="h-4 w-4" />
-                      Page load time is above recommended 2s threshold
-                    </div>
-                  )}
-                  
-                  {metrics.pagePerformance.firstPaint > 0.5 && (
-                    <div className="flex items-center gap-2 text-sm text-yellow-600">
-                      <AlertTriangle className="h-4 w-4" />
-                      First paint is taking longer than expected
-                    </div>
-                  )}
-                  
-                  {metrics.pagePerformance.loadTime <= 2 && (
-                    <div className="flex items-center gap-2 text-sm text-green-600">
-                      <CheckCircle className="h-4 w-4" />
-                      Page load performance is excellent
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </TabsContent>
-
-        <TabsContent value="resources" className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Card>
-              <CardHeader>
-                <CardTitle>Resource Performance</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="text-center">
-                    <div className="text-2xl font-bold">{metrics.resourcePerformance.totalResources}</div>
-                    <div className="text-sm text-muted-foreground">Total Resources</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-red-600">{metrics.resourcePerformance.slowResources}</div>
-                    <div className="text-sm text-muted-foreground">Slow Resources</div>
-                  </div>
-                </div>
-                
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between text-sm">
-                    <span>Average Load Time</span>
-                    <span className="font-medium">{metrics.resourcePerformance.averageLoadTime.toFixed(0)}ms</span>
-                  </div>
-                  <Progress value={(metrics.resourcePerformance.averageLoadTime / 300) * 100} className="h-2" />
-                </div>
-                
-                <div className="text-sm">
-                  <span className="text-muted-foreground">Largest Resource:</span>
-                  <div className="font-medium">{metrics.resourcePerformance.largestResource}</div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Resource Optimization</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  {metrics.resourcePerformance.slowResources > 0 && (
-                    <div className="flex items-center gap-2 text-sm text-yellow-600">
-                      <AlertTriangle className="h-4 w-4" />
-                      {metrics.resourcePerformance.slowResources} resources are loading slowly
-                    </div>
-                  )}
-                  
-                  {metrics.resourcePerformance.averageLoadTime > 200 && (
-                    <div className="flex items-center gap-2 text-sm text-yellow-600">
-                      <AlertTriangle className="h-4 w-4" />
-                      Consider optimizing resource loading
-                    </div>
-                  )}
-                  
-                  {metrics.resourcePerformance.slowResources === 0 && (
-                    <div className="flex items-center gap-2 text-sm text-green-600">
-                      <CheckCircle className="h-4 w-4" />
-                      All resources are loading efficiently
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          </div>
+              </div>
+            </CardContent>
+          </Card>
         </TabsContent>
 
         <TabsContent value="system" className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Card>
-              <CardHeader>
-                <CardTitle>System Resources</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>System Resources</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <div className="flex items-center justify-between text-sm">
+                  <div className="flex justify-between text-sm">
                     <span>Memory Usage</span>
-                    <span className="font-medium">{metrics.system.memoryUsage.toFixed(1)}%</span>
+                    <span className={metrics.system.memoryUsage > 80 ? 'text-red-600' : 'text-green-600'}>
+                      {metrics.system.memoryUsage.toFixed(1)}%
+                    </span>
                   </div>
-                  <Progress value={metrics.system.memoryUsage} className="h-2" />
+                  <Progress 
+                    value={metrics.system.memoryUsage} 
+                    className="h-2" 
+                  />
                 </div>
-                
                 <div className="space-y-2">
-                  <div className="flex items-center justify-between text-sm">
+                  <div className="flex justify-between text-sm">
                     <span>CPU Usage</span>
-                    <span className="font-medium">{metrics.system.cpuUsage.toFixed(1)}%</span>
+                    <span className={metrics.system.cpuUsage > 70 ? 'text-red-600' : 'text-green-600'}>
+                      {metrics.system.cpuUsage.toFixed(1)}%
+                    </span>
                   </div>
-                  <Progress value={metrics.system.cpuUsage} className="h-2" />
+                  <Progress 
+                    value={metrics.system.cpuUsage} 
+                    className="h-2" 
+                  />
                 </div>
-                
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between text-sm">
-                    <span>Network Latency</span>
-                    <span className="font-medium">{metrics.system.networkLatency.toFixed(0)}ms</span>
-                  </div>
-                  <Progress value={(metrics.system.networkLatency / 200) * 100} className="h-2" />
-                </div>
-                
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between text-sm">
-                    <span>Database Response</span>
-                    <span className="font-medium">{metrics.system.databaseResponseTime.toFixed(0)}ms</span>
-                  </div>
-                  <Progress value={(metrics.system.databaseResponseTime / 100) * 100} className="h-2" />
-                </div>
-              </CardContent>
-            </Card>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
 
-            <Card>
-              <CardHeader>
-                <CardTitle>System Health</CardTitle>
-              </CardHeader>
-              <CardContent>
+        <TabsContent value="alerts" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Performance Alerts</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {alerts.length > 0 ? (
                 <div className="space-y-3">
-                  {metrics.system.memoryUsage > 80 && (
-                    <div className="flex items-center gap-2 text-sm text-red-600">
-                      <AlertTriangle className="h-4 w-4" />
-                      High memory usage detected
+                  {alerts.slice(-5).map((alert) => (
+                    <div
+                      key={alert.id}
+                      className={`p-3 rounded-lg border ${
+                        alert.type === 'error' 
+                          ? 'border-red-200 bg-red-50' 
+                          : alert.type === 'warning'
+                          ? 'border-yellow-200 bg-yellow-50'
+                          : 'border-blue-200 bg-blue-50'
+                      }`}
+                    >
+                      <div className="flex items-start gap-3">
+                        <div className="mt-1">
+                          {alert.type === 'error' ? (
+                            <AlertTriangle className="w-4 h-4 text-red-600" />
+                          ) : alert.type === 'warning' ? (
+                            <Clock className="w-4 h-4 text-yellow-600" />
+                          ) : (
+                            <CheckCircle className="w-4 h-4 text-blue-600" />
+                          )}
+                        </div>
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className="text-sm font-medium">{alert.message}</span>
+                            <Badge 
+                              variant="secondary" 
+                              className={`text-xs ${
+                                alert.severity === 'high' 
+                                  ? 'bg-red-100 text-red-800'
+                                  : alert.severity === 'medium'
+                                  ? 'bg-yellow-100 text-yellow-800'
+                                  : 'bg-blue-100 text-blue-800'
+                              }`}
+                            >
+                              {alert.severity}
+                            </Badge>
+                          </div>
+                          <div className="text-xs text-muted-foreground">
+                            {alert.timestamp.toLocaleTimeString()}
+                          </div>
+                        </div>
+                      </div>
                     </div>
-                  )}
-                  
-                  {metrics.system.cpuUsage > 70 && (
-                    <div className="flex items-center gap-2 text-sm text-yellow-600">
-                      <AlertTriangle className="h-4 w-4" />
-                      High CPU usage detected
-                    </div>
-                  )}
-                  
-                  {metrics.system.networkLatency > 100 && (
-                    <div className="flex items-center gap-2 text-sm text-yellow-600">
-                      <AlertTriangle className="h-4 w-4" />
-                      Network latency is high
-                    </div>
-                  )}
-                  
-                  {metrics.system.memoryUsage <= 80 && metrics.system.cpuUsage <= 70 && (
-                    <div className="flex items-center gap-2 text-sm text-green-600">
-                      <CheckCircle className="h-4 w-4" />
-                      System resources are healthy
-                    </div>
-                  )}
+                  ))}
                 </div>
-              </CardContent>
-            </Card>
-          </div>
+              ) : (
+                <div className="text-center text-muted-foreground py-8">
+                  <CheckCircle className="w-12 h-12 mx-auto mb-4 text-green-600" />
+                  <p className="text-lg font-medium">All Good!</p>
+                  <p className="text-sm">No performance alerts at the moment</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
         </TabsContent>
       </Tabs>
+
+      {/* Control Panel */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Monitoring Controls</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center gap-4">
+            <Button
+              onClick={() => setIsMonitoring(!isMonitoring)}
+              variant={isMonitoring ? 'destructive' : 'default'}
+            >
+              {isMonitoring ? 'Stop Monitoring' : 'Start Monitoring'}
+            </Button>
+            <Button onClick={updatePerformanceMetrics} variant="outline">
+              Refresh Metrics
+            </Button>
+            <Button onClick={() => setAlerts([])} variant="outline">
+              Clear Alerts
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 };

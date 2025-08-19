@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { CalendarHeader } from "./CalendarHeader";
 import { CalendarGrid } from "./CalendarGrid";
 import { AIPanel } from "./AIPanel";
@@ -72,8 +72,24 @@ export const SmartCalendar = () => {
     });
   }, [toast]);
 
+  // Memoize the getEventColor function
+  const getEventColor = useCallback((type: Event['type']) => {
+    switch (type) {
+      case "meeting":
+        return "bg-calendar-event";
+      case "focus":
+        return "bg-primary";
+      case "break":
+        return "bg-accent";
+      case "travel":
+        return "bg-destructive";
+      default:
+        return "bg-calendar-event";
+    }
+  }, []);
+
   // Helper function to parse natural language into event details
-  const parseNaturalLanguageEvent = (text: string) => {
+  const parseNaturalLanguageEvent = useCallback((text: string) => {
     const lowerText = text.toLowerCase();
     
     // Extract date information
@@ -192,41 +208,34 @@ export const SmartCalendar = () => {
       date: eventDate,
       formattedDate
     };
-  };
-
-  const getEventColor = (type: Event['type']) => {
-    switch (type) {
-      case "meeting":
-        return "bg-calendar-event";
-      case "focus":
-        return "bg-primary";
-      case "break":
-        return "bg-accent";
-      case "travel":
-        return "bg-destructive";
-      default:
-        return "bg-calendar-event";
-    }
-  };
+  }, []);
 
   const handleCloseCreateModal = useCallback(() => {
     setIsCreateModalOpen(false);
     setSelectedDate(null);
   }, []);
 
-  const todaysEvents = events.filter(event => {
-    if (!event.date || !(event.date instanceof Date) || isNaN(event.date.getTime())) {
-      console.warn('Event without valid date:', event);
-      return false;
-    }
-    
-    const today = new Date();
-    const todayString = today.toDateString();
-    const eventDateString = event.date.toDateString();
-    
-    // Show events for today and upcoming days
-    return event.date >= today;
-  });
+  // Memoize today's events calculation
+  const todaysEvents = useMemo(() => {
+    return events.filter(event => {
+      if (!event.date || !(event.date instanceof Date) || isNaN(event.date.getTime())) {
+        console.warn('Event without valid date:', event);
+        return false;
+      }
+      
+      const today = new Date();
+      const todayString = today.toDateString();
+      const eventDateString = event.date.toDateString();
+      
+      // Show events for today and upcoming days
+      return event.date >= today;
+    });
+  }, [events]);
+
+  // Memoize layout class
+  const layoutClass = useMemo(() => {
+    return isMobile ? 'flex-col' : 'flex-row';
+  }, [isMobile]);
 
   // Debug logging
   console.log('Current events:', events.map(e => ({ 
@@ -245,7 +254,7 @@ export const SmartCalendar = () => {
         onViewChange={setView}
       />
       
-      <div className={`flex flex-1 overflow-auto ${isMobile ? 'flex-col' : 'flex-row'}`}>
+      <div className={`flex flex-1 overflow-auto ${layoutClass}`}>
         <CalendarGrid
           currentDate={currentDate}
           events={events}

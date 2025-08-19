@@ -1,6 +1,7 @@
 import { Clock, MapPin, Users, Sparkles } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { memo, useCallback } from "react";
 
 export interface Event {
   id: string;
@@ -20,10 +21,10 @@ interface EventCardProps {
   className?: string;
 }
 
-export const EventCard = ({ event, className = "" }: EventCardProps) => {
+export const EventCard = memo(({ event, className = "" }: EventCardProps) => {
   const isMobile = useIsMobile();
 
-  const getEventIcon = () => {
+  const getEventIcon = useCallback(() => {
     switch (event.type) {
       case "meeting":
         return <Users className="w-3 h-3" />;
@@ -36,7 +37,7 @@ export const EventCard = ({ event, className = "" }: EventCardProps) => {
       default:
         return <Clock className="w-3 h-3" />;
     }
-  };
+  }, [event.type]);
 
   return (
     <div className={`
@@ -82,4 +83,6 @@ export const EventCard = ({ event, className = "" }: EventCardProps) => {
       </div>
     </div>
   );
-};
+});
+
+EventCard.displayName = 'EventCard';
