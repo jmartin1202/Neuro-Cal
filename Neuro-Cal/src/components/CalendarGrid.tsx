@@ -1,5 +1,6 @@
 import { Event, EventCard } from "./EventCard";
 import { useMemo } from "react";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface CalendarGridProps {
   currentDate: Date;
@@ -19,6 +20,7 @@ export const CalendarGrid = ({
   const lastDayOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
   const firstDayOfWeek = firstDayOfMonth.getDay();
   const daysInMonth = lastDayOfMonth.getDate();
+  const isMobile = useIsMobile();
 
   const weekDays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
   
@@ -91,14 +93,14 @@ export const CalendarGrid = ({
   };
 
   return (
-    <div className="flex-1 p-6">
+    <div className="flex-1 p-3 md:p-6">
       <div className="grid grid-cols-7 gap-1 mb-4">
         {weekDays.map((day) => (
           <div
             key={day}
-            className="p-3 text-center text-sm font-medium text-muted-foreground"
+            className="p-2 md:p-3 text-center text-xs md:text-sm font-medium text-muted-foreground"
           >
-            {day}
+            {isMobile ? day.charAt(0) : day}
           </div>
         ))}
       </div>
@@ -114,7 +116,7 @@ export const CalendarGrid = ({
             <div
               key={`${dayInfo.date.getFullYear()}-${dayInfo.date.getMonth()}-${dayInfo.date.getDate()}`}
               className={`
-                min-h-[120px] p-2 border border-border rounded-lg cursor-pointer
+                ${isMobile ? 'min-h-[80px]' : 'min-h-[120px]'} p-1 md:p-2 border border-border rounded-lg cursor-pointer
                 transition-all duration-200 hover:shadow-md hover:border-primary/50
                 ${!isCurrentMonthDay ? 'opacity-40' : ''}
                 ${isTodayDay ? 'bg-gradient-ai ring-1 ring-calendar-today/20' : 'bg-card'}
@@ -123,10 +125,10 @@ export const CalendarGrid = ({
               onClick={() => onDateClick(dayInfo.date)}
               title={`Click to create event on ${dayInfo.date.toLocaleDateString()}`}
             >
-              <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center justify-between mb-1 md:mb-2">
                 <span
                   className={`
-                    text-sm font-medium
+                    text-xs md:text-sm font-medium
                     ${!isCurrentMonthDay ? 'text-muted-foreground' : 'text-foreground'}
                     ${isTodayDay ? 'text-calendar-today font-bold' : ''}
                   `}
@@ -134,26 +136,26 @@ export const CalendarGrid = ({
                   {dayInfo.day}
                 </span>
                 {isTodayDay && (
-                  <div className="w-2 h-2 bg-calendar-today rounded-full" />
+                  <div className="w-1.5 h-1.5 md:w-2 md:h-2 bg-calendar-today rounded-full" />
                 )}
               </div>
 
-              <div className="space-y-1">
-                {dayEvents.slice(0, 2).map((event, eventIndex) => (
+              <div className="space-y-0.5 md:space-y-1">
+                {dayEvents.slice(0, isMobile ? 1 : 2).map((event, eventIndex) => (
                   <EventCard
                     key={event.id}
                     event={event}
-                    className="text-xs p-1"
+                    className={`text-xs p-0.5 md:p-1 ${isMobile ? 'text-[10px]' : ''}`}
                   />
                 ))}
-                {dayEvents.length > 2 && (
+                {dayEvents.length > (isMobile ? 1 : 2) && (
                   <div className="text-xs text-muted-foreground px-1">
-                    +{dayEvents.length - 2} more
+                    +{dayEvents.length - (isMobile ? 1 : 2)} more
                   </div>
                 )}
                 {dayEvents.length === 0 && isCurrentMonthDay && (
-                  <div className="text-xs text-muted-foreground/50 px-1 py-2 text-center">
-                    Click to add event
+                  <div className="text-xs text-muted-foreground/50 px-1 py-1 md:py-2 text-center">
+                    {isMobile ? '+' : 'Click to add event'}
                   </div>
                 )}
               </div>

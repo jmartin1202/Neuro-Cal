@@ -143,3 +143,103 @@
     overflow-y: auto;
   }
 }
+
+/* Mobile-specific optimizations */
+@layer utilities {
+  /* Ensure touch targets are at least 44px for mobile accessibility */
+  .touch-target {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  /* Mobile-optimized calendar grid */
+  .calendar-grid-mobile {
+    grid-template-columns: repeat(7, 1fr);
+    gap: 2px;
+  }
+  
+  /* Mobile-optimized calendar cells */
+  .calendar-cell-mobile {
+    min-height: 80px;
+    padding: 4px;
+  }
+  
+  /* Mobile-optimized text sizes */
+  .text-mobile-xs {
+    font-size: 0.625rem;
+    line-height: 0.75rem;
+  }
+  
+  .text-mobile-sm {
+    font-size: 0.75rem;
+    line-height: 1rem;
+  }
+  
+  /* Mobile-optimized spacing */
+  .space-mobile-1 {
+    gap: 0.25rem;
+  }
+  
+  .space-mobile-2 {
+    gap: 0.5rem;
+  }
+  
+  .space-mobile-3 {
+    gap: 0.75rem;
+  }
+  
+  .space-mobile-4 {
+    gap: 1rem;
+  }
+}
+
+/* Mobile-first responsive design */
+@media (max-width: 768px) {
+  /* Optimize calendar for mobile */
+  .calendar-container {
+    padding: 0.75rem;
+  }
+  
+  /* Ensure buttons are touch-friendly */
+  button, [role="button"] {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  /* Optimize form inputs for mobile */
+  input, select, textarea {
+    font-size: 16px; /* Prevents zoom on iOS */
+  }
+  
+  /* Mobile-optimized modal */
+  .dialog-content-mobile {
+    margin: 1rem;
+    max-width: calc(100vw - 2rem);
+  }
+  
+  /* Mobile-optimized calendar header */
+  .calendar-header-mobile {
+    flex-direction: column;
+    gap: 1rem;
+    padding: 1rem;
+  }
+  
+  /* Mobile-optimized navigation */
+  .nav-mobile {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+}
+
+/* Ensure smooth scrolling on mobile */
+@media (max-width: 768px) {
+  html {
+    scroll-behavior: smooth;
+  }
+  
+  /* Optimize touch scrolling */
+  .calendar-grid {
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+  }
+}

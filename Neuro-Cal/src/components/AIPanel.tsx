@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Sparkles, Send, Brain, Clock, TrendingUp, Calendar } from "lucide-react";
 import { Event, EventCard } from "./EventCard";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface AIPanelProps {
   upcomingEvents: Event[];
@@ -14,6 +15,7 @@ interface AIPanelProps {
 export const AIPanel = ({ upcomingEvents, onCreateEvent }: AIPanelProps) => {
   const [inputText, setInputText] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
+  const isMobile = useIsMobile();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -57,7 +59,7 @@ export const AIPanel = ({ upcomingEvents, onCreateEvent }: AIPanelProps) => {
   ];
 
   return (
-    <div className="w-80 bg-gradient-card border-l border-border p-6 space-y-6 overflow-y-auto max-h-full">
+    <div className={`${isMobile ? 'w-full border-t border-border' : 'w-80 border-l border-border'} bg-gradient-card p-4 md:p-6 space-y-4 md:space-y-6 overflow-y-auto max-h-full`}>
       {/* AI Assistant */}
       <Card className="border-primary/20 bg-gradient-ai">
         <CardHeader className="pb-3">
@@ -101,8 +103,11 @@ export const AIPanel = ({ upcomingEvents, onCreateEvent }: AIPanelProps) => {
               {suggestions.map((suggestion, index) => (
                 <button
                   key={index}
-                  onClick={() => setInputText(suggestion)}
-                  className="text-left text-xs text-muted-foreground hover:text-foreground p-2 rounded-md hover:bg-background/50 w-full transition-colors"
+                  onClick={() => {
+                    setInputText(suggestion);
+                    handleSubmit({ preventDefault: () => {} } as React.FormEvent);
+                  }}
+                  className="w-full text-left text-xs text-muted-foreground hover:text-foreground transition-colors p-2 rounded-md hover:bg-background/50"
                 >
                   {suggestion}
                 </button>
@@ -112,47 +117,54 @@ export const AIPanel = ({ upcomingEvents, onCreateEvent }: AIPanelProps) => {
         </CardContent>
       </Card>
 
+      {/* Upcoming Events */}
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="flex items-center gap-2 text-lg">
+            <Calendar className="w-5 h-5" />
+            Upcoming Events
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          {upcomingEvents.length > 0 ? (
+            upcomingEvents.slice(0, isMobile ? 3 : 5).map((event) => (
+              <EventCard
+                key={event.id}
+                event={event}
+                className="text-sm"
+              />
+            ))
+          ) : (
+            <div className="text-center text-muted-foreground py-4">
+              <Calendar className="w-8 h-8 mx-auto mb-2 opacity-50" />
+              <p className="text-sm">No upcoming events</p>
+              <p className="text-xs">Create your first event above!</p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
       {/* AI Insights */}
       <Card>
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center gap-2 text-lg">
-            <Sparkles className="w-5 h-5 text-primary" />
-            Smart Insights
+            <TrendingUp className="w-5 h-5" />
+            AI Insights
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
           {aiInsights.map((insight, index) => (
-            <div key={index} className="flex gap-3 p-3 rounded-lg bg-secondary/50">
-              <div className="mt-0.5 text-primary">
-                {insight.icon}
-              </div>
+            <div key={index} className="flex items-start gap-3 p-3 rounded-lg bg-secondary/50">
+              <div className="mt-0.5">{insight.icon}</div>
               <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 mb-1">
-                  <h4 className="text-sm font-medium">{insight.title}</h4>
-                  <Badge variant={insight.type === "warning" ? "destructive" : "secondary"} className="text-xs">
-                    {insight.type}
-                  </Badge>
-                </div>
+                <h4 className="text-sm font-medium">{insight.title}</h4>
                 <p className="text-xs text-muted-foreground">{insight.description}</p>
               </div>
+              <Badge variant={insight.type === "success" ? "default" : insight.type === "warning" ? "destructive" : "secondary"} className="text-xs">
+                {insight.type}
+              </Badge>
             </div>
           ))}
-        </CardContent>
-      </Card>
-
-      {/* Today's Agenda */}
-      <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="text-lg">Today's Agenda</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-2">
-          {upcomingEvents.length > 0 ? (
-            upcomingEvents.slice(0, 4).map((event) => (
-              <EventCard key={event.id} event={event} />
-            ))
-          ) : (
-            <p className="text-sm text-muted-foreground">No events scheduled for today</p>
-          )}
         </CardContent>
       </Card>
     </div>

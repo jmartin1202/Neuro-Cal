@@ -5,6 +5,7 @@ import { AIPanel } from "./AIPanel";
 import { CreateEventModal } from "./CreateEventModal";
 import { Event } from "./EventCard";
 import { useToast } from "@/hooks/use-toast";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 export const SmartCalendar = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -12,6 +13,7 @@ export const SmartCalendar = () => {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [view, setView] = useState<"month" | "week" | "day">("month");
   const [events, setEvents] = useState<Event[]>([]);
+  const isMobile = useIsMobile();
 
   const { toast } = useToast();
 
@@ -243,7 +245,7 @@ export const SmartCalendar = () => {
         onViewChange={setView}
       />
       
-      <div className="flex flex-1 overflow-auto">
+      <div className={`flex flex-1 overflow-auto ${isMobile ? 'flex-col' : 'flex-row'}`}>
         <CalendarGrid
           currentDate={currentDate}
           events={events}
