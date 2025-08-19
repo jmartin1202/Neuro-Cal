@@ -70,6 +70,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   }, []);
 
+  const logout = () => {
+    localStorage.removeItem('neurocal_token');
+    setToken(null);
+    setUser(null);
+    setError(null);
+    // Redirect to auth page
+    window.location.href = '/auth';
+  };
+
   const verifyToken = useCallback(async (tokenToVerify: string) => {
     try {
       const response = await fetch(`${API_BASE_URL}/auth/profile`, {
@@ -153,15 +162,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setError(errorMessage);
       throw error;
     }
-  };
-
-  const logout = () => {
-    localStorage.removeItem('neurocal_token');
-    setToken(null);
-    setUser(null);
-    setError(null);
-    // Redirect to auth page
-    window.location.href = '/auth';
   };
 
   const clearError = () => {

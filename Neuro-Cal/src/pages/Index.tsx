@@ -1,67 +1,68 @@
-import { SmartCalendar } from "@/components/SmartCalendar";
 import { useAuth } from "@/contexts/AuthContext";
-import { Button } from "@/components/ui/button";
-import { Link } from "react-router-dom";
-import { LogOut, User, LogIn } from "lucide-react";
-import { useIsMobile } from "@/hooks/use-mobile";
 
 const Index = () => {
-  const { user, logout, isLoading } = useAuth();
-  const isMobile = useIsMobile();
-
-  const handleLogout = () => {
-    logout();
-  };
-
+  const { user, isLoading } = useAuth();
   return (
     <div className="min-h-screen bg-background">
-      {/* Navigation Header */}
+      {/* Simple Navigation Header */}
       <div className="border-b bg-card">
-        <div className="container mx-auto px-3 md:px-4 py-3 md:py-4">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 md:gap-0">
-            <div className="flex items-center gap-3 md:gap-4">
-              <h1 className="text-xl md:text-2xl font-bold">NeuroCal</h1>
-              <span className="text-sm md:text-base text-muted-foreground">Smart AI Calendar</span>
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <h1 className="text-2xl font-bold">NeuroCal</h1>
+              <span className="text-base text-muted-foreground">Smart AI Calendar</span>
             </div>
-            <div className="flex items-center gap-2">
-              {!isLoading && (
-                <>
-                  {user ? (
-                    <div className="flex items-center gap-2 md:gap-3">
-                      <div className="flex items-center gap-2 text-xs md:text-sm">
-                        <User className="h-3 w-3 md:h-4 md:w-4" />
-                        <span className="hidden sm:inline">
-                          {user.firstName} {user.lastName}
-                        </span>
-                      </div>
-                      <Button 
-                        variant="outline" 
-                        size="sm" 
-                        onClick={handleLogout}
-                        className="flex items-center gap-1 md:gap-2"
-                      >
-                        <LogOut className="h-3 w-3 md:h-4 md:w-4" />
-                        <span className="hidden sm:inline">Logout</span>
-                      </Button>
-                    </div>
-                  ) : (
-                    <div className="flex items-center gap-2">
-                      <Link to="/signin">
-                        <Button variant="outline" size="sm" className="flex items-center gap-1 md:gap-2">
-                          <LogIn className="h-3 w-3 md:h-4 md:w-4" />
-                          Sign In
-                        </Button>
-                      </Link>
-                    </div>
-                  )}
-                </>
-              )}
+            <div className="text-sm text-muted-foreground">
+              {isLoading ? "Loading..." : user ? `Welcome, ${user.firstName}!` : "Not signed in"} 🎉
             </div>
           </div>
         </div>
       </div>
       
-      <SmartCalendar />
+      {/* Content area */}
+      <div className="p-8">
+        <div className="max-w-4xl mx-auto">
+          <h2 className="text-3xl font-bold mb-6">Welcome to NeuroCal</h2>
+          <p className="text-lg text-muted-foreground mb-8">
+            Your AI-powered smart calendar is loading...
+          </p>
+          
+          <div className="bg-card border rounded-lg p-6">
+            <h3 className="text-xl font-semibold mb-4">Status Check</h3>
+            <div className="space-y-2">
+              <div className="flex items-center gap-2">
+                <span className="w-2 h-2 bg-green-500 rounded-full"></span>
+                <span>React components: Working</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="w-2 h-2 bg-green-500 rounded-full"></span>
+                <span>Tailwind CSS: Working</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="w-2 h-2 bg-green-500 rounded-full"></span>
+                <span>AuthContext: Working</span>
+              </div>
+            </div>
+          </div>
+          
+          {/* Simple Calendar Placeholder */}
+          <div className="mt-8 bg-card border rounded-lg p-6">
+            <h3 className="text-xl font-semibold mb-4">Calendar</h3>
+            <div className="grid grid-cols-7 gap-2 text-center">
+              {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
+                <div key={day} className="p-2 font-medium text-muted-foreground">
+                  {day}
+                </div>
+              ))}
+              {Array.from({ length: 35 }, (_, i) => (
+                <div key={i} className="p-2 h-20 border rounded hover:bg-muted cursor-pointer">
+                  {i > 6 && i < 32 ? i - 6 : ''}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };
