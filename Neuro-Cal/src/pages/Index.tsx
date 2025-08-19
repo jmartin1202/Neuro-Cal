@@ -5,7 +5,9 @@ import { useToast } from "@/hooks/use-toast";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
-import { LogOut, LogIn, Calendar, Sparkles, Zap, Users, Clock, X, BarChart3, Crown, Star, Lock, Plus, Check, Badge, Brain, AlertTriangle } from "lucide-react";
+import { LogOut, LogIn, Calendar, Sparkles, Zap, Users, Clock, X, BarChart3, Crown, Star, Lock, Plus, Check, Badge, Brain, AlertTriangle, RefreshCw } from "lucide-react";
+import { useErrorPrevention } from "@/hooks/useErrorPrevention";
+import { ComponentSafetyWrapper } from "@/components/ComponentSafetyWrapper";
 
 // Lazy load components to isolate issues
 const CalendarHeader = lazy(() => import("@/components/CalendarHeader").then(module => ({ default: module.CalendarHeader })));
@@ -57,6 +59,14 @@ const AIPanelFallback = () => (
 const Index = () => {
   console.log("🚀 Index component rendering..."); // Debug log
   
+  // Error prevention hook
+  const errorPrevention = useErrorPrevention("Index", {
+    maxErrors: 3,
+    errorWindowMs: 30000, // 30 seconds
+    autoRecover: true,
+    logErrors: true
+  });
+  
   // All React hooks MUST be at the top level
   const { user, logout, isLoading } = useAuth();
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -71,59 +81,203 @@ const Index = () => {
 
   console.log("✅ React hooks called successfully"); // Debug log
 
-  // Event handlers
+  // Safe state setters
+  const safeSetCurrentDate = useCallback((value: Date | ((prev: Date) => Date)) => {
+    errorPrevention.safeSetState(setCurrentDate, value, 'setCurrentDate');
+  }, [errorPrevention]);
+
+  const safeSetSelectedDate = useCallback((value: Date | null | ((prev: Date | null) => Date | null)) => {
+    errorPrevention.safeSetState(setSelectedDate, value, 'setSelectedDate');
+  }, [errorPrevention]);
+
+  const safeSetIsCreateModalOpen = useCallback((value: boolean | ((prev: boolean) => boolean)) => {
+    errorPrevention.safeSetState(setIsCreateModalOpen, value, 'setIsCreateModalOpen');
+  }, [errorPrevention]);
+
+  const safeSetShowAuthModal = useCallback((value: boolean | ((prev: boolean) => boolean)) => {
+    errorPrevention.safeSetState(setShowAuthModal, value, 'setShowAuthModal');
+  }, [errorPrevention]);
+
+  const safeSetShowPricingModal = useCallback((value: boolean | ((prev: boolean) => boolean)) => {
+    errorPrevention.safeSetState(setShowPricingModal, value, 'setShowPricingModal');
+  }, [errorPrevention]);
+
+  const safeSetAuthMode = useCallback((value: 'login' | 'register' | ((prev: 'login' | 'register') => 'login' | 'register')) => {
+    errorPrevention.safeSetState(setAuthMode, value, 'setAuthMode');
+  }, [errorPrevention]);
+
+  const safeSetEvents = useCallback((value: Event[] | ((prev: Event[]) => Event[])) => {
+    errorPrevention.safeSetState(setEvents, value, 'setEvents');
+  }, [errorPrevention]);
+
+  // Event handlers with error prevention
   const handleDateClick = useCallback((date: Date) => {
-    if (!user) {
-      setShowPricingModal(true);
-      return;
+    try {
+      if (!user) {
+        safeSetShowPricingModal(true);
+        return;
+      }
+      safeSetSelectedDate(date);
+      safeSetIsCreateModalOpen(true);
+    } catch (error) {
+      errorPrevention.trackError(error instanceof Error ? error : String(error), 'handleDateClick');
     }
-    setSelectedDate(date);
-    setIsCreateModalOpen(true);
-  }, [user]);
+  }, [user, safeSetShowPricingModal, safeSetSelectedDate, safeSetIsCreateModalOpen, errorPrevention]);
 
   const handleCreateEvent = useCallback(async (eventData: Omit<Event, 'id'>) => {
-    const newEvent: Event = {
-      ...eventData,
-      id: `event-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
-    };
-    setEvents(prev => [...prev, newEvent]);
-    setIsCreateModalOpen(false);
-    toast({
-      title: "Event Created! 🎉",
-      description: `"${newEvent.title}" has been added to your calendar.`,
-    });
-  }, [toast]);
-
-  const handleAICreateEvent = useCallback((eventText: string) => {
-    if (!user) {
-      setShowPricingModal(true);
-      return;
-    }
-    // AI event creation logic would go here
-    toast({
-      title: "AI Event Creation",
-      description: "This feature requires authentication.",
-    });
-  }, [user, toast]);
-
-  const handleAuthModeSwitch = useCallback(() => {
-    setAuthMode(prev => prev === 'login' ? 'register' : 'login');
-  }, []);
-
-  const handleSelectPlan = useCallback((plan: string) => {
-    setShowPricingModal(false);
-    if (plan === 'trial') {
-      setShowAuthModal(true);
-      setAuthMode('register');
-    } else {
+    try {
+      const newEvent: Event = {
+        ...eventData,
+        id: `event-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+      };
+      
+      safeSetEvents(prev => [...prev, newEvent]);
+      safeSetIsCreateModalOpen(false);
+      
       toast({
-        title: "Plan Selected",
-        description: `You selected the ${plan} plan. Redirecting to checkout...`,
+        title: "Event Created! 🎉",
+        description: `"${newEvent.title}" has been added to your calendar.`,
+      });
+    } catch (error) {
+      errorPrevention.trackError(error instanceof Error ? error : String(error), 'handleCreateEvent');
+      toast({
+        title: "Error Creating Event",
+        description: "Something went wrong. Please try again.",
       });
     }
-  }, [toast]);
+  }, [toast, safeSetEvents, safeSetIsCreateModalOpen, errorPrevention]);
+
+  const handleAICreateEvent = useCallback((eventText: string) => {
+    try {
+      if (!user) {
+        safeSetShowPricingModal(true);
+        return;
+      }
+      // AI event creation logic would go here
+      toast({
+        title: "AI Event Creation",
+        description: "This feature requires authentication.",
+      });
+    } catch (error) {
+      errorPrevention.trackError(error instanceof Error ? error : String(error), 'handleAICreateEvent');
+    }
+  }, [user, toast, safeSetShowPricingModal, errorPrevention]);
+
+  const handleAuthModeSwitch = useCallback(() => {
+    try {
+      safeSetAuthMode(prev => prev === 'login' ? 'register' : 'login');
+    } catch (error) {
+      errorPrevention.trackError(error instanceof Error ? error : String(error), 'handleAuthModeSwitch');
+    }
+  }, [safeSetAuthMode, errorPrevention]);
+
+  const handleSelectPlan = useCallback((plan: string) => {
+    try {
+      safeSetShowPricingModal(false);
+      if (plan === 'trial') {
+        safeSetShowAuthModal(true);
+        safeSetAuthMode('register');
+      } else {
+        toast({
+          title: "Plan Selected",
+          description: `You selected the ${plan} plan. Redirecting to checkout...`,
+        });
+      }
+    } catch (error) {
+      errorPrevention.trackError(error instanceof Error ? error : String(error), 'handleSelectPlan');
+    }
+  }, [toast, safeSetShowPricingModal, safeSetShowAuthModal, safeSetAuthMode, errorPrevention]);
 
   console.log("✅ Event handlers defined successfully"); // Debug log
+
+  // Safe navigation handlers
+  const handlePrevMonth = useCallback(() => {
+    try {
+      safeSetCurrentDate(prev => new Date(prev.getFullYear(), prev.getMonth() - 1, 1));
+    } catch (error) {
+      errorPrevention.trackError(error instanceof Error ? error : String(error), 'handlePrevMonth');
+    }
+  }, [safeSetCurrentDate, errorPrevention]);
+
+  const handleNextMonth = useCallback(() => {
+    try {
+      safeSetCurrentDate(prev => new Date(prev.getFullYear(), prev.getMonth() + 1, 1));
+    } catch (error) {
+      errorPrevention.trackError(error instanceof Error ? error : String(error), 'handleNextMonth');
+    }
+  }, [safeSetCurrentDate, errorPrevention]);
+
+  const handleViewChange = useCallback(() => {
+    // Placeholder for view change
+  }, []);
+
+  // Safe modal close handlers
+  const handleCloseCreateModal = useCallback(() => {
+    try {
+      safeSetIsCreateModalOpen(false);
+      safeSetSelectedDate(null);
+    } catch (error) {
+      errorPrevention.trackError(error instanceof Error ? error : String(error), 'handleCloseCreateModal');
+    }
+  }, [safeSetIsCreateModalOpen, safeSetSelectedDate, errorPrevention]);
+
+  const handleCloseAuthModal = useCallback(() => {
+    try {
+      safeSetShowAuthModal(false);
+    } catch (error) {
+      errorPrevention.trackError(error instanceof Error ? error : String(error), 'handleCloseAuthModal');
+    }
+  }, [safeSetShowAuthModal, errorPrevention]);
+
+  const handleClosePricingModal = useCallback(() => {
+    try {
+      safeSetShowPricingModal(false);
+    } catch (error) {
+      errorPrevention.trackError(error instanceof Error ? error : String(error), 'handleClosePricingModal');
+    }
+  }, [safeSetShowPricingModal, errorPrevention]);
+
+  // Safe button click handlers
+  const handleCreateEventClick = useCallback(() => {
+    try {
+      safeSetIsCreateModalOpen(true);
+    } catch (error) {
+      errorPrevention.trackError(error instanceof Error ? error : String(error), 'handleCreateEventClick');
+    }
+  }, [safeSetIsCreateModalOpen, errorPrevention]);
+
+  const handleSignInClick = useCallback(() => {
+    try {
+      safeSetShowAuthModal(true);
+    } catch (error) {
+      errorPrevention.trackError(error instanceof Error ? error : String(error), 'handleSignInClick');
+    }
+  }, [safeSetShowAuthModal, errorPrevention]);
+
+  const handleUpgradeClick = useCallback(() => {
+    try {
+      safeSetShowPricingModal(true);
+    } catch (error) {
+      errorPrevention.trackError(error instanceof Error ? error : String(error), 'handleUpgradeClick');
+    }
+  }, [safeSetShowPricingModal, errorPrevention]);
+
+  const handleGetStartedClick = useCallback(() => {
+    try {
+      safeSetShowPricingModal(true);
+    } catch (error) {
+      errorPrevention.trackError(error instanceof Error ? error : String(error), 'handleGetStartedClick');
+    }
+  }, [safeSetShowPricingModal, errorPrevention]);
+
+  // Safe logout handler
+  const handleLogout = useCallback(() => {
+    try {
+      logout();
+    } catch (error) {
+      errorPrevention.trackError(error instanceof Error ? error : String(error), 'handleLogout');
+    }
+  }, [logout, errorPrevention]);
 
   // Loading state
   if (isLoading) {
@@ -132,6 +286,46 @@ const Index = () => {
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
           <p className="text-lg text-muted-foreground">Loading NeuroCal...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Error state - show recovery options
+  if (errorPrevention.isErrorState) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-yellow-50 to-orange-50 flex items-center justify-center p-4">
+        <div className="max-w-md w-full bg-white rounded-2xl shadow-2xl p-8 text-center">
+          <div className="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <AlertTriangle className="w-8 h-8 text-yellow-600" />
+          </div>
+          <h1 className="text-2xl font-bold text-gray-900 mb-4">Component Error Detected</h1>
+          <p className="text-gray-600 mb-6">
+            We've detected some issues in the calendar component. Let's fix this!
+          </p>
+          
+          <div className="space-y-3">
+            <Button
+              onClick={errorPrevention.attemptRecovery}
+              className="w-full bg-blue-600 hover:bg-blue-700"
+            >
+              <RefreshCw className="w-4 h-4 mr-2" />
+              Try to Fix
+            </Button>
+            
+            <Button
+              onClick={errorPrevention.forceRecovery}
+              variant="outline"
+              className="w-full"
+            >
+              <AlertTriangle className="w-4 h-4 mr-2" />
+              Force Recovery
+            </Button>
+          </div>
+          
+          <p className="text-xs text-gray-500 mt-4">
+            Error count: {errorPrevention.errorCount}
+          </p>
         </div>
       </div>
     );
@@ -160,22 +354,22 @@ const Index = () => {
             <div className="flex items-center gap-3">
               {user ? (
                 <>
-                  <Button variant="outline" size="sm" onClick={() => setIsCreateModalOpen(true)}>
+                  <Button variant="outline" size="sm" onClick={handleCreateEventClick}>
                     <Plus className="h-4 w-4 mr-2" />
                     Create Event
                   </Button>
-                  <Button variant="outline" size="sm" onClick={logout}>
+                  <Button variant="outline" size="sm" onClick={handleLogout}>
                     <LogOut className="h-4 w-4 mr-2" />
                     Logout
                   </Button>
                 </>
               ) : (
                 <>
-                  <Button variant="outline" size="sm" onClick={() => setShowAuthModal(true)}>
+                  <Button variant="outline" size="sm" onClick={handleSignInClick}>
                     <LogIn className="h-4 w-4 mr-2" />
                     Sign In
                   </Button>
-                  <Button onClick={() => setShowPricingModal(true)}>
+                  <Button onClick={handleUpgradeClick}>
                     <Crown className="h-4 w-4 mr-2" />
                     Upgrade
                   </Button>
@@ -202,7 +396,7 @@ const Index = () => {
                 </p>
               </div>
               <Button 
-                onClick={() => setShowPricingModal(true)} 
+                onClick={handleGetStartedClick} 
                 size="sm" 
                 className="bg-blue-600 hover:bg-blue-700"
               >
@@ -217,25 +411,39 @@ const Index = () => {
           {/* Calendar Header */}
           <div>
             <Suspense fallback={<CalendarHeaderFallback />}>
-              <CalendarHeader 
-                currentDate={currentDate}
-                onPrevMonth={() => setCurrentDate(prev => new Date(prev.getFullYear(), prev.getMonth() - 1, 1))}
-                onNextMonth={() => setCurrentDate(prev => new Date(prev.getFullYear(), prev.getMonth() + 1, 1))}
-                view="month"
-                onViewChange={() => {}}
-              />
+              <ComponentSafetyWrapper
+                componentName="CalendarHeader"
+                isolationLevel="moderate"
+                autoRecover={true}
+                retryCount={3}
+              >
+                <CalendarHeader 
+                  currentDate={currentDate}
+                  onPrevMonth={handlePrevMonth}
+                  onNextMonth={handleNextMonth}
+                  view="month"
+                  onViewChange={handleViewChange}
+                />
+              </ComponentSafetyWrapper>
             </Suspense>
           </div>
 
           {/* Calendar Grid */}
           <div>
             <Suspense fallback={<CalendarGridFallback />}>
-              <CalendarGrid 
-                currentDate={currentDate}
-                events={events}
-                onDateClick={handleDateClick}
-                selectedDate={selectedDate}
-              />
+              <ComponentSafetyWrapper
+                componentName="CalendarGrid"
+                isolationLevel="moderate"
+                autoRecover={true}
+                retryCount={3}
+              >
+                <CalendarGrid 
+                  currentDate={currentDate}
+                  events={events}
+                  onDateClick={handleDateClick}
+                  selectedDate={selectedDate}
+                />
+              </ComponentSafetyWrapper>
             </Suspense>
           </div>
 
@@ -252,7 +460,7 @@ const Index = () => {
                     </p>
                   </div>
                   <Button 
-                    onClick={() => setShowPricingModal(true)}
+                    onClick={handleUpgradeClick}
                     size="sm"
                     className="bg-yellow-600 hover:bg-yellow-700"
                   >
@@ -263,10 +471,17 @@ const Index = () => {
               </div>
             ) : (
               <Suspense fallback={<AIPanelFallback />}>
-                <AIPanel 
-                  upcomingEvents={events}
-                  onCreateEvent={handleAICreateEvent} 
-                />
+                <ComponentSafetyWrapper
+                  componentName="AIPanel"
+                  isolationLevel="loose"
+                  autoRecover={true}
+                  retryCount={5}
+                >
+                  <AIPanel 
+                    upcomingEvents={events}
+                    onCreateEvent={handleAICreateEvent} 
+                  />
+                </ComponentSafetyWrapper>
               </Suspense>
             )}
           </div>
@@ -275,12 +490,19 @@ const Index = () => {
 
       {/* Create Event Modal */}
       <Suspense fallback={<div>Loading modal...</div>}>
-        <CreateEventModal
-          isOpen={isCreateModalOpen}
-          onClose={() => setIsCreateModalOpen(false)}
-          onCreateEvent={handleCreateEvent}
-          selectedDate={selectedDate}
-        />
+        <ComponentSafetyWrapper
+          componentName="CreateEventModal"
+          isolationLevel="strict"
+          autoRecover={false}
+          retryCount={1}
+        >
+          <CreateEventModal
+            isOpen={isCreateModalOpen}
+            onClose={handleCloseCreateModal}
+            onCreateEvent={handleCreateEvent}
+            selectedDate={selectedDate}
+          />
+        </ComponentSafetyWrapper>
       </Suspense>
 
       {/* Simple Auth Modal */}
@@ -288,7 +510,7 @@ const Index = () => {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-lg p-6 w-full max-w-md relative">
             <button 
-              onClick={() => setShowAuthModal(false)} 
+              onClick={handleCloseAuthModal} 
               className="absolute top-4 right-4 p-2 hover:bg-gray-100 rounded-full"
             >
               <X className="h-5 w-5 text-gray-500" />
@@ -309,11 +531,25 @@ const Index = () => {
             <div className="space-y-4">
               {authMode === 'login' ? (
                 <Suspense fallback={<div className="p-4 text-center">Loading login form...</div>}>
-                  <LoginForm />
+                  <ComponentSafetyWrapper
+                    componentName="LoginForm"
+                    isolationLevel="moderate"
+                    autoRecover={true}
+                    retryCount={3}
+                  >
+                    <LoginForm />
+                  </ComponentSafetyWrapper>
                 </Suspense>
               ) : (
                 <Suspense fallback={<div className="p-4 text-center">Loading registration form...</div>}>
-                  <RegisterForm />
+                  <ComponentSafetyWrapper
+                    componentName="RegisterForm"
+                    isolationLevel="moderate"
+                    autoRecover={true}
+                    retryCount={3}
+                  >
+                    <RegisterForm />
+                  </ComponentSafetyWrapper>
                 </Suspense>
               )}
             </div>
@@ -338,7 +574,7 @@ const Index = () => {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-lg p-8 max-w-4xl w-full relative">
             <button 
-              onClick={() => setShowPricingModal(false)} 
+              onClick={handleClosePricingModal} 
               className="absolute top-4 right-4 p-2 hover:bg-gray-100 rounded-full"
             >
               <X className="h-5 w-5 text-gray-500" />
