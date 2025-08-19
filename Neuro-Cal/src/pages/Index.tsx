@@ -1,10 +1,11 @@
 import React, { useState, useCallback, Suspense, lazy, useRef, useEffect } from "react";
+import { Link } from "react-router-dom";
 import { Event } from "@/components/EventCard";
 import { useToast } from "@/hooks/use-toast";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
-import { LogOut, LogIn, Calendar, Sparkles, Zap, Users, Clock, X } from "lucide-react";
+import { LogOut, LogIn, Calendar, Sparkles, Zap, Users, Clock, X, BarChart3, Crown, Star, Lock } from "lucide-react";
 
 // Lazy load components to isolate issues
 const CalendarHeader = lazy(() => import("@/components/CalendarHeader").then(module => ({ default: module.CalendarHeader })));
@@ -51,6 +52,228 @@ const AIPanelFallback = () => (
     </div>
   </div>
 );
+
+// Demo mode feature gating component
+const FeatureGate = ({ 
+  children, 
+  feature, 
+  plan, 
+  onUpgrade 
+}: { 
+  children: React.ReactNode; 
+  feature: string; 
+  plan: "basic" | "pro"; 
+  onUpgrade: () => void;
+}) => {
+  return (
+    <div className="relative">
+      {children}
+      <div className="absolute inset-0 bg-black/20 backdrop-blur-sm rounded-lg flex items-center justify-center">
+        <div className="bg-white p-4 rounded-lg shadow-lg text-center max-w-sm">
+          <Lock className="h-8 w-8 text-gray-400 mx-auto mb-2" />
+          <h3 className="font-semibold text-gray-900 mb-1">Premium Feature</h3>
+          <p className="text-sm text-gray-600 mb-3">
+            {feature} requires {plan === "basic" ? "Basic" : "Pro"} plan
+          </p>
+          <Button onClick={onUpgrade} size="sm" className="w-full">
+            <Crown className="h-4 w-4 mr-2" />
+            Upgrade to {plan === "basic" ? "Basic" : "Pro"}
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Pricing modal component
+const PricingModal = ({ 
+  isOpen, 
+  onClose, 
+  onSelectPlan 
+}: { 
+  isOpen: boolean; 
+  onClose: () => void; 
+  onSelectPlan: (plan: "trial" | "basic" | "pro") => void;
+}) => {
+  const modalRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (modalRef.current && !modalRef.current.contains(event.target as Node)) {
+        onClose();
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isOpen, onClose]);
+
+  useEffect(() => {
+    const handleEscapeKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        onClose();
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener('keydown', handleEscapeKey);
+    }
+
+    return () => {
+      document.removeEventListener('keydown', handleEscapeKey);
+    };
+  }, [isOpen, onClose]);
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+      <div 
+        ref={modalRef}
+        className="bg-white rounded-lg p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto"
+      >
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 p-2 hover:bg-gray-100 rounded-full transition-colors duration-200"
+        >
+          <X className="h-5 w-5 text-gray-500" />
+        </button>
+
+        <div className="text-center mb-8">
+          <h2 className="text-3xl font-bold text-gray-900 mb-2">Choose Your Plan</h2>
+          <p className="text-gray-600">Start with a free trial, then choose the plan that fits your needs</p>
+        </div>
+
+        <div className="grid md:grid-cols-3 gap-6">
+          {/* Free Trial */}
+          <div className="border rounded-lg p-6 text-center">
+            <div className="mb-4">
+              <Star className="h-12 w-12 text-blue-500 mx-auto mb-2" />
+              <h3 className="text-xl font-semibold">Free Trial</h3>
+              <p className="text-gray-600 text-sm">7 days full access</p>
+            </div>
+            <div className="mb-6">
+              <span className="text-3xl font-bold text-gray-900">$0</span>
+              <span className="text-gray-600">/7 days</span>
+            </div>
+            <ul className="text-left text-sm text-gray-600 mb-6 space-y-2">
+              <li className="flex items-center">
+                <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
+                Full calendar access
+              </li>
+              <li className="flex items-center">
+                <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
+                Basic event creation
+              </li>
+              <li className="flex items-center">
+                <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
+                AI suggestions (limited)
+              </li>
+            </ul>
+            <Button 
+              onClick={() => onSelectPlan("trial")}
+              className="w-full bg-blue-600 hover:bg-blue-700"
+            >
+              Start Free Trial
+            </Button>
+          </div>
+
+          {/* Basic Plan */}
+          <div className="border-2 border-blue-500 rounded-lg p-6 text-center relative">
+            <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
+              <span className="bg-blue-500 text-white px-3 py-1 rounded-full text-sm font-medium">Most Popular</span>
+            </div>
+            <div className="mb-4">
+              <Calendar className="h-12 w-12 text-blue-500 mx-auto mb-2" />
+              <h3 className="text-xl font-semibold">Basic</h3>
+              <p className="text-gray-600 text-sm">Perfect for individuals</p>
+            </div>
+            <div className="mb-6">
+              <span className="text-3xl font-bold text-gray-900">$4.99</span>
+              <span className="text-gray-600">/month</span>
+            </div>
+            <ul className="text-left text-sm text-gray-600 mb-6 space-y-2">
+              <li className="flex items-center">
+                <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
+                Everything in trial
+              </li>
+              <li className="flex items-center">
+                <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
+                Unlimited events
+              </li>
+              <li className="flex items-center">
+                <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
+                Advanced AI features
+              </li>
+              <li className="flex items-center">
+                <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
+                Priority support
+              </li>
+            </ul>
+            <Button 
+              onClick={() => onSelectPlan("basic")}
+              className="w-full bg-blue-600 hover:bg-blue-700"
+            >
+              Choose Basic
+            </Button>
+          </div>
+
+          {/* Pro Plan */}
+          <div className="border rounded-lg p-6 text-center">
+            <div className="mb-4">
+              <Crown className="h-12 w-12 text-purple-500 mx-auto mb-2" />
+              <h3 className="text-xl font-semibold">Pro</h3>
+              <p className="text-gray-600 text-sm">For power users & teams</p>
+            </div>
+            <div className="mb-6">
+              <span className="text-3xl font-bold text-gray-900">$9.99</span>
+              <span className="text-gray-600">/month</span>
+            </div>
+            <ul className="text-left text-sm text-gray-600 mb-6 space-y-2">
+              <li className="flex items-center">
+                <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
+                Everything in Basic
+              </li>
+              <li className="flex items-center">
+                <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
+                Team collaboration
+              </li>
+              <li className="flex items-center">
+                <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
+                Advanced analytics
+              </li>
+              <li className="flex items-center">
+                <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
+                API access
+              </li>
+              <li className="flex items-center">
+                <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
+                White-label options
+              </li>
+            </ul>
+            <Button 
+              onClick={() => onSelectPlan("pro")}
+              className="w-full bg-purple-600 hover:bg-purple-700"
+            >
+              Choose Pro
+            </Button>
+          </div>
+        </div>
+
+        <div className="text-center mt-6">
+          <p className="text-sm text-gray-500">
+            All plans include a 7-day free trial. Cancel anytime.
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 // Modal component with click-outside-to-close functionality
 const AuthModal = ({ 
@@ -162,6 +385,7 @@ const Index = () => {
     const [view, setView] = useState<"month" | "week" | "day">("month");
     const [events, setEvents] = useState<Event[]>([]);
     const [showAuthModal, setShowAuthModal] = useState(false);
+    const [showPricingModal, setShowPricingModal] = useState(false);
     const [authMode, setAuthMode] = useState<"login" | "register">("login");
     
     const isMobile = useIsMobile();
@@ -190,9 +414,14 @@ const Index = () => {
     }, []);
 
     const handleDateClick = useCallback((date: Date) => {
+      if (!user) {
+        // Show upgrade prompt for demo users
+        setShowPricingModal(true);
+        return;
+      }
       setSelectedDate(date);
       setIsCreateModalOpen(true);
-    }, []);
+    }, [user]);
 
     const handleCreateEvent = useCallback(async (eventData: Omit<Event, 'id'>) => {
       const newEvent: Event = {
@@ -268,6 +497,12 @@ const Index = () => {
     }, []);
 
     const handleAICreateEvent = useCallback((eventText: string) => {
+      if (!user) {
+        // Show upgrade prompt for demo users
+        setShowPricingModal(true);
+        return;
+      }
+
       const parsedEvent = parseNaturalLanguageEvent(eventText);
       
       const aiGeneratedEvent: Event = {
@@ -289,165 +524,33 @@ const Index = () => {
         title: "Event Created",
         description: `AI has scheduled "${parsedEvent.title}" on ${parsedEvent.formattedDate} at ${parsedEvent.time}`,
       });
-    }, [parseNaturalLanguageEvent, getEventColor, toast]);
+    }, [parseNaturalLanguageEvent, getEventColor, toast, user]);
 
-    console.log("✅ About to render landing page or main interface..."); // Debug log
+    const handleSelectPlan = useCallback((plan: "trial" | "basic" | "pro") => {
+      setShowPricingModal(false);
+      
+      if (plan === "trial") {
+        // Show signup modal for trial
+        setAuthMode("register");
+        setShowAuthModal(true);
+        toast({
+          title: "Start Your Free Trial! 🎉",
+          description: "Create an account to get 7 days of full access to NeuroCal!",
+        });
+      } else {
+        // Show signup modal for paid plans
+        setAuthMode("register");
+        setShowAuthModal(true);
+        toast({
+          title: `Upgrade to ${plan === "basic" ? "Basic" : "Pro"}! 🚀`,
+          description: `Create an account to access the ${plan === "basic" ? "$4.99" : "$9.99"} plan!`,
+        });
+      }
+    }, [toast]);
 
-    // Landing page content for non-authenticated users
-    if (!user && !isLoading) {
-      console.log("Rendering landing page..."); // Debug log
-      return (
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
-          {/* Hero Section */}
-          <div className="relative overflow-hidden">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-16">
-              <div className="text-center">
-                <div className="flex justify-center mb-8">
-                  <div className="p-4 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full">
-                    <Calendar className="h-12 w-12 text-white" />
-                  </div>
-                </div>
-                
-                <h1 className="text-4xl md:text-6xl font-bold text-gray-900 mb-6">
-                  Meet <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">NeuroCal</span>
-                </h1>
-                
-                <p className="text-xl md:text-2xl text-gray-600 mb-8 max-w-3xl mx-auto">
-                  The AI-powered calendar that understands natural language and helps you schedule smarter, not harder.
-                </p>
-                
-                <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
-                  <Button 
-                    onClick={() => {
-                      setAuthMode("register");
-                      setShowAuthModal(true);
-                    }}
-                    size="lg"
-                    className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-3 text-lg"
-                  >
-                    <Sparkles className="mr-2 h-5 w-5" />
-                    Get Started Free
-                  </Button>
-                  
-                  <Button 
-                    onClick={() => {
-                      setAuthMode("login");
-                      setShowAuthModal(true);
-                    }}
-                    variant="outline"
-                    size="lg"
-                    className="px-8 py-3 text-lg border-2"
-                  >
-                    <LogIn className="mr-2 h-5 w-5" />
-                    Sign In
-                  </Button>
-                </div>
-              </div>
-            </div>
-          </div>
+    console.log("✅ About to render demo calendar interface..."); // Debug log
 
-          {/* Features Section */}
-          <div className="py-20 bg-white">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-              <div className="text-center mb-16">
-                <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-                  Why Choose NeuroCal?
-                </h2>
-                <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-                  Experience the future of calendar management with cutting-edge AI technology
-                </p>
-              </div>
-              
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-                <div className="text-center p-6">
-                  <div className="bg-blue-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <Sparkles className="h-8 w-8 text-blue-600" />
-                  </div>
-                  <h3 className="text-xl font-semibold text-gray-900 mb-2">AI-Powered Scheduling</h3>
-                  <p className="text-gray-600">Just describe your event in plain English and let AI handle the details</p>
-                </div>
-                
-                <div className="text-center p-6">
-                  <div className="bg-purple-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <Zap className="h-8 w-8 text-purple-600" />
-                  </div>
-                  <h3 className="text-xl font-semibold text-gray-900 mb-2">Smart Optimization</h3>
-                  <p className="text-gray-600">AI suggests optimal times and helps avoid scheduling conflicts</p>
-                </div>
-                
-                <div className="text-center p-6">
-                  <div className="bg-green-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <Users className="h-8 w-8 text-green-600" />
-                  </div>
-                  <h3 className="text-xl font-semibold text-gray-900 mb-2">Team Collaboration</h3>
-                  <p className="text-gray-600">Easily coordinate with team members and share calendars</p>
-                </div>
-                
-                <div className="text-center p-6">
-                  <div className="bg-orange-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <Clock className="h-8 w-8 text-orange-600" />
-                  </div>
-                  <h3 className="text-xl font-semibold text-gray-900 mb-2">Time Management</h3>
-                  <p className="text-gray-600">Track your productivity and optimize your daily schedule</p>
-                </div>
-                
-                <div className="text-center p-6">
-                  <div className="bg-red-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <Calendar className="h-8 w-8 text-red-600" />
-                  </div>
-                  <h3 className="text-xl font-semibold text-gray-900 mb-2">Multi-Platform Sync</h3>
-                  <p className="text-gray-600">Access your calendar from anywhere, on any device</p>
-                </div>
-                
-                <div className="text-center p-6">
-                  <div className="bg-indigo-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <Sparkles className="h-8 w-8 text-indigo-600" />
-                  </div>
-                  <h3 className="text-xl font-semibold text-gray-900 mb-2">Intelligent Insights</h3>
-                  <p className="text-gray-600">Get analytics and suggestions to improve your scheduling habits</p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* CTA Section */}
-          <div className="py-20 bg-gradient-to-r from-blue-600 to-purple-600">
-            <div className="max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8">
-              <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-                Ready to Transform Your Calendar?
-              </h2>
-              <p className="text-xl text-blue-100 mb-8">
-                Join thousands of users who are already scheduling smarter with NeuroCal
-              </p>
-              <Button 
-                onClick={() => {
-                  setAuthMode("register");
-                  setShowAuthModal(true);
-                }}
-                size="lg"
-                variant="secondary"
-                className="px-8 py-3 text-lg bg-white text-blue-600 hover:bg-gray-100"
-              >
-                <Sparkles className="mr-2 h-5 w-5" />
-                Start Your Free Trial
-              </Button>
-            </div>
-          </div>
-
-          {/* Auth Modal */}
-          <AuthModal
-            isOpen={showAuthModal}
-            onClose={() => setShowAuthModal(false)}
-            authMode={authMode}
-            onAuthModeSwitch={handleAuthModeSwitch}
-          />
-        </div>
-      );
-    }
-
-    console.log("Rendering main calendar interface..."); // Debug log
-
-    // Main calendar interface for authenticated users
+    // Always show the calendar interface (demo mode)
     return (
       <div className="min-h-screen bg-background">
         {/* Header */}
@@ -456,11 +559,26 @@ const Index = () => {
             <div className="flex items-center space-x-2">
               <Calendar className="h-6 w-6 text-primary" />
               <span className="font-bold text-xl">NeuroCal</span>
+              {!user && (
+                <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full">
+                  Demo Mode
+                </span>
+              )}
             </div>
             
             <div className="flex items-center space-x-4">
               {user ? (
                 <>
+                  <Link to="/dashboard">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-muted-foreground hover:text-foreground"
+                    >
+                      <BarChart3 className="h-4 w-4 mr-2" />
+                      Analytics
+                    </Button>
+                  </Link>
                   <span className="text-sm text-muted-foreground">
                     Welcome, {user.email}
                   </span>
@@ -475,19 +593,50 @@ const Index = () => {
                   </Button>
                 </>
               ) : (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setShowAuthModal(true)}
-                  className="text-muted-foreground hover:text-foreground"
-                >
-                  <LogIn className="h-4 w-4 mr-2" />
-                  Sign In
-                </Button>
+                <>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setShowPricingModal(true)}
+                    className="text-muted-foreground hover:text-foreground"
+                  >
+                    <Crown className="h-4 w-4 mr-2" />
+                    Upgrade
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setShowAuthModal(true)}
+                    className="text-muted-foreground hover:text-foreground"
+                  >
+                    <LogIn className="h-4 w-4 mr-2" />
+                    Sign In
+                  </Button>
+                </>
               )}
             </div>
           </div>
         </header>
+
+        {/* Demo Banner for non-authenticated users */}
+        {!user && (
+          <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3">
+            <div className="container mx-auto text-center">
+              <p className="text-sm">
+                🎉 <strong>Demo Mode:</strong> Test all features! 
+                <Button 
+                  variant="secondary" 
+                  size="sm" 
+                  className="ml-3 bg-white text-blue-600 hover:bg-gray-100"
+                  onClick={() => setShowPricingModal(true)}
+                >
+                  <Crown className="h-4 w-4 mr-1" />
+                  Upgrade to Save Events
+                </Button>
+              </p>
+            </div>
+          </div>
+        )}
 
         {/* Main Content */}
         <main className="container mx-auto p-4">
@@ -516,12 +665,27 @@ const Index = () => {
 
             {/* AI Panel */}
             <div className="space-y-4">
-              <Suspense fallback={<AIPanelFallback />}>
-                <AIPanel 
-                  upcomingEvents={events}
-                  onCreateEvent={handleAICreateEvent} 
-                />
-              </Suspense>
+              {!user ? (
+                <FeatureGate 
+                  feature="AI Event Creation" 
+                  plan="basic"
+                  onUpgrade={() => setShowPricingModal(true)}
+                >
+                  <Suspense fallback={<AIPanelFallback />}>
+                    <AIPanel 
+                      upcomingEvents={events}
+                      onCreateEvent={handleAICreateEvent} 
+                    />
+                  </Suspense>
+                </FeatureGate>
+              ) : (
+                <Suspense fallback={<AIPanelFallback />}>
+                  <AIPanel 
+                    upcomingEvents={events}
+                    onCreateEvent={handleAICreateEvent} 
+                  />
+                </Suspense>
+              )}
             </div>
           </div>
         </main>
@@ -542,6 +706,13 @@ const Index = () => {
           onClose={() => setShowAuthModal(false)}
           authMode={authMode}
           onAuthModeSwitch={handleAuthModeSwitch}
+        />
+
+        {/* Pricing Modal */}
+        <PricingModal
+          isOpen={showPricingModal}
+          onClose={() => setShowPricingModal(false)}
+          onSelectPlan={handleSelectPlan}
         />
       </div>
     );
