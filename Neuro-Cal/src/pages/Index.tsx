@@ -1,7 +1,7 @@
-import { useAuth } from "@/contexts/AuthContext";
-
 const Index = () => {
-  const { user, isLoading } = useAuth();
+  // Temporarily disabled AuthContext for production debugging
+  const user = null;
+  const isLoading = false;
   return (
     <div className="min-h-screen bg-background">
       {/* Simple Navigation Header */}
