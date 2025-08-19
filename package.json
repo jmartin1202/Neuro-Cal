@@ -6,7 +6,7 @@
   "scripts": {
     "start": "cd Neuro-Cal && npm start",
     "dev": "cd Neuro-Cal && npm run dev",
-    "postinstall": "cd Neuro-Cal && npm install",
+    "postinstall": "cd Neuro-Cal && npm install --ignore-scripts",
     "heroku-postbuild": "cd Neuro-Cal && npm run build"
   },
   "engines": {
