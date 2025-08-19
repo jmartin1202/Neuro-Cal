@@ -20,13 +20,20 @@
 
 ```
 NeuroCal/
-├── Neuro-Cal/          # Main application
+├── Neuro-Cal/          # Main application directory
 │   ├── src/           # React components & logic
+│   │   ├── components/ # UI components
+│   │   ├── pages/     # Route pages
+│   │   ├── contexts/  # React contexts
+│   │   ├── hooks/     # Custom hooks
+│   │   └── lib/       # Utility libraries
 │   ├── backend/       # Node.js server & routes
 │   ├── public/        # Static assets
-│   └── dist/          # Production build
-├── Procfile           # Heroku deployment config
-└── package.json       # Root dependencies
+│   ├── dist/          # Production build
+│   ├── package.json   # Dependencies & scripts
+│   ├── vite.config.ts # Vite configuration
+│   └── tsconfig.json  # TypeScript configuration
+└── README.md          # Project documentation
 ```
 
 ## 🚀 Quick Start
@@ -72,11 +79,11 @@ heroku ps --app neurocal
 
 ## 🔧 Recent Updates
 
+- ✅ **Calendar Bug Fixes**: Fixed event switching issue when clicking dates
+- ✅ **Code Quality**: Removed all TypeScript `any` types and linting errors
+- ✅ **Project Cleanup**: Removed duplicate files and simplified structure
 - ✅ **Heroku Deployment**: Fully configured and running
-- ✅ **Vercel Integration**: Removed (Heroku-only deployment)
-- ✅ **Git Configuration**: Fixed email configuration
 - ✅ **Build System**: Optimized for production deployment
-- ✅ **Procfile**: Properly configured for Heroku
 
 ## 📊 Deployment Status
 
