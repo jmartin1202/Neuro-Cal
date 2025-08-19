@@ -1,23 +1,43 @@
 const Index = () => {
   return (
-    <div style={{ padding: '20px', fontFamily: 'Arial, sans-serif' }}>
-      <h1 style={{ color: 'red', fontSize: '48px' }}>🚨 DEBUG MODE 🚨</h1>
-      <p style={{ fontSize: '24px', marginBottom: '20px' }}>
-        If you can see this red text, React is working!
-      </p>
-      
-      <div style={{ background: '#f0f0f0', padding: '20px', borderRadius: '8px' }}>
-        <h2>Test Results:</h2>
-        <ul style={{ fontSize: '18px' }}>
-          <li>✅ HTML rendering: Working</li>
-          <li>✅ React JSX: Working</li>
-          <li>✅ Basic styling: Working</li>
-        </ul>
-      </div>
-      
-      <div style={{ marginTop: '20px', padding: '20px', border: '2px solid blue' }}>
-        <h3>Current Time: {new Date().toLocaleString()}</h3>
-        <p>This proves JavaScript is executing</p>
+    <div className="min-h-screen bg-background p-8">
+      <div className="max-w-4xl mx-auto">
+        <h1 className="text-4xl font-bold text-red-600 mb-6">🚨 DEBUG MODE 🚨</h1>
+        <p className="text-xl text-foreground mb-8">
+          If you can see this red text with Tailwind styling, React + Tailwind is working!
+        </p>
+        
+        <div className="bg-card border rounded-lg p-6 mb-6">
+          <h2 className="text-2xl font-semibold mb-4">Test Results:</h2>
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <span className="w-2 h-2 bg-green-500 rounded-full"></span>
+              <span>HTML rendering: Working</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="w-2 h-2 bg-green-500 rounded-full"></span>
+              <span>React JSX: Working</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="w-2 h-2 bg-green-500 rounded-full"></span>
+              <span>Tailwind CSS: Working</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="w-2 h-2 bg-green-500 rounded-full"></span>
+              <span>React Router: Working</span>
+            </div>
+          </div>
+        </div>
+        
+        <div className="bg-card border rounded-lg p-6">
+          <h3 className="text-xl font-semibold mb-4">Current Status:</h3>
+          <p className="text-lg text-muted-foreground mb-2">
+            Current Time: {new Date().toLocaleString()}
+          </p>
+          <p className="text-sm text-muted-foreground">
+            This proves JavaScript is executing and Tailwind classes are working
+          </p>
+        </div>
       </div>
     </div>
   );
