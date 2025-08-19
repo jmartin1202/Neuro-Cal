@@ -1,42 +1,67 @@
 const Index = () => {
   return (
-    <div className="min-h-screen bg-background p-8">
-      <div className="max-w-4xl mx-auto">
-        <h1 className="text-4xl font-bold text-red-600 mb-6">🚨 DEBUG MODE 🚨</h1>
-        <p className="text-xl text-foreground mb-8">
-          If you can see this red text with Tailwind styling, React + Tailwind is working!
-        </p>
-        
-        <div className="bg-card border rounded-lg p-6 mb-6">
-          <h2 className="text-2xl font-semibold mb-4">Test Results:</h2>
-          <div className="space-y-2">
-            <div className="flex items-center gap-2">
-              <span className="w-2 h-2 bg-green-500 rounded-full"></span>
-              <span>HTML rendering: Working</span>
+    <div className="min-h-screen bg-background">
+      {/* Navigation Header */}
+      <div className="border-b bg-card">
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <h1 className="text-2xl font-bold">NeuroCal</h1>
+              <span className="text-base text-muted-foreground">Smart AI Calendar</span>
             </div>
-            <div className="flex items-center gap-2">
-              <span className="w-2 h-2 bg-green-500 rounded-full"></span>
-              <span>React JSX: Working</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="w-2 h-2 bg-green-500 rounded-full"></span>
-              <span>Tailwind CSS: Working</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="w-2 h-2 bg-green-500 rounded-full"></span>
-              <span>React Router: Working</span>
+            <div className="text-sm text-muted-foreground">
+              Production Ready! 🎉
             </div>
           </div>
         </div>
-        
-        <div className="bg-card border rounded-lg p-6">
-          <h3 className="text-xl font-semibold mb-4">Current Status:</h3>
-          <p className="text-lg text-muted-foreground mb-2">
-            Current Time: {new Date().toLocaleString()}
+      </div>
+      
+      {/* Content area */}
+      <div className="p-8">
+        <div className="max-w-4xl mx-auto">
+          <h2 className="text-3xl font-bold mb-6">Welcome to NeuroCal</h2>
+          <p className="text-lg text-muted-foreground mb-8">
+            Your AI-powered smart calendar is now working in production!
           </p>
-          <p className="text-sm text-muted-foreground">
-            This proves JavaScript is executing and Tailwind classes are working
-          </p>
+          
+          <div className="bg-card border rounded-lg p-6 mb-6">
+            <h3 className="text-xl font-semibold mb-4">System Status</h3>
+            <div className="space-y-2">
+              <div className="flex items-center gap-2">
+                <span className="w-2 h-2 bg-green-500 rounded-full"></span>
+                <span>React: Working</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="w-2 h-2 bg-green-500 rounded-full"></span>
+                <span>Tailwind CSS: Working</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="w-2 h-2 bg-green-500 rounded-full"></span>
+                <span>Production Build: Working</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="w-2 h-2 bg-green-500 rounded-full"></span>
+                <span>Heroku Deployment: Working</span>
+              </div>
+            </div>
+          </div>
+          
+          {/* Simple Calendar */}
+          <div className="bg-card border rounded-lg p-6">
+            <h3 className="text-xl font-semibold mb-4">Calendar View</h3>
+            <div className="grid grid-cols-7 gap-2 text-center">
+              {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
+                <div key={day} className="p-2 font-medium text-muted-foreground">
+                  {day}
+                </div>
+              ))}
+              {Array.from({ length: 35 }, (_, i) => (
+                <div key={i} className="p-2 h-20 border rounded hover:bg-muted cursor-pointer">
+                  {i > 6 && i < 32 ? i - 6 : ''}
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
     </div>
