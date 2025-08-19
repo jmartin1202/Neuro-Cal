@@ -54,150 +54,244 @@ const AIPanelFallback = () => (
   </div>
 );
 
-// Error boundary component
-const ErrorBoundary = ({ 
-  children, 
-  fallback, 
-  componentName 
-}: { 
-  children: React.ReactNode; 
-  fallback: React.ReactNode; 
-  componentName: string;
-}) => {
-  try {
-    return <>{children}</>;
-  } catch (error) {
-    console.error(`🚨 Error in ${componentName}:`, error);
-    return <>{fallback}</>;
-  }
-};
-
 const Index = () => {
   console.log("🚀 Index component rendering..."); // Debug log
   
-  try {
-    console.log("✅ About to call React hooks..."); // Debug log
-    
-    // All React hooks MUST be at the top level
-    const { user, logout, isLoading } = useAuth();
-    const [currentDate, setCurrentDate] = useState(new Date());
-    const [selectedDate, setSelectedDate] = useState<Date | null>(null);
-    const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-    const [showAuthModal, setShowAuthModal] = useState(false);
-    const [showPricingModal, setShowPricingModal] = useState(false);
-    const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
-    const [events, setEvents] = useState<Event[]>([]);
-    const { toast } = useToast();
-    const isMobile = useIsMobile();
+  // All React hooks MUST be at the top level
+  const { user, logout, isLoading } = useAuth();
+  const [currentDate, setCurrentDate] = useState(new Date());
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [showPricingModal, setShowPricingModal] = useState(false);
+  const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
+  const [events, setEvents] = useState<Event[]>([]);
+  const { toast } = useToast();
+  const isMobile = useIsMobile();
 
-    console.log("✅ React hooks called successfully"); // Debug log
+  console.log("✅ React hooks called successfully"); // Debug log
 
-    // Event handlers
-    const handleDateClick = useCallback((date: Date) => {
-      if (!user) {
-        setShowPricingModal(true);
-        return;
-      }
-      setSelectedDate(date);
-      setIsCreateModalOpen(true);
-    }, [user]);
+  // Event handlers
+  const handleDateClick = useCallback((date: Date) => {
+    if (!user) {
+      setShowPricingModal(true);
+      return;
+    }
+    setSelectedDate(date);
+    setIsCreateModalOpen(true);
+  }, [user]);
 
-    const handleCreateEvent = useCallback(async (eventData: Omit<Event, 'id'>) => {
-      const newEvent: Event = {
-        ...eventData,
-        id: `event-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
-      };
-      setEvents(prev => [...prev, newEvent]);
-      setIsCreateModalOpen(false);
+  const handleCreateEvent = useCallback(async (eventData: Omit<Event, 'id'>) => {
+    const newEvent: Event = {
+      ...eventData,
+      id: `event-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+    };
+    setEvents(prev => [...prev, newEvent]);
+    setIsCreateModalOpen(false);
+    toast({
+      title: "Event Created! 🎉",
+      description: `"${newEvent.title}" has been added to your calendar.`,
+    });
+  }, [toast]);
+
+  const handleAICreateEvent = useCallback((eventText: string) => {
+    if (!user) {
+      setShowPricingModal(true);
+      return;
+    }
+    // AI event creation logic would go here
+    toast({
+      title: "AI Event Creation",
+      description: "This feature requires authentication.",
+    });
+  }, [user, toast]);
+
+  const handleAuthModeSwitch = useCallback(() => {
+    setAuthMode(prev => prev === 'login' ? 'register' : 'login');
+  }, []);
+
+  const handleSelectPlan = useCallback((plan: string) => {
+    setShowPricingModal(false);
+    if (plan === 'trial') {
+      setShowAuthModal(true);
+      setAuthMode('register');
+    } else {
       toast({
-        title: "Event Created! 🎉",
-        description: `"${newEvent.title}" has been added to your calendar.`,
+        title: "Plan Selected",
+        description: `You selected the ${plan} plan. Redirecting to checkout...`,
       });
-    }, [toast]);
+    }
+  }, [toast]);
 
-    const handleAICreateEvent = useCallback((eventText: string) => {
-      if (!user) {
-        setShowPricingModal(true);
-        return;
-      }
-      // AI event creation logic would go here
-      toast({
-        title: "AI Event Creation",
-        description: "This feature requires authentication.",
-      });
-    }, [user, toast]);
+  console.log("✅ Event handlers defined successfully"); // Debug log
 
-    const handleAuthModeSwitch = useCallback(() => {
-      setAuthMode(prev => prev === 'login' ? 'register' : 'login');
-    }, []);
+  // Loading state
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-lg text-muted-foreground">Loading NeuroCal...</p>
+        </div>
+      </div>
+    );
+  }
 
-    const handleSelectPlan = useCallback((plan: string) => {
-      setShowPricingModal(false);
-      if (plan === 'trial') {
-        setShowAuthModal(true);
-        setAuthMode('register');
-      } else {
-        toast({
-          title: "Plan Selected",
-          description: `You selected the ${plan} plan. Redirecting to checkout...`,
-        });
-      }
-    }, [toast]);
+  console.log("✅ About to render main JSX..."); // Debug log
 
-    console.log("✅ Event handlers defined successfully"); // Debug log
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted">
+      {/* Header */}
+      <header className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-40">
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-gradient-primary rounded-xl flex items-center justify-center">
+                <Brain className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h1 className="text-xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+                  NeuroCal
+                </h1>
+                <p className="text-xs text-muted-foreground">AI-Powered Calendar</p>
+              </div>
+            </div>
 
-    // AuthModal component
-    const AuthModal = ({ isOpen, onClose, authMode, onAuthModeSwitch }: {
-      isOpen: boolean;
-      onClose: () => void;
-      authMode: 'login' | 'register';
-      onAuthModeSwitch: () => void;
-    }) => {
-      const modalRef = useRef<HTMLDivElement>(null);
+            <div className="flex items-center gap-3">
+              {user ? (
+                <>
+                  <Button variant="outline" size="sm" onClick={() => setIsCreateModalOpen(true)}>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Create Event
+                  </Button>
+                  <Button variant="outline" size="sm" onClick={logout}>
+                    <LogOut className="h-4 w-4 mr-2" />
+                    Logout
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <Button variant="outline" size="sm" onClick={() => setShowAuthModal(true)}>
+                    <LogIn className="h-4 w-4 mr-2" />
+                    Sign In
+                  </Button>
+                  <Button onClick={() => setShowPricingModal(true)}>
+                    <Crown className="h-4 w-4 mr-2" />
+                    Upgrade
+                  </Button>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      </header>
 
-      useEffect(() => {
-        const handleClickOutside = (event: MouseEvent) => {
-          if (modalRef.current && !modalRef.current.contains(event.target as Node)) {
-            onClose();
-          }
-        };
+      {/* Main Content */}
+      <main className="container mx-auto px-4 py-8">
+        {/* Demo Mode Banner */}
+        {!user && (
+          <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                <Calendar className="h-4 w-4 text-blue-600" />
+              </div>
+              <div className="flex-1">
+                <h3 className="font-semibold text-blue-900">Demo Mode</h3>
+                <p className="text-sm text-blue-700">
+                  You're viewing the calendar in demo mode. Sign up for a free trial to save events and unlock AI features!
+                </p>
+              </div>
+              <Button 
+                onClick={() => setShowPricingModal(true)} 
+                size="sm" 
+                className="bg-blue-600 hover:bg-blue-700"
+              >
+                <Star className="h-4 w-4 mr-2" />
+                Get Started Free
+              </Button>
+            </div>
+          </div>
+        )}
 
-        if (isOpen) {
-          document.addEventListener('mousedown', handleClickOutside);
-        }
+        <div className="space-y-6">
+          {/* Calendar Header */}
+          <div>
+            <Suspense fallback={<CalendarHeaderFallback />}>
+              <CalendarHeader 
+                currentDate={currentDate}
+                onPrevMonth={() => setCurrentDate(prev => new Date(prev.getFullYear(), prev.getMonth() - 1, 1))}
+                onNextMonth={() => setCurrentDate(prev => new Date(prev.getFullYear(), prev.getMonth() + 1, 1))}
+                view="month"
+                onViewChange={() => {}}
+              />
+            </Suspense>
+          </div>
 
-        return () => {
-          document.removeEventListener('mousedown', handleClickOutside);
-        };
-      }, [isOpen, onClose]);
+          {/* Calendar Grid */}
+          <div>
+            <Suspense fallback={<CalendarGridFallback />}>
+              <CalendarGrid 
+                currentDate={currentDate}
+                events={events}
+                onDateClick={handleDateClick}
+                selectedDate={selectedDate}
+              />
+            </Suspense>
+          </div>
 
-      useEffect(() => {
-        const handleEscapeKey = (event: KeyboardEvent) => {
-          if (event.key === 'Escape') {
-            onClose();
-          }
-        };
+          {/* AI Panel */}
+          <div className="space-y-4">
+            {!user ? (
+              <div className="p-4 bg-yellow-50 border border-yellow-300 rounded-lg">
+                <div className="flex items-center gap-3">
+                  <Lock className="h-8 w-8 text-yellow-600" />
+                  <div className="flex-1">
+                    <h3 className="font-semibold text-yellow-900">Premium Feature</h3>
+                    <p className="text-sm text-yellow-700">
+                      AI Event Creation requires Basic plan
+                    </p>
+                  </div>
+                  <Button 
+                    onClick={() => setShowPricingModal(true)}
+                    size="sm"
+                    className="bg-yellow-600 hover:bg-yellow-700"
+                  >
+                    <Crown className="h-4 w-4 mr-2" />
+                    Upgrade to Basic
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <Suspense fallback={<AIPanelFallback />}>
+                <AIPanel 
+                  upcomingEvents={events}
+                  onCreateEvent={handleAICreateEvent} 
+                />
+              </Suspense>
+            )}
+          </div>
+        </div>
+      </main>
 
-        if (isOpen) {
-          document.addEventListener('keydown', handleEscapeKey);
-        }
+      {/* Create Event Modal */}
+      <Suspense fallback={<div>Loading modal...</div>}>
+        <CreateEventModal
+          isOpen={isCreateModalOpen}
+          onClose={() => setIsCreateModalOpen(false)}
+          onCreateEvent={handleCreateEvent}
+          selectedDate={selectedDate}
+        />
+      </Suspense>
 
-        return () => {
-          document.removeEventListener('keydown', handleEscapeKey);
-        };
-      }, [isOpen, onClose]);
-
-      if (!isOpen) return null;
-
-      return (
+      {/* Simple Auth Modal */}
+      {showAuthModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div ref={modalRef} className="bg-white rounded-lg p-6 w-full max-w-md relative">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md relative">
             <button 
-              onClick={onClose} 
-              className="absolute top-4 right-4 p-2 hover:bg-gray-100 rounded-full transition-colors duration-200 group"
-              aria-label="Close modal"
+              onClick={() => setShowAuthModal(false)} 
+              className="absolute top-4 right-4 p-2 hover:bg-gray-100 rounded-full"
             >
-              <X className="h-5 w-5 text-gray-500 group-hover:text-gray-700" />
+              <X className="h-5 w-5 text-gray-500" />
             </button>
             
             <div className="text-center mb-6">
@@ -226,7 +320,7 @@ const Index = () => {
 
             <div className="mt-6 text-center">
               <button
-                onClick={onAuthModeSwitch}
+                onClick={handleAuthModeSwitch}
                 className="text-blue-600 hover:text-blue-800 text-sm font-medium"
               >
                 {authMode === 'login' 
@@ -237,87 +331,17 @@ const Index = () => {
             </div>
           </div>
         </div>
-      );
-    };
+      )}
 
-    // FeatureGate component
-    const FeatureGate = ({ children, feature, plan, onUpgrade }: {
-      children: React.ReactNode;
-      feature: string;
-      plan: 'basic' | 'pro';
-      onUpgrade: () => void;
-    }) => {
-      return (
-        <div className="relative">
-          {children}
-          <div className="absolute inset-0 bg-black/20 backdrop-blur-sm rounded-lg flex items-center justify-center">
-            <div className="bg-white p-4 rounded-lg shadow-lg text-center max-w-sm">
-              <Lock className="h-8 w-8 text-gray-400 mx-auto mb-2" />
-              <h3 className="font-semibold text-gray-900 mb-1">Premium Feature</h3>
-              <p className="text-sm text-gray-600 mb-3">
-                {feature} requires {plan === "basic" ? "Basic" : "Pro"} plan
-              </p>
-              <Button onClick={onUpgrade} size="sm" className="w-full">
-                <Crown className="h-4 w-4 mr-2" />
-                Upgrade to {plan === "basic" ? "Basic" : "Pro"}
-              </Button>
-            </div>
-          </div>
-        </div>
-      );
-    };
-
-    // PricingModal component
-    const PricingModal = ({ isOpen, onClose, onSelectPlan }: {
-      isOpen: boolean;
-      onClose: () => void;
-      onSelectPlan: (plan: string) => void;
-    }) => {
-      const modalRef = useRef<HTMLDivElement>(null);
-
-      useEffect(() => {
-        const handleClickOutside = (event: MouseEvent) => {
-          if (modalRef.current && !modalRef.current.contains(event.target as Node)) {
-            onClose();
-          }
-        };
-
-        if (isOpen) {
-          document.addEventListener('mousedown', handleClickOutside);
-        }
-
-        return () => {
-          document.removeEventListener('mousedown', handleClickOutside);
-        };
-      }, [isOpen, onClose]);
-
-      useEffect(() => {
-        const handleEscapeKey = (event: KeyboardEvent) => {
-          if (event.key === 'Escape') {
-            onClose();
-          }
-        };
-
-        if (isOpen) {
-          document.addEventListener('keydown', handleEscapeKey);
-        }
-
-        return () => {
-          document.removeEventListener('keydown', handleEscapeKey);
-        };
-      }, [isOpen, onClose]);
-
-      if (!isOpen) return null;
-
-      return (
+      {/* Simple Pricing Modal */}
+      {showPricingModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div ref={modalRef} className="bg-white rounded-lg p-8 max-w-4xl w-full relative">
+          <div className="bg-white rounded-lg p-8 max-w-4xl w-full relative">
             <button 
-              onClick={onClose} 
-              className="absolute top-4 right-4 p-2 hover:bg-gray-100 rounded-full transition-colors duration-200 group"
-              aria-label="Close modal"
+              onClick={() => setShowPricingModal(false)} 
+              className="absolute top-4 right-4 p-2 hover:bg-gray-100 rounded-full"
             >
-              <X className="h-5 w-5 text-gray-500 group-hover:text-gray-700" />
+              <X className="h-5 w-5 text-gray-500" />
             </button>
 
             <div className="text-center mb-8">
@@ -354,7 +378,7 @@ const Index = () => {
                     </li>
                   </ul>
                   <Button 
-                    onClick={() => onSelectPlan('trial')} 
+                    onClick={() => handleSelectPlan('trial')} 
                     className="w-full bg-blue-600 hover:bg-blue-700"
                   >
                     <Star className="h-4 w-4 mr-2" />
@@ -388,7 +412,7 @@ const Index = () => {
                     </li>
                   </ul>
                   <Button 
-                    onClick={() => onSelectPlan('basic')} 
+                    onClick={() => handleSelectPlan('basic')} 
                     variant="outline" 
                     className="w-full"
                   >
@@ -426,7 +450,7 @@ const Index = () => {
                     </li>
                   </ul>
                   <Button 
-                    onClick={() => onSelectPlan('pro')} 
+                    onClick={() => handleSelectPlan('pro')} 
                     className="w-full bg-purple-600 hover:bg-purple-700"
                   >
                     <Zap className="h-4 w-4 mr-2" />
@@ -437,224 +461,9 @@ const Index = () => {
             </div>
           </div>
         </div>
-      );
-    };
-
-    console.log("✅ Component definitions completed"); // Debug log
-
-    // Loading state
-    if (isLoading) {
-      return (
-        <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted flex items-center justify-center">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-            <p className="text-lg text-muted-foreground">Loading NeuroCal...</p>
-          </div>
-        </div>
-      );
-    }
-
-    console.log("✅ About to render main JSX..."); // Debug log
-
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted">
-        {/* Header */}
-        <header className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-40">
-          <div className="container mx-auto px-4 py-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-gradient-primary rounded-xl flex items-center justify-center">
-                  <Brain className="w-6 h-6 text-white" />
-                </div>
-                <div>
-                  <h1 className="text-xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-                    NeuroCal
-                  </h1>
-                  <p className="text-xs text-muted-foreground">AI-Powered Calendar</p>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-3">
-                {user ? (
-                  <>
-                    <Button variant="outline" size="sm" onClick={() => setIsCreateModalOpen(true)}>
-                      <Plus className="h-4 w-4 mr-2" />
-                      Create Event
-                    </Button>
-                    <Button variant="outline" size="sm" onClick={logout}>
-                      <LogOut className="h-4 w-4 mr-2" />
-                      Logout
-                    </Button>
-                  </>
-                ) : (
-                  <>
-                    <Button variant="outline" size="sm" onClick={() => setShowAuthModal(true)}>
-                      <LogIn className="h-4 w-4 mr-2" />
-                      Sign In
-                    </Button>
-                    <Button onClick={() => setShowPricingModal(true)}>
-                      <Crown className="h-4 w-4 mr-2" />
-                      Upgrade
-                    </Button>
-                  </>
-                )}
-              </div>
-            </div>
-          </div>
-        </header>
-
-        {/* Main Content */}
-        <main className="container mx-auto px-4 py-8">
-          {/* Demo Mode Banner */}
-          {!user && (
-            <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                  <Calendar className="h-4 w-4 text-blue-600" />
-                </div>
-                <div className="flex-1">
-                  <h3 className="font-semibold text-blue-900">Demo Mode</h3>
-                  <p className="text-sm text-blue-700">
-                    You're viewing the calendar in demo mode. Sign up for a free trial to save events and unlock AI features!
-                  </p>
-                </div>
-                <Button 
-                  onClick={() => setShowPricingModal(true)} 
-                  size="sm" 
-                  className="bg-blue-600 hover:bg-blue-700"
-                >
-                  <Star className="h-4 w-4 mr-2" />
-                  Get Started Free
-                </Button>
-              </div>
-            </div>
-          )}
-
-          <div className="space-y-6">
-            {/* Calendar Header */}
-                         <div>
-               <Suspense fallback={<CalendarHeaderFallback />}>
-                 <CalendarHeader 
-                   currentDate={currentDate}
-                   onPrevMonth={() => setCurrentDate(prev => new Date(prev.getFullYear(), prev.getMonth() - 1, 1))}
-                   onNextMonth={() => setCurrentDate(prev => new Date(prev.getFullYear(), prev.getMonth() + 1, 1))}
-                   view="month"
-                   onViewChange={() => {}}
-                 />
-               </Suspense>
-             </div>
-
-            {/* Calendar Grid */}
-            <div>
-              <Suspense fallback={<CalendarGridFallback />}>
-                <CalendarGrid 
-                  currentDate={currentDate}
-                  events={events}
-                  onDateClick={handleDateClick}
-                  selectedDate={selectedDate}
-                />
-              </Suspense>
-            </div>
-
-            {/* AI Panel */}
-            <div className="space-y-4">
-              {!user ? (
-                <ErrorBoundary 
-                  componentName="FeatureGate" 
-                  fallback={
-                    <div className="p-4 bg-yellow-100 border border-yellow-300 rounded-lg">
-                      <p className="text-yellow-800">AI Panel temporarily unavailable</p>
-                      <Button 
-                        onClick={() => setShowPricingModal(true)}
-                        className="mt-2"
-                      >
-                        <Crown className="h-4 w-4 mr-2" />
-                        Upgrade Now
-                      </Button>
-                    </div>
-                  }
-                >
-                  <FeatureGate 
-                    feature="AI Event Creation" 
-                    plan="basic"
-                    onUpgrade={() => setShowPricingModal(true)}
-                  >
-                    <Suspense fallback={<AIPanelFallback />}>
-                      <AIPanel 
-                        upcomingEvents={events}
-                        onCreateEvent={handleAICreateEvent} 
-                      />
-                    </Suspense>
-                  </FeatureGate>
-                </ErrorBoundary>
-              ) : (
-                <Suspense fallback={<AIPanelFallback />}>
-                  <AIPanel 
-                    upcomingEvents={events}
-                    onCreateEvent={handleAICreateEvent} 
-                  />
-                </Suspense>
-              )}
-            </div>
-          </div>
-        </main>
-
-        {/* Create Event Modal */}
-                 <Suspense fallback={<div>Loading modal...</div>}>
-           <CreateEventModal
-             isOpen={isCreateModalOpen}
-             onClose={() => setIsCreateModalOpen(false)}
-             onCreateEvent={handleCreateEvent}
-             selectedDate={selectedDate}
-           />
-         </Suspense>
-
-        {/* Auth Modal */}
-        <AuthModal
-          isOpen={showAuthModal}
-          onClose={() => setShowAuthModal(false)}
-          authMode={authMode}
-          onAuthModeSwitch={handleAuthModeSwitch}
-        />
-
-        {/* Pricing Modal */}
-        <ErrorBoundary 
-          componentName="PricingModal" 
-          fallback={
-            showPricingModal ? (
-              <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-                <div className="bg-white rounded-lg p-6 max-w-md text-center">
-                  <h3 className="text-xl font-semibold mb-4">Pricing Temporarily Unavailable</h3>
-                  <p className="text-gray-600 mb-4">Please try again later or contact support.</p>
-                  <Button onClick={() => setShowPricingModal(false)}>Close</Button>
-                </div>
-              </div>
-            ) : null
-          }
-        >
-          <PricingModal
-            isOpen={showPricingModal}
-            onClose={() => setShowPricingModal(false)}
-            onSelectPlan={handleSelectPlan}
-          />
-        </ErrorBoundary>
-      </div>
-    );
-  } catch (error) {
-    console.error("🚨 ERROR in Index component:", error);
-    return (
-      <div className="min-h-screen bg-red-50 flex items-center justify-center">
-        <div className="text-center p-8">
-          <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <AlertTriangle className="w-8 h-8 text-red-600" />
-          </div>
-          <h1 className="text-2xl font-bold text-red-900 mb-2">Something went wrong</h1>
-          <p className="text-red-700 mb-4">We're working to fix this issue. Please try refreshing the page.</p>
-          <Button onClick={() => window.location.reload()}>Refresh Page</Button>
-        </div>
-      </div>
-    );
-  }
+      )}
+    </div>
+  );
 };
 
 export default Index;
