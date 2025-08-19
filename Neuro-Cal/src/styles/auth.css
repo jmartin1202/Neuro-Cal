@@ -1,0 +1,297 @@
+/* NeuroCal Enhanced Authentication Styles */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+:root {
+  --primary-orange: #E17B47;
+  --accent-amber: #F4A261;
+  --text-dark: #212529;
+  --text-medium: #6C757D;
+  --text-light: #ADB5BD;
+  --bg-white: #FFFFFF;
+  --bg-light: #F8F9FA;
+  --border-light: #E9ECEF;
+  --success-green: #52C41A;
+  --error-red: #FF4D4F;
+  --shadow-subtle: 0 2px 8px rgba(0,0,0,0.08);
+  --shadow-medium: 0 4px 20px rgba(0,0,0,0.12);
+}
+
+/* Enhanced auth container */
+.neurocal-auth-container {
+  background: white;
+  border-radius: 16px;
+  box-shadow: var(--shadow-medium);
+  padding: 48px;
+  width: 100%;
+  max-width: 480px;
+  margin: 20px auto;
+}
+
+.neurocal-auth-header {
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.neurocal-logo {
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--primary-orange);
+  margin-bottom: 8px;
+  font-family: 'Inter', sans-serif;
+}
+
+.neurocal-auth-title {
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--text-dark);
+  margin-bottom: 8px;
+  font-family: 'Inter', sans-serif;
+}
+
+.neurocal-auth-subtitle {
+  color: var(--text-medium);
+  font-size: 16px;
+  font-family: 'Inter', sans-serif;
+}
+
+/* Enhanced form styling */
+.neurocal-form-group {
+  margin-bottom: 24px;
+}
+
+.neurocal-form-label {
+  display: block;
+  font-weight: 500;
+  color: var(--text-dark);
+  margin-bottom: 8px;
+  font-family: 'Inter', sans-serif;
+}
+
+.neurocal-form-input {
+  width: 100%;
+  padding: 12px 16px;
+  border: 2px solid var(--border-light);
+  border-radius: 8px;
+  font-size: 16px;
+  transition: all 0.2s ease;
+  background: var(--bg-white);
+  font-family: 'Inter', sans-serif;
+}
+
+.neurocal-form-input:focus {
+  outline: none;
+  border-color: var(--primary-orange);
+  box-shadow: 0 0 0 3px rgba(225, 123, 71, 0.1);
+}
+
+.neurocal-form-input.error {
+  border-color: var(--error-red);
+}
+
+.neurocal-form-input.success {
+  border-color: var(--success-green);
+}
+
+.neurocal-input-error {
+  color: var(--error-red);
+  font-size: 14px;
+  margin-top: 4px;
+  font-family: 'Inter', sans-serif;
+}
+
+.neurocal-input-success {
+  color: var(--success-green);
+  font-size: 14px;
+  margin-top: 4px;
+  font-family: 'Inter', sans-serif;
+}
+
+/* Password strength indicator */
+.neurocal-password-strength {
+  margin-top: 8px;
+}
+
+.neurocal-strength-bar {
+  height: 4px;
+  background: var(--border-light);
+  border-radius: 2px;
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+
+.neurocal-strength-fill {
+  height: 100%;
+  transition: all 0.3s ease;
+  border-radius: 2px;
+}
+
+.neurocal-strength-text {
+  font-size: 12px;
+  color: var(--text-medium);
+  font-family: 'Inter', sans-serif;
+}
+
+/* Enhanced button styling */
+.neurocal-auth-button {
+  width: 100%;
+  background: var(--primary-orange);
+  color: white;
+  border: none;
+  padding: 14px 24px;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+  overflow: hidden;
+  font-family: 'Inter', sans-serif;
+}
+
+.neurocal-auth-button:hover:not(:disabled) {
+  background: #d16a3a;
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-medium);
+}
+
+.neurocal-auth-button:disabled {
+  background: var(--text-light);
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.neurocal-button-text {
+  transition: opacity 0.2s ease;
+}
+
+.neurocal-button-spinner {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.neurocal-spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid transparent;
+  border-top: 2px solid white;
+  border-radius: 50%;
+  animation: neurocal-spin 1s linear infinite;
+}
+
+@keyframes neurocal-spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.neurocal-auth-button.loading .neurocal-button-text {
+  opacity: 0;
+}
+
+.neurocal-auth-button.loading .neurocal-button-spinner {
+  opacity: 1;
+}
+
+/* Name fields grid */
+.neurocal-name-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+/* Terms checkbox */
+.neurocal-terms-checkbox {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.neurocal-checkbox-input {
+  margin-top: 4px;
+}
+
+.neurocal-terms-text {
+  font-size: 14px;
+  color: var(--text-medium);
+  line-height: 1.5;
+  font-family: 'Inter', sans-serif;
+}
+
+/* Footer styling */
+.neurocal-auth-footer {
+  text-align: center;
+  color: var(--text-medium);
+  font-family: 'Inter', sans-serif;
+}
+
+.neurocal-auth-link {
+  color: var(--primary-orange);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.neurocal-auth-link:hover {
+  text-decoration: underline;
+}
+
+/* Toast notifications */
+.neurocal-toast {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  padding: 16px 24px;
+  border-radius: 8px;
+  color: white;
+  font-weight: 500;
+  z-index: 1000;
+  transform: translateX(100%);
+  transition: transform 0.3s ease;
+  font-family: 'Inter', sans-serif;
+  min-width: 300px;
+  max-width: 500px;
+}
+
+.neurocal-toast.show {
+  transform: translateX(0);
+}
+
+.neurocal-toast.success {
+  background: var(--success-green);
+}
+
+.neurocal-toast.error {
+  background: var(--error-red);
+}
+
+/* Responsive design */
+@media (max-width: 576px) {
+  .neurocal-auth-container {
+    padding: 32px 24px;
+    margin: 10px;
+  }
+
+  .neurocal-auth-title {
+    font-size: 20px;
+  }
+
+  .neurocal-name-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+}
+
+/* Background gradient for auth pages */
+.neurocal-auth-page {
+  background: linear-gradient(135deg, var(--bg-light) 0%, #ffffff 100%);
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Inter', sans-serif;
+}
