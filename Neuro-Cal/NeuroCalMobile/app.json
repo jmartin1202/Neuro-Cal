@@ -1,0 +1,56 @@
+{
+  "expo": {
+    "name": "NeuroCal",
+    "slug": "neurocal-mobile",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+          "splash": {
+        "image": "./assets/splash-icon.png",
+        "resizeMode": "contain",
+        "backgroundColor": "#667eea"
+      },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.neurocal.mobile",
+      "buildNumber": "1",
+      "infoPlist": {
+        "NSCalendarsUsageDescription": "NeuroCal needs access to your calendar to create and manage events.",
+        "NSRemindersUsageDescription": "NeuroCal needs access to your reminders to sync with your calendar.",
+        "NSCameraUsageDescription": "NeuroCal needs camera access to scan QR codes for calendar sharing.",
+        "NSPhotoLibraryUsageDescription": "NeuroCal needs photo library access to attach images to events."
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#667eea"
+      },
+      "package": "com.neurocal.mobile",
+      "versionCode": 1,
+      "permissions": [
+        "READ_CALENDAR",
+        "WRITE_CALENDAR",
+        "CAMERA",
+        "READ_EXTERNAL_STORAGE"
+      ]
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "expo-calendar",
+      "expo-notifications",
+      "expo-camera"
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "your-project-id-here"
+      }
+    }
+  }
+}
