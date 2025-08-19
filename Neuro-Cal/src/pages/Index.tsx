@@ -12,12 +12,20 @@ import { LogOut, LogIn, Calendar, Sparkles, Zap, Users, Clock } from "lucide-rea
 import { LoginForm } from "@/components/auth/LoginForm";
 import { RegisterForm } from "@/components/auth/RegisterForm";
 
-// Safe component wrapper to catch errors
-const SafeComponent = ({ children, fallback, name }: { children: React.ReactNode; fallback: React.ReactNode; name: string }) => {
+// Error boundary component to catch component errors
+const ErrorBoundary = ({ 
+  children, 
+  fallback, 
+  componentName 
+}: { 
+  children: React.ReactNode; 
+  fallback: React.ReactNode; 
+  componentName: string;
+}) => {
   try {
     return <>{children}</>;
   } catch (error) {
-    console.error(`Error in ${name}:`, error);
+    console.error(`🚨 Error in ${componentName}:`, error);
     return <>{fallback}</>;
   }
 };
@@ -327,13 +335,19 @@ const Index = () => {
                 </div>
                 
                 {authMode === "login" ? (
-                  <SafeComponent name="LoginForm" fallback={<div>Login form loading...</div>}>
+                  <ErrorBoundary 
+                    componentName="LoginForm" 
+                    fallback={<div className="p-4 bg-red-100 text-red-700 rounded">Login form error - check console</div>}
+                  >
                     <LoginForm />
-                  </SafeComponent>
+                  </ErrorBoundary>
                 ) : (
-                  <SafeComponent name="RegisterForm" fallback={<div>Register form loading...</div>}>
+                  <ErrorBoundary 
+                    componentName="RegisterForm" 
+                    fallback={<div className="p-4 bg-red-100 text-red-700 rounded">Register form error - check console</div>}
+                  >
                     <RegisterForm />
-                  </SafeComponent>
+                  </ErrorBoundary>
                 )}
                 
                 <div className="mt-4 text-center">
@@ -404,9 +418,9 @@ const Index = () => {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Calendar Section */}
             <div className="lg:col-span-2">
-              <SafeComponent 
-                name="CalendarHeader" 
-                fallback={<div className="p-4 bg-red-100 text-red-700">Calendar Header Error</div>}
+              <ErrorBoundary 
+                componentName="CalendarHeader" 
+                fallback={<div className="p-4 bg-red-100 text-red-700 rounded mb-4">Calendar Header Error - check console</div>}
               >
                 <CalendarHeader
                   currentDate={currentDate}
@@ -415,11 +429,11 @@ const Index = () => {
                   view={view}
                   onViewChange={setView}
                 />
-              </SafeComponent>
+              </ErrorBoundary>
               
-              <SafeComponent 
-                name="CalendarGrid" 
-                fallback={<div className="p-4 bg-red-100 text-red-700">Calendar Grid Error</div>}
+              <ErrorBoundary 
+                componentName="CalendarGrid" 
+                fallback={<div className="p-4 bg-red-100 text-red-700 rounded">Calendar Grid Error - check console</div>}
               >
                 <CalendarGrid
                   currentDate={currentDate}
@@ -427,28 +441,28 @@ const Index = () => {
                   selectedDate={selectedDate}
                   onDateClick={handleDateClick}
                 />
-              </SafeComponent>
+              </ErrorBoundary>
             </div>
 
             {/* AI Panel */}
             <div className="space-y-4">
-              <SafeComponent 
-                name="AIPanel" 
-                fallback={<div className="p-4 bg-red-100 text-red-700">AI Panel Error</div>}
+              <ErrorBoundary 
+                componentName="AIPanel" 
+                fallback={<div className="p-4 bg-red-100 text-red-700 rounded">AI Panel Error - check console</div>}
               >
                 <AIPanel 
                   upcomingEvents={events}
                   onCreateEvent={handleAICreateEvent} 
                 />
-              </SafeComponent>
+              </ErrorBoundary>
             </div>
           </div>
         </main>
 
         {/* Create Event Modal */}
-        <SafeComponent 
-          name="CreateEventModal" 
-          fallback={<div>Modal loading...</div>}
+        <ErrorBoundary 
+          componentName="CreateEventModal" 
+          fallback={<div>Modal Error - check console</div>}
         >
           <CreateEventModal
             isOpen={isCreateModalOpen}
@@ -456,7 +470,7 @@ const Index = () => {
             onCreateEvent={handleCreateEvent}
             selectedDate={selectedDate}
           />
-        </SafeComponent>
+        </ErrorBoundary>
 
         {/* Auth Modal */}
         {showAuthModal && (
@@ -477,13 +491,19 @@ const Index = () => {
               </div>
               
               {authMode === "login" ? (
-                <SafeComponent name="LoginForm" fallback={<div>Login form loading...</div>}>
+                <ErrorBoundary 
+                  componentName="LoginForm" 
+                  fallback={<div className="p-4 bg-red-100 text-red-700 rounded">Login form error - check console</div>}
+                >
                   <LoginForm />
-                </SafeComponent>
+                </ErrorBoundary>
               ) : (
-                <SafeComponent name="RegisterForm" fallback={<div>Register form loading...</div>}>
+                <ErrorBoundary 
+                  componentName="RegisterForm" 
+                  fallback={<div className="p-4 bg-red-100 text-red-700 rounded">Register form error - check console</div>}
+                >
                   <RegisterForm />
-                </SafeComponent>
+                </ErrorBoundary>
               )}
               
               <div className="mt-4 text-center">
