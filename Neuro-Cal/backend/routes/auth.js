@@ -11,6 +11,24 @@ const router = express.Router();
 // JWT secret from environment
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
 
+// Simple auth health check (no database required)
+router.get('/health', (req, res) => {
+  res.json({ 
+    status: 'OK', 
+    service: 'Authentication API',
+    timestamp: new Date().toISOString(),
+    features: {
+      oauth: {
+        google: !!passport._strategies.google,
+        microsoft: !!passport._strategies.microsoft,
+        apple: !!passport._strategies.apple,
+        yahoo: !!passport._strategies.yahoo
+      },
+      local: !!passport._strategies.local
+    }
+  });
+});
+
 // Middleware to verify JWT token
 export const authenticateToken = async (req, res, next) => {
   const authHeader = req.headers['authorization'];
@@ -73,70 +91,124 @@ router.post('/check-email', [
   }
 });
 
-// OAuth Routes
-router.get('/google', passport.authenticate('google', { 
-  scope: ['profile', 'email', 'https://www.googleapis.com/auth/calendar'] 
-}));
+// OAuth Routes - Only register if strategies are available
+const registerOAuthRoutes = () => {
+  // Check if Google strategy is available
+  if (passport._strategies.google) {
+    router.get('/google', passport.authenticate('google', { 
+      scope: ['profile', 'email', 'https://www.googleapis.com/auth/calendar'] 
+    }));
 
-router.get('/google/callback', 
-  passport.authenticate('google', { failureRedirect: '/login' }),
-  async (req, res) => {
-    try {
-      const token = jwt.sign({ userId: req.user.id }, JWT_SECRET, { expiresIn: '7d' });
-      res.redirect(`${process.env.FRONTEND_URL}/dashboard?token=${token}`);
-    } catch (error) {
-      console.error('Google OAuth callback error:', error);
-      res.redirect(`${process.env.FRONTEND_URL}/login?error=oauth_failed`);
-    }
+    router.get('/google/callback', 
+      passport.authenticate('google', { failureRedirect: '/login' }),
+      async (req, res) => {
+        try {
+          const token = jwt.sign({ userId: req.user.id }, JWT_SECRET, { expiresIn: '7d' });
+          res.redirect(`${process.env.FRONTEND_URL}/dashboard?token=${token}`);
+        } catch (error) {
+          console.error('Google OAuth callback error:', error);
+          res.redirect(`${process.env.FRONTEND_URL}/login?error=oauth_failed`);
+        }
+      }
+    );
+    console.log('✅ Google OAuth routes registered');
+  } else {
+    // Fallback route for when Google strategy is not available
+    router.get('/google', (req, res) => {
+      res.status(503).json({ 
+        error: 'Google OAuth not configured',
+        message: 'Please configure GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET environment variables'
+      });
+    });
+    console.log('⚠️  Google OAuth routes not available - strategy not initialized');
   }
-);
 
-router.get('/microsoft', passport.authenticate('microsoft', {
-  scope: ['User.Read', 'Calendars.ReadWrite']
-}));
+  // Check if Microsoft strategy is available
+  if (passport._strategies.microsoft) {
+    router.get('/microsoft', passport.authenticate('microsoft', {
+      scope: ['User.Read', 'Calendars.ReadWrite']
+    }));
 
-router.get('/microsoft/callback',
-  passport.authenticate('microsoft', { failureRedirect: '/login' }),
-  async (req, res) => {
-    try {
-      const token = jwt.sign({ userId: req.user.id }, JWT_SECRET, { expiresIn: '7d' });
-      res.redirect(`${process.env.FRONTEND_URL}/dashboard?token=${token}`);
-    } catch (error) {
-      console.error('Microsoft OAuth callback error:', error);
-      res.redirect(`${process.env.FRONTEND_URL}/login?error=oauth_failed`);
-    }
+    router.get('/microsoft/callback',
+      passport.authenticate('microsoft', { failureRedirect: '/login' }),
+      async (req, res) => {
+        try {
+          const token = jwt.sign({ userId: req.user.id }, JWT_SECRET, { expiresIn: '7d' });
+          res.redirect(`${process.env.FRONTEND_URL}/dashboard?token=${token}`);
+        } catch (error) {
+          console.error('Microsoft OAuth callback error:', error);
+          res.redirect(`${process.env.FRONTEND_URL}/login?error=oauth_failed`);
+        }
+      }
+    );
+    console.log('✅ Microsoft OAuth routes registered');
+  } else {
+    router.get('/microsoft', (req, res) => {
+      res.status(503).json({ 
+        error: 'Microsoft OAuth not configured',
+        message: 'Please configure MICROSOFT_CLIENT_ID and MICROSOFT_CLIENT_SECRET environment variables'
+      });
+    });
+    console.log('⚠️  Microsoft OAuth routes not available - strategy not initialized');
   }
-);
 
-router.get('/apple', passport.authenticate('apple'));
+  // Check if Apple strategy is available
+  if (passport._strategies.apple) {
+    router.get('/apple', passport.authenticate('apple'));
 
-router.get('/apple/callback',
-  passport.authenticate('apple', { failureRedirect: '/login' }),
-  async (req, res) => {
-    try {
-      const token = jwt.sign({ userId: req.user.id }, JWT_SECRET, { expiresIn: '7d' });
-      res.redirect(`${process.env.FRONTEND_URL}/dashboard?token=${token}`);
-    } catch (error) {
-      console.error('Apple OAuth callback error:', error);
-      res.redirect(`${process.env.FRONTEND_URL}/login?error=oauth_failed`);
-    }
+    router.get('/apple/callback',
+      passport.authenticate('apple', { failureRedirect: '/login' }),
+      async (req, res) => {
+        try {
+          const token = jwt.sign({ userId: req.user.id }, JWT_SECRET, { expiresIn: '7d' });
+          res.redirect(`${process.env.FRONTEND_URL}/dashboard?token=${token}`);
+        } catch (error) {
+          console.error('Apple OAuth callback error:', error);
+          res.redirect(`${process.env.FRONTEND_URL}/login?error=oauth_failed`);
+        }
+      }
+    );
+    console.log('✅ Apple OAuth routes registered');
+  } else {
+    router.get('/apple', (req, res) => {
+      res.status(503).json({ 
+        error: 'Apple OAuth not configured',
+        message: 'Please configure APPLE_CLIENT_ID, APPLE_TEAM_ID, and APPLE_KEY_ID environment variables'
+      });
+    });
+    console.log('⚠️  Apple OAuth routes not available - strategy not initialized');
   }
-);
 
-router.get('/yahoo', passport.authenticate('yahoo'));
+  // Check if Yahoo strategy is available
+  if (passport._strategies.yahoo) {
+    router.get('/yahoo', passport.authenticate('yahoo'));
 
-router.get('/yahoo/callback',
-  passport.authenticate('yahoo', { failureRedirect: '/login' }),
-  async (req, res) => {
-    try {
-      const token = jwt.sign({ userId: req.user.id }, JWT_SECRET, { expiresIn: '7d' });
-      res.redirect(`${process.env.FRONTEND_URL}/dashboard?token=${token}`);
-    } catch (error) {
-      console.error('Yahoo OAuth callback error:', error);
-      res.redirect(`${process.env.FRONTEND_URL}/login?error=oauth_failed`);
-    }
+    router.get('/yahoo/callback',
+      passport.authenticate('yahoo', { failureRedirect: '/login' }),
+      async (req, res) => {
+        try {
+          const token = jwt.sign({ userId: req.user.id }, JWT_SECRET, { expiresIn: '7d' });
+          res.redirect(`${process.env.FRONTEND_URL}/dashboard?token=${token}`);
+        } catch (error) {
+          console.error('Yahoo OAuth callback error:', error);
+          res.redirect(`${process.env.FRONTEND_URL}/login?error=oauth_failed`);
+        }
+      }
+    );
+    console.log('✅ Yahoo OAuth routes registered');
+  } else {
+    router.get('/yahoo', (req, res) => {
+      res.status(503).json({ 
+        error: 'Yahoo OAuth not configured',
+        message: 'Please configure YAHOO_CLIENT_ID and YAHOO_CLIENT_SECRET environment variables'
+      });
+    });
+    console.log('⚠️  Yahoo OAuth routes not available - strategy not initialized');
   }
-);
+};
+
+// Register OAuth routes
+registerOAuthRoutes();
 
 // Email/Password Registration
 router.post('/register', [
