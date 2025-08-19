@@ -71,7 +71,7 @@ const FEATURE_CONFIGS: Record<string, FeatureConfig> = {
   },
   unlimited_usage: {
     name: 'Unlimited Usage',
-    icon: <Infinity className="h-5 w-5" />,
+            icon: <InfinityIcon className="h-5 w-5" />,
     description: 'No limits on AI suggestions or integrations',
     basic: false,
     pro: true,
@@ -207,7 +207,7 @@ const FeatureGate: React.FC<FeatureGateProps> = ({
 };
 
 // Infinity icon component
-const Infinity: React.FC<{ className?: string }> = ({ className }) => (
+const InfinityIcon: React.FC<{ className?: string }> = ({ className }) => (
   <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
     <path d="M13.828 10.172a4 4 0 0 0-5.656 0l-4 4a4 4 0 1 0 5.656 5.656l1.102-1.101m-.758-4.899a4 4 0 0 0 5.656 0l4-4a4 4 0 0 0-5.656-5.656l-1.1 1.1" />
   </svg>
