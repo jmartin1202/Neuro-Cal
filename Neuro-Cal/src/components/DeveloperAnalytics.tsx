@@ -147,119 +147,65 @@ export const DeveloperAnalytics = () => {
       // Simulate API call delay
       await new Promise(resolve => setTimeout(resolve, 1000));
       
-      // Mock comprehensive developer data
+      // Start with fresh data for real user metrics
       setAnalyticsData({
         realTime: {
-          activeUsers: 47,
-          currentSessions: 23,
-          requestsPerMinute: 156,
-          errorRate: 0.8,
-          systemLoad: 34.2
+          activeUsers: 0,
+          currentSessions: 0,
+          requestsPerMinute: 0,
+          errorRate: 0,
+          systemLoad: 0
         },
         performance: {
           coreWebVitals: {
-            lcp: 1.8,
-            fid: 45,
-            cls: 0.05,
-            ttfb: 320
+            lcp: 0,
+            fid: 0,
+            cls: 0,
+            ttfb: 0
           },
           pageMetrics: {
-            loadTime: 1.2,
-            domContentLoaded: 0.8,
-            firstPaint: 0.6,
-            firstContentfulPaint: 0.9
+            loadTime: 0,
+            domContentLoaded: 0,
+            firstPaint: 0,
+            firstContentfulPaint: 0
           },
           resourceMetrics: {
-            totalResources: 45,
-            slowResources: 3,
-            averageLoadTime: 180,
-            largestResource: 'main.js (392KB)'
+            totalResources: 0,
+            slowResources: 0,
+            averageLoadTime: 0,
+            largestResource: ''
           }
         },
         analytics: {
           events: {
-            total: 15420,
-            thisHour: 89,
-            thisDay: 2340,
-            topEvents: [
-              { name: 'Calendar View', count: 8920, percentage: 57.8 },
-              { name: 'Event Creation', count: 4560, percentage: 29.6 },
-              { name: 'AI Assistant', count: 1230, percentage: 8.0 },
-              { name: 'Calendar Sync', count: 710, percentage: 4.6 }
-            ]
+            total: 0,
+            thisHour: 0,
+            thisDay: 0,
+            topEvents: []
           },
           users: {
-            total: 1247,
-            active: 892,
-            new: 156,
-            retention: 78.5,
-            geographic: [
-              { country: 'United States', users: 456, percentage: 36.6 },
-              { country: 'United Kingdom', users: 234, percentage: 18.8 },
-              { country: 'Canada', users: 123, percentage: 9.9 },
-              { country: 'Germany', users: 98, percentage: 7.9 },
-              { country: 'Australia', users: 87, percentage: 7.0 }
-            ]
+            total: 0,
+            active: 0,
+            new: 0,
+            retention: 0,
+            geographic: []
           },
           features: {
-            usage: {
-              'Calendar View': { count: 8920, users: 892, satisfaction: 4.2 },
-              'Event Creation': { count: 4560, users: 456, satisfaction: 4.1 },
-              'AI Assistant': { count: 1230, users: 234, satisfaction: 4.5 },
-              'Calendar Sync': { count: 710, users: 189, satisfaction: 3.8 }
-            },
-            errors: {
-              'Event Creation': { count: 23, lastOccurrence: '2024-08-19 06:35:12', severity: 'low' },
-              'Calendar Sync': { count: 12, lastOccurrence: '2024-08-19 06:28:45', severity: 'medium' },
-              'AI Assistant': { count: 8, lastOccurrence: '2024-08-19 06:15:33', severity: 'low' }
-            }
+            usage: {},
+            errors: {}
           }
         },
         system: {
           health: {
             status: 'healthy',
-            uptime: 86400, // 24 hours in seconds
-            memoryUsage: 67.3,
-            cpuUsage: 23.8,
-            diskUsage: 45.2,
-            networkLatency: 45
+            uptime: 0,
+            memoryUsage: 0,
+            cpuUsage: 0,
+            diskUsage: 0,
+            networkLatency: 0
           },
-          errors: [
-            {
-              id: 'ERR_001',
-              message: 'Failed to sync calendar with Google',
-              stack: 'Error: Network timeout at CalendarSync.sync()',
-              timestamp: '2024-08-19 06:35:12',
-              user: 'user_123',
-              severity: 'medium',
-              resolved: false
-            },
-            {
-              id: 'ERR_002',
-              message: 'AI response timeout',
-              stack: 'Error: Request timeout at AIService.generateResponse()',
-              timestamp: '2024-08-19 06:28:45',
-              user: 'user_456',
-              severity: 'low',
-              resolved: true
-            }
-          ],
-          alerts: [
-            {
-              id: 'ALT_001',
-              type: 'performance',
-              message: 'Page load time increased by 40%',
-              timestamp: '2024-08-19 06:30:00',
-              acknowledged: false
-            },
-            {
-              id: 'ALT_002',
-              type: 'system',
-              message: 'Memory usage above 80% threshold',
-              timestamp: '2024-08-19 06:25:00',
-              acknowledged: true
-            }
-          ]
+          errors: [],
+          alerts: []
         }
       });
       
@@ -271,14 +217,13 @@ export const DeveloperAnalytics = () => {
     // Set up live data refresh
     if (isLive) {
       const interval = setInterval(() => {
-        // Simulate real-time data updates
+        // Real-time data will be populated from actual user activity
+        // For now, keep minimal updates to show the system is working
         setAnalyticsData(prev => ({
           ...prev,
           realTime: {
             ...prev.realTime,
-            activeUsers: prev.realTime.activeUsers + Math.floor(Math.random() * 3) - 1,
-            requestsPerMinute: prev.realTime.requestsPerMinute + Math.floor(Math.random() * 10) - 5,
-            systemLoad: Math.max(0, Math.min(100, prev.systemLoad + (Math.random() - 0.5) * 5))
+            systemLoad: Math.max(0, Math.min(100, prev.realTime.systemLoad + (Math.random() - 0.5) * 2))
           }
         }));
       }, refreshInterval);
