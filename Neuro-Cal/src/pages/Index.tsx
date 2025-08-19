@@ -597,6 +597,20 @@ const Index = () => {
                       Analytics
                     </Button>
                   </Link>
+                  <a 
+                    href="https://neurocal-analytics-f798adc616ee.herokuapp.com/" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                  >
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="text-muted-foreground hover:text-foreground border-primary/20 hover:border-primary/40"
+                    >
+                      <BarChart3 className="h-4 w-4 mr-2" />
+                      Live Dashboard
+                    </Button>
+                  </a>
                   <span className="text-sm text-muted-foreground">
                     Welcome, {user.email}
                   </span>
@@ -651,6 +665,21 @@ const Index = () => {
                   <Crown className="h-4 w-4 mr-1" />
                   Upgrade to Save Events
                 </Button>
+                <a 
+                  href="https://neurocal-analytics-f798adc616ee.herokuapp.com/" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="ml-3"
+                >
+                  <Button 
+                    variant="secondary" 
+                    size="sm" 
+                    className="bg-white text-blue-600 hover:bg-gray-100"
+                  >
+                    <BarChart3 className="h-4 w-4 mr-1" />
+                    View Analytics
+                  </Button>
+                </a>
               </p>
             </div>
           </div>
