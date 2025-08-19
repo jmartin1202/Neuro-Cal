@@ -75,8 +75,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setToken(null);
     setUser(null);
     setError(null);
-    // Redirect to auth page
-    window.location.href = '/auth';
+    // Don't redirect, just clear the state
+    // window.location.href = '/auth';
   };
 
   const verifyToken = useCallback(async (tokenToVerify: string) => {
