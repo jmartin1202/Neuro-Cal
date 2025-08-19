@@ -85,6 +85,28 @@ app.get('/health', (req, res) => {
   res.json({ status: 'OK', timestamp: new Date().toISOString() });
 });
 
+// Database health check endpoint
+app.get('/health/db', async (req, res) => {
+  try {
+    const client = await pool.connect();
+    const result = await client.query('SELECT 1 as test');
+    client.release();
+    
+    res.json({ 
+      status: 'OK', 
+      database: 'Connected',
+      timestamp: new Date().toISOString() 
+    });
+  } catch (error) {
+    res.status(503).json({ 
+      status: 'ERROR', 
+      database: 'Disconnected',
+      error: error.message,
+      timestamp: new Date().toISOString() 
+    });
+  }
+});
+
 // Use routes
 app.use('/api/auth', authRoutes);
 app.use('/api/calendar', calendarRoutes);

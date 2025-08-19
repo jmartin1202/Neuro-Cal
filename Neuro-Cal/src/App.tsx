@@ -3,12 +3,12 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { SupabaseAuthProvider } from "@/contexts/SupabaseAuthContext";
+import { AuthProvider } from "@/contexts/AuthContext";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import { DeveloperAnalytics } from "@/components/DeveloperAnalytics";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
-import { SupabaseExample } from "@/components/SupabaseExample";
+// import { SupabaseExample } from "@/components/SupabaseExample";
 import { SimpleTest } from "@/components/SimpleTest";
 import NotFound from "./pages/NotFound";
 
@@ -16,7 +16,7 @@ const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <SupabaseAuthProvider>
+    <AuthProvider>
       <TooltipProvider>
         <Toaster />
         <Sonner />
@@ -29,14 +29,14 @@ const App = () => (
                 <DeveloperAnalytics />
               </ProtectedRoute>
             } />
-            <Route path="/supabase-demo" element={<SupabaseExample />} />
+            {/* <Route path="/supabase-demo" element={<SupabaseExample />} /> */}
             <Route path="/test" element={<SimpleTest />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
       </TooltipProvider>
-    </SupabaseAuthProvider>
+    </AuthProvider>
   </QueryClientProvider>
 );
 
