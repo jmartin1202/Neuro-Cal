@@ -26,9 +26,10 @@ export const CalendarGrid = ({
   const eventDateMapping = useMemo(() => {
     const mapping = new Map<string, Event[]>();
     
-    // Only associate events that have actual dates
+    // Associate events with their actual dates
     events.forEach((event) => {
       if (event.date) {
+        // Use the event's actual date
         const key = `${event.date.getFullYear()}-${event.date.getMonth()}-${event.date.getDate()}`;
         if (!mapping.has(key)) {
           mapping.set(key, []);
@@ -38,7 +39,7 @@ export const CalendarGrid = ({
     });
     
     return mapping;
-  }, [events]);
+  }, [events]); // Only depend on events, not currentDate or daysInMonth
 
   const calendarDays = [];
 
@@ -74,28 +75,16 @@ export const CalendarGrid = ({
   }
 
   const isToday = (date: Date) => {
-    return date.getFullYear() === today.getFullYear() &&
-           date.getMonth() === today.getMonth() &&
-           date.getDate() === today.getDate();
+    return date.toDateString() === today.toDateString();
   };
 
   const isSelected = (date: Date) => {
-    return selectedDate && 
-           date.getFullYear() === selectedDate.getFullYear() &&
-           date.getMonth() === selectedDate.getMonth() &&
-           date.getDate() === selectedDate.getDate();
+    return selectedDate && date.toDateString() === selectedDate.toDateString();
   };
 
   const getEventsForDate = (date: Date) => {
     const key = `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`;
-    const events = eventDateMapping.get(key) || [];
-    
-    // Filter out any events that might not have proper dates
-    return events.filter(event => event.date && 
-      event.date.getFullYear() === date.getFullYear() &&
-      event.date.getMonth() === date.getMonth() &&
-      event.date.getDate() === date.getDate()
-    );
+    return eventDateMapping.get(key) || [];
   };
 
   return (

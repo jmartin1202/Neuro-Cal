@@ -11,92 +11,85 @@ export const SmartCalendar = () => {
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [view, setView] = useState<"month" | "week" | "day">("month");
-  const [events, setEvents] = useState<Event[]>(() => {
-    const now = new Date();
-    const currentYear = now.getFullYear();
-    const currentMonth = now.getMonth();
-    const currentDay = now.getDate();
-    
-    return [
-      {
-        id: "1",
-        title: "Team Standup",
-        time: "9:00 AM",
-        duration: "30 min",
-        date: new Date(currentYear, currentMonth, currentDay + 1), // Tomorrow
-        location: "Conference Room A",
-        attendees: ["John", "Sarah", "Mike"],
-        color: "bg-calendar-event",
-        type: "meeting"
-      },
-      {
-        id: "2",
-        title: "Focus Work - Project Review",
-        time: "2:00 PM",
-        duration: "2 hours",
-        date: new Date(currentYear, currentMonth, currentDay + 2), // Day after tomorrow
-        color: "bg-primary",
-        type: "focus",
-        isAiSuggested: true
-      },
-      {
-        id: "3",
-        title: "Coffee Break",
-        time: "3:30 PM",
-        duration: "15 min",
-        date: new Date(currentYear, currentMonth, currentDay + 1), // Tomorrow
-        color: "bg-accent",
-        type: "break",
-        isAiSuggested: true
-      },
-      {
-        id: "4",
-        title: "Client Meeting Prep",
-        time: "4:00 PM",
-        duration: "1 hour",
-        date: new Date(currentYear, currentMonth, currentDay + 3), // 3 days from now
-        location: "Office",
-        color: "bg-destructive",
-        type: "meeting"
-      },
-      {
-        id: "5",
-        title: "Weekly Planning",
-        time: "10:00 AM",
-        duration: "1 hour",
-        date: new Date(currentYear, currentMonth, currentDay + 7), // Next week
-        color: "bg-calendar-event",
-        type: "meeting"
-      },
-      {
-        id: "6",
-        title: "Code Review",
-        time: "11:00 AM",
-        duration: "45 min",
-        date: new Date(currentYear, currentMonth, currentDay + 1), // Tomorrow
-        color: "bg-primary",
-        type: "focus"
-      },
-      {
-        id: "7",
-        title: "Lunch with Team",
-        time: "12:30 PM",
-        duration: "1 hour",
-        date: new Date(currentYear, currentMonth, currentDay + 2), // Day after tomorrow
-        color: "bg-accent",
-        type: "break"
-      },
-      {
-        id: "8",
-        title: "Product Demo",
-        time: "3:00 PM",
-        duration: "1 hour",
-        date: new Date(currentYear, currentMonth, currentDay + 5), // 5 days from now
-        color: "bg-calendar-event",
-        type: "meeting"
-      }
-    ];
-  });
+  const [events, setEvents] = useState<Event[]>([
+    {
+      id: "1",
+      title: "Team Standup",
+      time: "9:00 AM",
+      duration: "30 min",
+      date: new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDate() + 1), // Tomorrow
+      location: "Conference Room A",
+      attendees: ["John", "Sarah", "Mike"],
+      color: "bg-calendar-event",
+      type: "meeting"
+    },
+    {
+      id: "2",
+      title: "Focus Work - Project Review",
+      time: "2:00 PM",
+      duration: "2 hours",
+      date: new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDate() + 2), // Day after tomorrow
+      color: "bg-primary",
+      type: "focus",
+      isAiSuggested: true
+    },
+    {
+      id: "3",
+      title: "Coffee Break",
+      time: "3:30 PM",
+      duration: "15 min",
+      date: new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDate() + 1), // Tomorrow
+      color: "bg-accent",
+      type: "break",
+      isAiSuggested: true
+    },
+    {
+      id: "4",
+      title: "Client Meeting Prep",
+      time: "4:00 PM",
+      duration: "1 hour",
+      date: new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDate() + 3), // 3 days from now
+      location: "Office",
+      color: "bg-destructive",
+      type: "meeting"
+    },
+    {
+      id: "5",
+      title: "Weekly Planning",
+      time: "10:00 AM",
+      duration: "1 hour",
+      date: new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDate() + 7), // Next week
+      color: "bg-calendar-event",
+      type: "meeting"
+    },
+    {
+      id: "6",
+      title: "Code Review",
+      time: "11:00 AM",
+      duration: "45 min",
+      date: new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDate() + 1), // Tomorrow
+      color: "bg-primary",
+      type: "focus"
+    },
+    {
+      id: "7",
+      title: "Lunch with Team",
+      time: "12:30 PM",
+      duration: "1 hour",
+      date: new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDate() + 2), // Day after tomorrow
+      color: "bg-accent",
+      type: "break"
+    },
+    {
+      id: "8",
+      title: "Product Demo",
+      time: "3:00 PM",
+      duration: "1 hour",
+      date: new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDate() + 5), // 5 days from now
+      color: "bg-calendar-event",
+      type: "meeting"
+    }
+  ]);
 
   const { toast } = useToast();
 
@@ -109,10 +102,8 @@ export const SmartCalendar = () => {
   }, []);
 
   const handleDateClick = useCallback((date: Date) => {
-    console.log('Date clicked:', date);
     setSelectedDate(date);
     setIsCreateModalOpen(true);
-    console.log('Modal should open, selectedDate:', date, 'isCreateModalOpen: true');
   }, []);
 
   const handleCreateEvent = useCallback(async (eventData: Omit<Event, 'id'>) => {
@@ -334,18 +325,13 @@ export const SmartCalendar = () => {
       </div>
 
       {/* Create Event Modal */}
-      <CreateEventModal
-        isOpen={isCreateModalOpen}
-        onClose={handleCloseCreateModal}
-        selectedDate={selectedDate || new Date()}
-        onCreateEvent={handleCreateEvent}
-      />
-      
-      {/* Debug info - remove this later */}
-      {isCreateModalOpen && (
-        <div className="fixed top-4 right-4 bg-red-500 text-white p-2 rounded z-50">
-          Modal is open! Selected date: {selectedDate?.toDateString()}
-        </div>
+      {selectedDate && (
+        <CreateEventModal
+          isOpen={isCreateModalOpen}
+          onClose={handleCloseCreateModal}
+          selectedDate={selectedDate}
+          onCreateEvent={handleCreateEvent}
+        />
       )}
     </div>
   );
