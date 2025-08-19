@@ -34,7 +34,6 @@ interface AuthContextType {
   isLoading: boolean;
   error: string | null;
   clearError: () => void;
-  checkOAuthCallback: () => void;
   refreshUserProfile: () => Promise<void>;
 }
 
@@ -60,6 +59,17 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Check for existing token on mount
+  useEffect(() => {
+    const existingToken = localStorage.getItem('neurocal_token');
+    if (existingToken) {
+      setToken(existingToken);
+      verifyToken(existingToken);
+    } else {
+      setIsLoading(false);
+    }
+  }, []);
+
   const verifyToken = useCallback(async (tokenToVerify: string) => {
     try {
       const response = await fetch(`${API_BASE_URL}/auth/profile`, {
@@ -78,80 +88,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     } catch (error) {
       console.error('Token verification failed:', error);
       logout();
+    } finally {
+      setIsLoading(false);
     }
   }, []);
 
-  const checkOAuthCallback = useCallback(() => {
-    // Check if we're returning from an OAuth callback
-    const urlParams = new URLSearchParams(window.location.search);
-    const oauthToken = urlParams.get('token');
-    const oauthError = urlParams.get('error');
-
-    if (oauthToken) {
-      // Store the token and verify it
-      localStorage.setItem('neurocal_token', oauthToken);
-      setToken(oauthToken);
-      verifyToken(oauthToken);
-      
-      // Clean up URL
-      window.history.replaceState({}, document.title, window.location.pathname);
-    } else if (oauthError) {
-      setError(`OAuth authentication failed: ${oauthError}`);
-      // Clean up URL
-      window.history.replaceState({}, document.title, window.location.pathname);
-    }
-  }, [verifyToken]);
-
-  const refreshUserProfile = useCallback(async () => {
-    if (!token) return;
-
-    try {
-      const response = await fetch(`${API_BASE_URL}/auth/profile`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setUser(data.user);
-        localStorage.setItem('neurocal_user', JSON.stringify(data.user));
-      }
-    } catch (error) {
-      console.error('Failed to refresh user profile:', error);
-    }
-  }, [token]);
-
-  // Check for existing token on mount
-  useEffect(() => {
-    const storedToken = localStorage.getItem('neurocal_token');
-    const storedUser = localStorage.getItem('neurocal_user');
-    
-    if (storedToken && storedUser) {
-      try {
-        setToken(storedToken);
-        setUser(JSON.parse(storedUser));
-        // Verify token is still valid
-        verifyToken(storedToken);
-      } catch (error) {
-        console.error('Failed to restore auth state:', error);
-        localStorage.removeItem('neurocal_token');
-        localStorage.removeItem('neurocal_user');
-      }
-    }
-    
-    // Check for OAuth callback
-    checkOAuthCallback();
-    
-    setIsLoading(false);
-  }, [verifyToken, checkOAuthCallback]);
-
   const login = async (email: string, password: string) => {
     try {
-      setIsLoading(true);
       setError(null);
-
       const response = await fetch(`${API_BASE_URL}/auth/login`, {
         method: 'POST',
         headers: {
@@ -168,24 +112,21 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
       // Store token and user data
       localStorage.setItem('neurocal_token', data.token);
-      localStorage.setItem('neurocal_user', JSON.stringify(data.user));
-      
       setToken(data.token);
       setUser(data.user);
+      
+      // Redirect to dashboard or main page
+      window.location.href = '/';
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Login failed';
       setError(errorMessage);
       throw error;
-    } finally {
-      setIsLoading(false);
     }
   };
 
   const register = async (email: string, password: string, firstName: string, lastName: string) => {
     try {
-      setIsLoading(true);
       setError(null);
-
       const response = await fetch(`${API_BASE_URL}/auth/register`, {
         method: 'POST',
         headers: {
@@ -200,27 +141,42 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         throw new Error(data.error || 'Registration failed');
       }
 
-      // For registration, we don't automatically log in - user needs to verify email
-      // But we can store the user data for display purposes
-      setUser(data.user);
+      // Show success message and switch to login
+      setError(null);
+      // You could show a success message here
+      console.log('Registration successful:', data.message);
+      
+      // Optionally redirect to login or show success message
+      return data;
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Registration failed';
       setError(errorMessage);
       throw error;
-    } finally {
-      setIsLoading(false);
     }
   };
 
   const logout = () => {
     localStorage.removeItem('neurocal_token');
-    localStorage.removeItem('neurocal_user');
     setToken(null);
     setUser(null);
+    setError(null);
+    // Redirect to auth page
+    window.location.href = '/auth';
   };
 
   const clearError = () => {
     setError(null);
+  };
+
+  const refreshUserProfile = async () => {
+    if (!token) return;
+    
+    try {
+      await verifyToken(token);
+    } catch (error) {
+      console.error('Failed to refresh user profile:', error);
+      logout();
+    }
   };
 
   const value: AuthContextType = {
@@ -232,7 +188,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     isLoading,
     error,
     clearError,
-    checkOAuthCallback,
     refreshUserProfile,
   };
 

@@ -36,6 +36,13 @@ export const RegisterForm = () => {
     
     try {
       await register(email.trim(), password, firstName.trim(), lastName.trim());
+      // Show success message
+      alert('Account created successfully! Please check your email to verify your account.');
+      // Clear form
+      setEmail('');
+      setPassword('');
+      setFirstName('');
+      setLastName('');
     } catch (error) {
       console.error('Registration error:', error);
     } finally {

@@ -49,10 +49,21 @@ app.get('/health', (req, res) => {
 // Import routes
 import authRoutes from './routes/auth.js';
 import aiRoutes from './routes/ai.js';
+import billingRoutes from './routes/billing.js';
+
+// Import webhook handler
+import { handleStripeWebhook } from './services/stripeWebhookHandler.js';
+
+// Import cron jobs
+import { initializeCronJobs } from './services/cronJobs.js';
 
 // Use routes
 app.use('/api/auth', authRoutes);
 app.use('/api/ai', aiRoutes);
+app.use('/api/billing', billingRoutes);
+
+// Stripe webhook endpoint (no body parsing for webhook verification)
+app.post('/webhooks/stripe', express.raw({ type: 'application/json' }), handleStripeWebhook);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
@@ -71,6 +82,10 @@ app.listen(PORT, () => {
   console.log('🚀 NeuroCal Backend running on port', PORT);
   console.log('📊 Health check: http://localhost:' + PORT + '/health');
   console.log('🔐 Authentication: Email/Password enabled');
+  console.log('💳 Billing: Stripe integration enabled');
+  
+  // Initialize cron jobs
+  initializeCronJobs();
 });
 
 export { pool };
