@@ -139,7 +139,7 @@ export const UserFeedback = () => {
               {/* Feedback Type Selection */}
               <div className="space-y-2">
                 <Label>Feedback Type</Label>
-                <Select value={feedbackType} onValueChange={(value: any) => setFeedbackType(value)}>
+                <Select value={feedbackType} onValueChange={(value: string) => setFeedbackType(value)}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>

@@ -51,7 +51,7 @@ const initializeGoogleAnalytics = (measurementId: string) => {
 
   // Initialize gtag
   window.dataLayer = window.dataLayer || [];
-  function gtag(...args: any[]) {
+  function gtag(...args: (string | Date | Record<string, unknown>)[]) {
     window.dataLayer.push(args);
   }
   gtag('js', new Date());
@@ -141,7 +141,7 @@ const initializePerformanceMonitoring = () => {
 // Analytics Event Tracking
 export const trackEvent = (
   eventName: string,
-  properties?: Record<string, any>,
+  properties?: Record<string, unknown>,
   userId?: string
 ) => {
   // Mixpanel
@@ -176,7 +176,7 @@ export const trackEvent = (
 };
 
 // User Identification
-export const identifyUser = (userId: string, userProperties?: Record<string, any>) => {
+export const identifyUser = (userId: string, userProperties?: Record<string, unknown>) => {
   // Mixpanel
   if (mixpanel) {
     mixpanel.identify(userId);
@@ -199,7 +199,7 @@ export const identifyUser = (userId: string, userProperties?: Record<string, any
 };
 
 // Page View Tracking
-export const trackPageView = (pageName: string, properties?: Record<string, any>) => {
+export const trackPageView = (pageName: string, properties?: Record<string, unknown>) => {
   trackEvent('Page View', {
     page_name: pageName,
     page_url: window.location.href,
@@ -209,7 +209,7 @@ export const trackPageView = (pageName: string, properties?: Record<string, any>
 };
 
 // Feature Usage Tracking
-export const trackFeatureUsage = (featureName: string, action: string, properties?: Record<string, any>) => {
+export const trackFeatureUsage = (featureName: string, action: string, properties?: Record<string, unknown>) => {
   trackEvent('Feature Usage', {
     feature: featureName,
     action,
@@ -218,7 +218,7 @@ export const trackFeatureUsage = (featureName: string, action: string, propertie
 };
 
 // Error Tracking
-export const trackError = (error: Error, context?: Record<string, any>) => {
+export const trackError = (error: Error, context?: Record<string, unknown>) => {
   trackEvent('Error', {
     error_message: error.message,
     error_stack: error.stack,
@@ -228,7 +228,7 @@ export const trackError = (error: Error, context?: Record<string, any>) => {
 };
 
 // Performance Metric Tracking
-export const trackPerformanceMetric = (metricName: string, value: number, properties?: Record<string, any>) => {
+export const trackPerformanceMetric = (metricName: string, value: number, properties?: Record<string, unknown>) => {
   trackEvent('Performance Metric', {
     metric_name: metricName,
     metric_value: value,
@@ -258,7 +258,7 @@ export const trackUserFeedback = (feedbackType: 'rating' | 'comment' | 'bug_repo
 // Export for global use
 declare global {
   interface Window {
-    gtag: (...args: any[]) => void;
-    dataLayer: any[];
+    gtag: (...args: (string | Date | Record<string, unknown>)[]) => void;
+    dataLayer: (string | Date | Record<string, unknown>)[][];
   }
 }

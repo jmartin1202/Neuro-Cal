@@ -1,4 +1,11 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
+
+interface UserPreferences {
+  theme?: 'light' | 'dark';
+  notifications?: boolean;
+  timeFormat?: '12h' | '24h';
+  [key: string]: unknown;
+}
 
 interface User {
   id: string;
@@ -6,7 +13,7 @@ interface User {
   firstName: string;
   lastName: string;
   timezone?: string;
-  preferences?: any;
+  preferences?: UserPreferences;
 }
 
 interface AuthContextType {
@@ -42,27 +49,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Check for existing token on mount
-  useEffect(() => {
-    const storedToken = localStorage.getItem('neurocal_token');
-    const storedUser = localStorage.getItem('neurocal_user');
-    
-    if (storedToken && storedUser) {
-      try {
-        setToken(storedToken);
-        setUser(JSON.parse(storedUser));
-        // Verify token is still valid
-        verifyToken(storedToken);
-      } catch (error) {
-        console.error('Failed to restore auth state:', error);
-        localStorage.removeItem('neurocal_token');
-        localStorage.removeItem('neurocal_user');
-      }
-    }
-    setIsLoading(false);
-  }, []);
-
-  const verifyToken = async (tokenToVerify: string) => {
+  const verifyToken = useCallback(async (tokenToVerify: string) => {
     try {
       const response = await fetch(`${API_BASE_URL}/auth/profile`, {
         headers: {
@@ -81,7 +68,27 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       console.error('Token verification failed:', error);
       logout();
     }
-  };
+  }, []);
+
+  // Check for existing token on mount
+  useEffect(() => {
+    const storedToken = localStorage.getItem('neurocal_token');
+    const storedUser = localStorage.getItem('neurocal_user');
+    
+    if (storedToken && storedUser) {
+      try {
+        setToken(storedToken);
+        setUser(JSON.parse(storedUser));
+        // Verify token is still valid
+        verifyToken(storedToken);
+      } catch (error) {
+        console.error('Failed to restore auth state:', error);
+        localStorage.removeItem('neurocal_token');
+        localStorage.removeItem('neurocal_user');
+      }
+    }
+    setIsLoading(false);
+  }, [verifyToken]);
 
   const login = async (email: string, password: string) => {
     try {

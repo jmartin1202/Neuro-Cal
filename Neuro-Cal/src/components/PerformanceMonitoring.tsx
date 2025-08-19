@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -76,13 +76,12 @@ export const PerformanceMonitoring = () => {
     if (!isMonitoring) return;
 
     const interval = setInterval(() => {
-      // Simulate real-time performance monitoring
       updatePerformanceMetrics();
       checkForAlerts();
     }, 5000); // Update every 5 seconds
 
     return () => clearInterval(interval);
-  }, [isMonitoring]);
+  }, [isMonitoring, checkForAlerts]);
 
   const updatePerformanceMetrics = () => {
     // Simulate performance data updates
@@ -121,7 +120,7 @@ export const PerformanceMonitoring = () => {
     }));
   };
 
-  const checkForAlerts = () => {
+  const checkForAlerts = useCallback(() => {
     const newAlerts: Array<{
       id: string;
       type: 'error' | 'warning' | 'info';
@@ -177,16 +176,17 @@ export const PerformanceMonitoring = () => {
       newAlerts.push({
         id: `alert-${Date.now()}-5`,
         type: 'error',
-        message: `${metrics.errors.critical} critical errors detected`,
+        message: `${metrics.errors.critical} critical error(s) detected`,
         timestamp: new Date(),
         severity: 'high'
       });
     }
 
+    // Update alerts if there are new ones
     if (newAlerts.length > 0) {
-      setAlerts(prev => [...newAlerts, ...prev.slice(0, 9)]); // Keep last 10 alerts
+      setAlerts(prev => [...prev, ...newAlerts]);
     }
-  };
+  }, [metrics]);
 
   const getPerformanceScore = () => {
     let score = 100;
