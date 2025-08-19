@@ -17,6 +17,9 @@
     "test": "vitest",
     "test:ui": "vitest --ui",
     "test:coverage": "vitest --coverage",
+    "deploy": "./scripts/deploy.sh",
+    "deploy:heroku": "heroku builds:create",
+    "deploy:github": "git add . && git commit -m \"Auto-deploy: $(date)\" && git push",
     "prepare": "husky"
   },
   "dependencies": {
