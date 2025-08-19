@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -21,6 +21,7 @@ export const CreateEventModal = ({
   selectedDate, 
   onCreateEvent 
 }: CreateEventModalProps) => {
+  console.log('CreateEventModal props:', { isOpen, selectedDate });
   const [formData, setFormData] = useState({
     title: "",
     time: "09:00",
@@ -30,6 +31,14 @@ export const CreateEventModal = ({
     type: "meeting" as const,
     description: ""
   });
+
+  // Reset form when selectedDate changes
+  useEffect(() => {
+    setFormData(prev => ({
+      ...prev,
+      time: "09:00"
+    }));
+  }, [selectedDate]);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -44,11 +53,19 @@ export const CreateEventModal = ({
         .map(name => name.trim())
         .filter(name => name.length > 0);
 
+      // Convert time from 24-hour format to 12-hour format
+      const timeString = formData.time;
+      const [hours, minutes] = timeString.split(':').map(Number);
+      const period = hours >= 12 ? 'PM' : 'AM';
+      const displayHours = hours === 0 ? 12 : hours > 12 ? hours - 12 : hours;
+      const formattedTime = `${displayHours}:${minutes.toString().padStart(2, '0')} ${period}`;
+
       // Create the event object
       const newEvent: Omit<Event, 'id'> = {
         title: formData.title,
-        time: formData.time,
+        time: formattedTime,
         duration: formData.duration,
+        date: selectedDate,
         location: formData.location || undefined,
         attendees: attendeeList.length > 0 ? attendeeList : undefined,
         color: getEventColor(formData.type),

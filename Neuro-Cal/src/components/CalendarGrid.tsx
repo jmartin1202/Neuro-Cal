@@ -26,21 +26,10 @@ export const CalendarGrid = ({
   const eventDateMapping = useMemo(() => {
     const mapping = new Map<string, Event[]>();
     
-    // Associate events with their actual dates
+    // Only associate events that have actual dates
     events.forEach((event) => {
       if (event.date) {
-        // Use the event's actual date
         const key = `${event.date.getFullYear()}-${event.date.getMonth()}-${event.date.getDate()}`;
-        if (!mapping.has(key)) {
-          mapping.set(key, []);
-        }
-        mapping.get(key)!.push(event);
-      } else {
-        // Fallback to the old random assignment for events without dates
-        const hash = event.id.charCodeAt(0);
-        const dayOfMonth = (hash % daysInMonth) + 1;
-        const key = `${currentDate.getFullYear()}-${currentDate.getMonth()}-${dayOfMonth}`;
-        
         if (!mapping.has(key)) {
           mapping.set(key, []);
         }
@@ -49,7 +38,7 @@ export const CalendarGrid = ({
     });
     
     return mapping;
-  }, [events, currentDate, daysInMonth]);
+  }, [events]);
 
   const calendarDays = [];
 
@@ -85,16 +74,28 @@ export const CalendarGrid = ({
   }
 
   const isToday = (date: Date) => {
-    return date.toDateString() === today.toDateString();
+    return date.getFullYear() === today.getFullYear() &&
+           date.getMonth() === today.getMonth() &&
+           date.getDate() === today.getDate();
   };
 
   const isSelected = (date: Date) => {
-    return selectedDate && date.toDateString() === selectedDate.toDateString();
+    return selectedDate && 
+           date.getFullYear() === selectedDate.getFullYear() &&
+           date.getMonth() === selectedDate.getMonth() &&
+           date.getDate() === selectedDate.getDate();
   };
 
   const getEventsForDate = (date: Date) => {
     const key = `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`;
-    return eventDateMapping.get(key) || [];
+    const events = eventDateMapping.get(key) || [];
+    
+    // Filter out any events that might not have proper dates
+    return events.filter(event => event.date && 
+      event.date.getFullYear() === date.getFullYear() &&
+      event.date.getMonth() === date.getMonth() &&
+      event.date.getDate() === date.getDate()
+    );
   };
 
   return (
