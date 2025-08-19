@@ -7,7 +7,7 @@
     "start": "cd Neuro-Cal && npm start",
     "build": "cd Neuro-Cal && npm run build",
     "dev": "cd Neuro-Cal && npm run dev",
-    "postinstall": "cd Neuro-Cal && npm install"
+    "postinstall": "cd Neuro-Cal && npm install --ignore-scripts"
   },
   "engines": {
     "node": "18.x",
