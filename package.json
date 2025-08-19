@@ -1,0 +1,23 @@
+{
+  "name": "neurocal",
+  "version": "1.0.0",
+  "description": "NeuroCal - AI-powered calendar application",
+  "main": "Neuro-Cal/dist/index.html",
+  "scripts": {
+    "start": "cd Neuro-Cal && npm start",
+    "build": "cd Neuro-Cal && npm run build",
+    "dev": "cd Neuro-Cal && npm run dev",
+    "postinstall": "cd Neuro-Cal && npm install"
+  },
+  "engines": {
+    "node": "18.x",
+    "npm": "9.x"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jmartin1202/Neuro-Cal.git"
+  },
+  "keywords": ["calendar", "ai", "productivity", "neurocal"],
+  "author": "Joel Martin",
+  "license": "MIT"
+}
