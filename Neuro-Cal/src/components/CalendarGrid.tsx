@@ -26,20 +26,23 @@ export const CalendarGrid = ({
   const eventDateMapping = useMemo(() => {
     const mapping = new Map<string, Event[]>();
     
-    // Associate events with their actual dates
+    // Only associate events that have valid dates
     events.forEach((event) => {
-      if (event.date) {
-        // Use the event's actual date
+      if (event.date && event.date instanceof Date && !isNaN(event.date.getTime())) {
         const key = `${event.date.getFullYear()}-${event.date.getMonth()}-${event.date.getDate()}`;
         if (!mapping.has(key)) {
           mapping.set(key, []);
         }
         mapping.get(key)!.push(event);
       }
+      // Remove the fallback logic that was causing events to switch around
     });
     
+    // Debug logging
+    console.log('Event date mapping:', Object.fromEntries(mapping));
+    
     return mapping;
-  }, [events]); // Only depend on events, not currentDate or daysInMonth
+  }, [events]);
 
   const calendarDays = [];
 
@@ -109,7 +112,7 @@ export const CalendarGrid = ({
 
           return (
             <div
-              key={index}
+              key={`${dayInfo.date.getFullYear()}-${dayInfo.date.getMonth()}-${dayInfo.date.getDate()}`}
               className={`
                 min-h-[120px] p-2 border border-border rounded-lg cursor-pointer
                 transition-all duration-200 hover:shadow-md hover:border-primary/50

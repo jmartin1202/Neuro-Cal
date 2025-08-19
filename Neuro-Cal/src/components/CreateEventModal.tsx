@@ -44,21 +44,12 @@ export const CreateEventModal = ({
         .map(name => name.trim())
         .filter(name => name.length > 0);
 
-      // Convert 24-hour time to 12-hour format
-      const convertTo12Hour = (time24: string) => {
-        const [hours, minutes] = time24.split(':');
-        const hour = parseInt(hours);
-        const ampm = hour >= 12 ? 'PM' : 'AM';
-        const hour12 = hour % 12 || 12;
-        return `${hour12}:${minutes} ${ampm}`;
-      };
-
       // Create the event object
       const newEvent: Omit<Event, 'id'> = {
         title: formData.title,
-        time: convertTo12Hour(formData.time),
+        time: formData.time,
         duration: formData.duration,
-        date: selectedDate, // Include the selected date
+        date: selectedDate, // Add the selected date to the event
         location: formData.location || undefined,
         attendees: attendeeList.length > 0 ? attendeeList : undefined,
         color: getEventColor(formData.type),

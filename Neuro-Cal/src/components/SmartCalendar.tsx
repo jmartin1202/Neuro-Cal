@@ -291,14 +291,25 @@ export const SmartCalendar = () => {
   }, []);
 
   const todaysEvents = events.filter(event => {
-    if (!event.date) return false;
+    if (!event.date || !(event.date instanceof Date) || isNaN(event.date.getTime())) {
+      console.warn('Event without valid date:', event);
+      return false;
+    }
     
     const today = new Date();
-    const eventDate = new Date(event.date);
+    const todayString = today.toDateString();
+    const eventDateString = event.date.toDateString();
     
     // Show events for today and upcoming days
-    return eventDate >= today;
+    return event.date >= today;
   });
+
+  // Debug logging
+  console.log('Current events:', events.map(e => ({ 
+    id: e.id, 
+    title: e.title, 
+    date: e.date?.toDateString() 
+  })));
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
