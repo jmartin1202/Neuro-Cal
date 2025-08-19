@@ -12,6 +12,16 @@ import { LogOut, LogIn, Calendar, Sparkles, Zap, Users, Clock } from "lucide-rea
 import { LoginForm } from "@/components/auth/LoginForm";
 import { RegisterForm } from "@/components/auth/RegisterForm";
 
+// Safe component wrapper to catch errors
+const SafeComponent = ({ children, fallback, name }: { children: React.ReactNode; fallback: React.ReactNode; name: string }) => {
+  try {
+    return <>{children}</>;
+  } catch (error) {
+    console.error(`Error in ${name}:`, error);
+    return <>{fallback}</>;
+  }
+};
+
 const Index = () => {
   console.log("🚀 Index component rendering..."); // Debug log
   
@@ -317,9 +327,13 @@ const Index = () => {
                 </div>
                 
                 {authMode === "login" ? (
-                  <LoginForm />
+                  <SafeComponent name="LoginForm" fallback={<div>Login form loading...</div>}>
+                    <LoginForm />
+                  </SafeComponent>
                 ) : (
-                  <RegisterForm />
+                  <SafeComponent name="RegisterForm" fallback={<div>Register form loading...</div>}>
+                    <RegisterForm />
+                  </SafeComponent>
                 )}
                 
                 <div className="mt-4 text-center">
@@ -390,38 +404,59 @@ const Index = () => {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Calendar Section */}
             <div className="lg:col-span-2">
-              <CalendarHeader
-                currentDate={currentDate}
-                onPrevMonth={handlePrevMonth}
-                onNextMonth={handleNextMonth}
-                view={view}
-                onViewChange={setView}
-              />
-              <CalendarGrid
-                currentDate={currentDate}
-                events={events}
-                selectedDate={selectedDate}
-                onDateClick={handleDateClick}
-              />
+              <SafeComponent 
+                name="CalendarHeader" 
+                fallback={<div className="p-4 bg-red-100 text-red-700">Calendar Header Error</div>}
+              >
+                <CalendarHeader
+                  currentDate={currentDate}
+                  onPrevMonth={handlePrevMonth}
+                  onNextMonth={handleNextMonth}
+                  view={view}
+                  onViewChange={setView}
+                />
+              </SafeComponent>
+              
+              <SafeComponent 
+                name="CalendarGrid" 
+                fallback={<div className="p-4 bg-red-100 text-red-700">Calendar Grid Error</div>}
+              >
+                <CalendarGrid
+                  currentDate={currentDate}
+                  events={events}
+                  selectedDate={selectedDate}
+                  onDateClick={handleDateClick}
+                />
+              </SafeComponent>
             </div>
 
             {/* AI Panel */}
             <div className="space-y-4">
-              <AIPanel 
-                upcomingEvents={events}
-                onCreateEvent={handleAICreateEvent} 
-              />
+              <SafeComponent 
+                name="AIPanel" 
+                fallback={<div className="p-4 bg-red-100 text-red-700">AI Panel Error</div>}
+              >
+                <AIPanel 
+                  upcomingEvents={events}
+                  onCreateEvent={handleAICreateEvent} 
+                />
+              </SafeComponent>
             </div>
           </div>
         </main>
 
         {/* Create Event Modal */}
-        <CreateEventModal
-          isOpen={isCreateModalOpen}
-          onClose={() => setIsCreateModalOpen(false)}
-          onCreateEvent={handleCreateEvent}
-          selectedDate={selectedDate}
-        />
+        <SafeComponent 
+          name="CreateEventModal" 
+          fallback={<div>Modal loading...</div>}
+        >
+          <CreateEventModal
+            isOpen={isCreateModalOpen}
+            onClose={() => setIsCreateModalOpen(false)}
+            onCreateEvent={handleCreateEvent}
+            selectedDate={selectedDate}
+          />
+        </SafeComponent>
 
         {/* Auth Modal */}
         {showAuthModal && (
@@ -442,9 +477,13 @@ const Index = () => {
               </div>
               
               {authMode === "login" ? (
-                <LoginForm />
+                <SafeComponent name="LoginForm" fallback={<div>Login form loading...</div>}>
+                  <LoginForm />
+                </SafeComponent>
               ) : (
-                <RegisterForm />
+                <SafeComponent name="RegisterForm" fallback={<div>Register form loading...</div>}>
+                  <RegisterForm />
+                </SafeComponent>
               )}
               
               <div className="mt-4 text-center">
@@ -474,6 +513,10 @@ const Index = () => {
           <pre className="bg-red-600 p-4 rounded text-sm">
             {error instanceof Error ? error.message : String(error)}
           </pre>
+          <div className="mt-4">
+            <p>This will help us identify which component is causing the issue.</p>
+            <p>Check the browser console for more details.</p>
+          </div>
         </div>
       </div>
     );
