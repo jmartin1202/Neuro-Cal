@@ -1,6 +1,6 @@
 import Stripe from 'stripe';
 import { pool } from '../server.js';
-import { sendEmail } from './emailService.js';
+import emailService from './emailService.js';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
@@ -287,7 +287,7 @@ const sendPaymentFailedEmail = async (userId, invoice) => {
       <p>Best regards,<br>The NeuroCal Team</p>
     `;
     
-    await sendEmail(user.email, 'Payment Failed - Action Required', emailTemplate);
+    await emailService.sendVerificationEmail(user.email, user.id, user.first_name);
     
   } catch (error) {
     console.error('Failed to send payment failed email:', error);
@@ -328,7 +328,7 @@ const sendTrialEndingSoonEmail = async (userId) => {
       <p>Best regards,<br>The NeuroCal Team</p>
     `;
     
-    await sendEmail(user.email, 'Your NeuroCal Trial is Ending Soon', emailTemplate);
+    await emailService.sendVerificationEmail(user.email, user.id, user.first_name);
     
   } catch (error) {
     console.error('Failed to send trial ending soon email:', error);

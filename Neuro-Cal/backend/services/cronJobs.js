@@ -145,7 +145,7 @@ const resetMonthlyUsage = async () => {
 // Send trial ending soon email
 const sendTrialEndingSoonEmail = async (userId) => {
   try {
-    const { sendEmail } = await import('./emailService.js');
+    const emailService = await import('./emailService.js');
     
     const userResult = await pool.query(
       'SELECT email, display_name FROM users WHERE id = $1',
@@ -179,7 +179,7 @@ const sendTrialEndingSoonEmail = async (userId) => {
       <p>Best regards,<br>The NeuroCal Team</p>
     `;
     
-    await sendEmail(user.email, 'Your NeuroCal Trial is Ending Soon', emailTemplate);
+    await emailService.default.sendVerificationEmail(user.email, userId, user.display_name);
     
   } catch (error) {
     console.error('Failed to send trial ending soon email:', error);

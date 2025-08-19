@@ -1,6 +1,6 @@
 import Stripe from 'stripe';
 import { pool } from '../server.js';
-import { sendEmail } from './emailService.js';
+import emailService from './emailService.js';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
@@ -373,7 +373,7 @@ class SubscriptionService {
         <p>Best regards,<br>The NeuroCal Team</p>
       `;
       
-      await sendEmail(user.email, 'Your NeuroCal trial has ended', emailTemplate);
+      await emailService.sendVerificationEmail(user.email, user.id, user.first_name);
       
     } catch (error) {
       console.error('Failed to send trial expiry email:', error);

@@ -392,9 +392,6 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess }) => 
         onBackToLogin={() => setShowForgotPassword(false)}
       />
     </div>
-        </CardContent>
-      </Card>
-    </div>
   );
 };
 
