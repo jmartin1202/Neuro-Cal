@@ -245,8 +245,8 @@ router.post('/register', [
 
     // Create local auth provider record
     await pool.query(
-      'INSERT INTO user_auth_providers (user_id, provider, provider_user_id, access_token, is_primary) VALUES ($1, $2, $3, $4, $5)',
-      [user.id, 'local', user.id, passwordHash, true]
+      'INSERT INTO user_auth_providers (user_id, provider, provider_user_id, provider_email, access_token, is_primary) VALUES ($1, $2, $3, $4, $5, $6)',
+      [user.id, 'local', user.id, email, passwordHash, true]
     );
 
     // Send verification email

@@ -24,7 +24,7 @@ const PORT = process.env.PORT || 5001;
 
 // Database connection
 const pool = new Pool({
-  user: process.env.DB_USER || 'postgres',
+  user: process.env.DB_USER || 'joelmartin',
   host: process.env.DB_HOST || 'localhost',
   database: process.env.DB_NAME || 'neurocal',
   password: process.env.DB_PASSWORD || 'password',
