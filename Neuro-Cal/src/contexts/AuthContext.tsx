@@ -59,26 +59,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Check for existing token on mount
-  useEffect(() => {
-    const existingToken = localStorage.getItem('neurocal_token');
-    if (existingToken) {
-      setToken(existingToken);
-      verifyToken(existingToken);
-    } else {
-      setIsLoading(false);
-    }
-  }, []);
-
-  const logout = () => {
-    localStorage.removeItem('neurocal_token');
-    setToken(null);
-    setUser(null);
-    setError(null);
-    // Don't redirect, just clear the state
-    // window.location.href = '/auth';
-  };
-
+  // Define verifyToken function BEFORE using it in useEffect
   const verifyToken = useCallback(async (tokenToVerify: string) => {
     try {
       const response = await fetch(`${API_BASE_URL}/auth/profile`, {
@@ -101,6 +82,26 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setIsLoading(false);
     }
   }, []);
+
+  // Check for existing token on mount
+  useEffect(() => {
+    const existingToken = localStorage.getItem('neurocal_token');
+    if (existingToken) {
+      setToken(existingToken);
+      verifyToken(existingToken);
+    } else {
+      setIsLoading(false);
+    }
+  }, [verifyToken]);
+
+  const logout = () => {
+    localStorage.removeItem('neurocal_token');
+    setToken(null);
+    setUser(null);
+    setError(null);
+    // Don't redirect, just clear the state
+    // window.location.href = '/auth';
+  };
 
   const login = async (email: string, password: string) => {
     try {
