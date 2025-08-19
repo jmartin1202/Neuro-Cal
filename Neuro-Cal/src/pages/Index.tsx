@@ -1,10 +1,10 @@
-import React, { useState, useCallback, Suspense, lazy } from "react";
+import React, { useState, useCallback, Suspense, lazy, useRef, useEffect } from "react";
 import { Event } from "@/components/EventCard";
 import { useToast } from "@/hooks/use-toast";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
-import { LogOut, LogIn, Calendar, Sparkles, Zap, Users, Clock } from "lucide-react";
+import { LogOut, LogIn, Calendar, Sparkles, Zap, Users, Clock, X } from "lucide-react";
 
 // Lazy load components to isolate issues
 const CalendarHeader = lazy(() => import("@/components/CalendarHeader").then(module => ({ default: module.CalendarHeader })));
@@ -51,6 +51,102 @@ const AIPanelFallback = () => (
     </div>
   </div>
 );
+
+// Modal component with click-outside-to-close functionality
+const AuthModal = ({ 
+  isOpen, 
+  onClose, 
+  authMode, 
+  onAuthModeSwitch 
+}: { 
+  isOpen: boolean; 
+  onClose: () => void; 
+  authMode: "login" | "register"; 
+  onAuthModeSwitch: () => void;
+}) => {
+  const modalRef = useRef<HTMLDivElement>(null);
+
+  // Handle click outside modal to close
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (modalRef.current && !modalRef.current.contains(event.target as Node)) {
+        onClose();
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isOpen, onClose]);
+
+  // Handle escape key to close
+  useEffect(() => {
+    const handleEscapeKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        onClose();
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener('keydown', handleEscapeKey);
+    }
+
+    return () => {
+      document.removeEventListener('keydown', handleEscapeKey);
+    };
+  }, [isOpen, onClose]);
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+      <div 
+        ref={modalRef}
+        className="bg-white rounded-lg p-6 w-full max-w-md relative"
+      >
+        {/* Close button - top right corner */}
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 p-2 hover:bg-gray-100 rounded-full transition-colors duration-200 group"
+          aria-label="Close modal"
+        >
+          <X className="h-5 w-5 text-gray-500 group-hover:text-gray-700" />
+        </button>
+
+        <div className="flex justify-between items-center mb-6 pr-8">
+          <h3 className="text-xl font-semibold">
+            {authMode === "login" ? "Sign In" : "Create Account"}
+          </h3>
+        </div>
+        
+        <Suspense fallback={<div className="p-4 text-center">Loading form...</div>}>
+          {authMode === "login" ? (
+            <LoginForm />
+          ) : (
+            <RegisterForm />
+          )}
+        </Suspense>
+        
+        <div className="mt-6 text-center">
+          <Button
+            variant="link"
+            onClick={onAuthModeSwitch}
+            className="text-blue-600 hover:text-blue-700"
+          >
+            {authMode === "login" 
+              ? "Don't have an account? Sign up" 
+              : "Already have an account? Sign in"
+            }
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const Index = () => {
   console.log("🚀 Index component rendering..."); // Debug log
@@ -339,46 +435,12 @@ const Index = () => {
           </div>
 
           {/* Auth Modal */}
-          {showAuthModal && (
-            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-              <div className="bg-white rounded-lg p-6 w-full max-w-md">
-                <div className="flex justify-between items-center mb-4">
-                  <h3 className="text-xl font-semibold">
-                    {authMode === "login" ? "Sign In" : "Create Account"}
-                  </h3>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setShowAuthModal(false)}
-                    className="text-gray-500 hover:text-gray-700"
-                  >
-                    ✕
-                  </Button>
-                </div>
-                
-                <Suspense fallback={<div className="p-4 text-center">Loading form...</div>}>
-                  {authMode === "login" ? (
-                    <LoginForm />
-                  ) : (
-                    <RegisterForm />
-                  )}
-                </Suspense>
-                
-                <div className="mt-4 text-center">
-                  <Button
-                    variant="link"
-                    onClick={handleAuthModeSwitch}
-                    className="text-blue-600 hover:text-blue-700"
-                  >
-                    {authMode === "login" 
-                      ? "Don't have an account? Sign up" 
-                      : "Already have an account? Sign in"
-                    }
-                  </Button>
-                </div>
-              </div>
-            </div>
-          )}
+          <AuthModal
+            isOpen={showAuthModal}
+            onClose={() => setShowAuthModal(false)}
+            authMode={authMode}
+            onAuthModeSwitch={handleAuthModeSwitch}
+          />
         </div>
       );
     }
@@ -475,46 +537,12 @@ const Index = () => {
         </Suspense>
 
         {/* Auth Modal */}
-        {showAuthModal && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-            <div className="bg-white rounded-lg p-6 w-full max-w-md">
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="text-xl font-semibold">
-                  {authMode === "login" ? "Sign In" : "Create Account"}
-                </h3>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setShowAuthModal(false)}
-                  className="text-gray-500 hover:text-gray-700"
-                >
-                  ✕
-                </Button>
-              </div>
-              
-              <Suspense fallback={<div className="p-4 text-center">Loading form...</div>}>
-                {authMode === "login" ? (
-                  <LoginForm />
-                ) : (
-                  <RegisterForm />
-                )}
-              </Suspense>
-              
-              <div className="mt-4 text-center">
-                <Button
-                  variant="link"
-                  onClick={handleAuthModeSwitch}
-                  className="text-blue-600 hover:text-blue-700"
-                >
-                  {authMode === "login" 
-                    ? "Don't have an account? Sign up" 
-                    : "Already have an account? Sign in"
-                  }
-                </Button>
-              </div>
-            </div>
-          </div>
-        )}
+        <AuthModal
+          isOpen={showAuthModal}
+          onClose={() => setShowAuthModal(false)}
+          authMode={authMode}
+          onAuthModeSwitch={handleAuthModeSwitch}
+        />
       </div>
     );
   } catch (error) {
