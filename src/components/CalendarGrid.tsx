@@ -1,0 +1,140 @@
+import { Event, EventCard } from "./EventCard";
+
+interface CalendarGridProps {
+  currentDate: Date;
+  events: Event[];
+  selectedDate: Date | null;
+  onDateClick: (date: Date) => void;
+}
+
+export const CalendarGrid = ({ 
+  currentDate, 
+  events, 
+  selectedDate, 
+  onDateClick 
+}: CalendarGridProps) => {
+  const today = new Date();
+  const firstDayOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+  const lastDayOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
+  const firstDayOfWeek = firstDayOfMonth.getDay();
+  const daysInMonth = lastDayOfMonth.getDate();
+
+  const weekDays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+  const calendarDays = [];
+
+  // Add empty cells for days before the first day of the month
+  for (let i = 0; i < firstDayOfWeek; i++) {
+    const prevMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 0);
+    const day = prevMonth.getDate() - firstDayOfWeek + i + 1;
+    calendarDays.push({
+      day,
+      isCurrentMonth: false,
+      date: new Date(prevMonth.getFullYear(), prevMonth.getMonth(), day)
+    });
+  }
+
+  // Add days of the current month
+  for (let day = 1; day <= daysInMonth; day++) {
+    calendarDays.push({
+      day,
+      isCurrentMonth: true,
+      date: new Date(currentDate.getFullYear(), currentDate.getMonth(), day)
+    });
+  }
+
+  // Add days from next month to fill the grid
+  const remainingCells = 42 - calendarDays.length;
+  for (let day = 1; day <= remainingCells; day++) {
+    const nextMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, day);
+    calendarDays.push({
+      day,
+      isCurrentMonth: false,
+      date: nextMonth
+    });
+  }
+
+  const isToday = (date: Date) => {
+    return date.toDateString() === today.toDateString();
+  };
+
+  const isSelected = (date: Date) => {
+    return selectedDate && date.toDateString() === selectedDate.toDateString();
+  };
+
+  const getEventsForDate = (date: Date) => {
+    return events.filter(event => {
+      // For demo purposes, randomly assign events to dates
+      const eventDate = new Date(date);
+      eventDate.setHours(0, 0, 0, 0);
+      return Math.random() > 0.85; // About 15% of days have events
+    });
+  };
+
+  return (
+    <div className="flex-1 p-6">
+      <div className="grid grid-cols-7 gap-1 mb-4">
+        {weekDays.map((day) => (
+          <div
+            key={day}
+            className="p-3 text-center text-sm font-medium text-muted-foreground"
+          >
+            {day}
+          </div>
+        ))}
+      </div>
+
+      <div className="grid grid-cols-7 gap-1">
+        {calendarDays.map((dayInfo, index) => {
+          const dayEvents = getEventsForDate(dayInfo.date);
+          const isCurrentMonthDay = dayInfo.isCurrentMonth;
+          const isTodayDay = isToday(dayInfo.date);
+          const isSelectedDay = isSelected(dayInfo.date);
+
+          return (
+            <div
+              key={index}
+              className={`
+                min-h-[120px] p-2 border border-border rounded-lg cursor-pointer
+                transition-all duration-200 hover:shadow-md
+                ${!isCurrentMonthDay ? 'opacity-40' : ''}
+                ${isTodayDay ? 'bg-gradient-ai ring-1 ring-calendar-today/20' : 'bg-card'}
+                ${isSelectedDay ? 'ring-2 ring-calendar-selected' : ''}
+              `}
+              onClick={() => onDateClick(dayInfo.date)}
+            >
+              <div className="flex items-center justify-between mb-2">
+                <span
+                  className={`
+                    text-sm font-medium
+                    ${!isCurrentMonthDay ? 'text-muted-foreground' : 'text-foreground'}
+                    ${isTodayDay ? 'text-calendar-today font-bold' : ''}
+                  `}
+                >
+                  {dayInfo.day}
+                </span>
+                {isTodayDay && (
+                  <div className="w-2 h-2 bg-calendar-today rounded-full" />
+                )}
+              </div>
+
+              <div className="space-y-1">
+                {dayEvents.slice(0, 2).map((event, eventIndex) => (
+                  <EventCard
+                    key={event.id}
+                    event={event}
+                    className="text-xs p-1"
+                  />
+                ))}
+                {dayEvents.length > 2 && (
+                  <div className="text-xs text-muted-foreground px-1">
+                    +{dayEvents.length - 2} more
+                  </div>
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+};
