@@ -1,4 +1,134 @@
+import { useState, useCallback, useMemo } from "react";
+import { CalendarHeader } from "@/components/CalendarHeader";
+import { CalendarGrid } from "@/components/CalendarGrid";
+import { AIPanel } from "@/components/AIPanel";
+import { CreateEventModal } from "@/components/CreateEventModal";
+import { Event } from "@/components/EventCard";
+import { useToast } from "@/hooks/use-toast";
+import { useIsMobile } from "@/hooks/use-mobile";
+
 const Index = () => {
+  const [currentDate, setCurrentDate] = useState(new Date());
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [view, setView] = useState<"month" | "week" | "day">("month");
+  const [events, setEvents] = useState<Event[]>([]);
+  const isMobile = useIsMobile();
+
+  const { toast } = useToast();
+
+  const handlePrevMonth = useCallback(() => {
+    setCurrentDate(prev => new Date(prev.getFullYear(), prev.getMonth() - 1, 1));
+  }, []);
+
+  const handleNextMonth = useCallback(() => {
+    setCurrentDate(prev => new Date(prev.getFullYear(), prev.getMonth() + 1, 1));
+  }, []);
+
+  const handleDateClick = useCallback((date: Date) => {
+    setSelectedDate(date);
+    setIsCreateModalOpen(true);
+  }, []);
+
+  const handleCreateEvent = useCallback(async (eventData: Omit<Event, 'id'>) => {
+    const newEvent: Event = {
+      ...eventData,
+      id: `event-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+    };
+
+    setEvents(prev => [...prev, newEvent]);
+    
+    toast({
+      title: "Event Created! 🎉",
+      description: `"${newEvent.title}" has been added to your calendar.`,
+    });
+
+    return Promise.resolve();
+  }, [toast]);
+
+  const handleAICreateEvent = useCallback((eventText: string) => {
+    const parsedEvent = parseNaturalLanguageEvent(eventText);
+    
+    const aiGeneratedEvent: Event = {
+      id: `ai-${Date.now()}`,
+      title: parsedEvent.title,
+      time: parsedEvent.time,
+      duration: parsedEvent.duration,
+      date: parsedEvent.date,
+      location: parsedEvent.location,
+      attendees: parsedEvent.attendees,
+      color: getEventColor(parsedEvent.type),
+      type: parsedEvent.type,
+      isAiSuggested: true
+    };
+
+    setEvents(prev => [...prev, aiGeneratedEvent]);
+    
+    toast({
+      title: "Event Created",
+      description: `AI has scheduled "${parsedEvent.title}" on ${parsedEvent.formattedDate} at ${parsedEvent.time}`,
+    });
+  }, [toast]);
+
+  const getEventColor = useCallback((type: Event['type']) => {
+    switch (type) {
+      case "meeting":
+        return "bg-calendar-event";
+      case "focus":
+        return "bg-primary";
+      case "break":
+        return "bg-accent";
+      case "travel":
+        return "bg-destructive";
+      default:
+        return "bg-calendar-event";
+    }
+  }, []);
+
+  const parseNaturalLanguageEvent = useCallback((text: string) => {
+    const lowerText = text.toLowerCase();
+    
+    let eventDate = new Date();
+    let time = "9:00 AM";
+    let duration = "1 hour";
+    let type: Event['type'] = "meeting";
+    let location = "";
+    let attendees: string[] = [];
+    
+    // Simple parsing logic
+    if (lowerText.includes("tomorrow")) {
+      eventDate.setDate(eventDate.getDate() + 1);
+    }
+    if (lowerText.includes("next week")) {
+      eventDate.setDate(eventDate.getDate() + 7);
+    }
+    
+    if (lowerText.includes("meeting")) type = "meeting";
+    if (lowerText.includes("focus")) type = "focus";
+    if (lowerText.includes("break")) type = "break";
+    if (lowerText.includes("travel")) type = "travel";
+    
+    const title = text.split(" ").slice(0, 3).join(" ") + "...";
+    
+    return {
+      title,
+      date: eventDate,
+      time,
+      duration,
+      type,
+      location,
+      attendees,
+      formattedDate: eventDate.toLocaleDateString()
+    };
+  }, []);
+
+  const upcomingEvents = useMemo(() => {
+    return events
+      .filter(event => event.date && new Date(event.date) > new Date())
+      .sort((a, b) => a.date && b.date ? new Date(a.date).getTime() - new Date(b.date).getTime() : 0)
+      .slice(0, 5);
+  }, [events]);
+
   return (
     <div className="min-h-screen bg-background">
       {/* Navigation Header */}
@@ -10,60 +140,53 @@ const Index = () => {
               <span className="text-base text-muted-foreground">Smart AI Calendar</span>
             </div>
             <div className="text-sm text-muted-foreground">
-              Production Ready! 🎉
+              AI-Powered Calendar Working! 🚀
             </div>
           </div>
         </div>
       </div>
       
-      {/* Content area */}
-      <div className="p-8">
-        <div className="max-w-4xl mx-auto">
-          <h2 className="text-3xl font-bold mb-6">Welcome to NeuroCal</h2>
-          <p className="text-lg text-muted-foreground mb-8">
-            Your AI-powered smart calendar is now working in production!
-          </p>
-          
-          <div className="bg-card border rounded-lg p-6 mb-6">
-            <h3 className="text-xl font-semibold mb-4">System Status</h3>
-            <div className="space-y-2">
-              <div className="flex items-center gap-2">
-                <span className="w-2 h-2 bg-green-500 rounded-full"></span>
-                <span>React: Working</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="w-2 h-2 bg-green-500 rounded-full"></span>
-                <span>Tailwind CSS: Working</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="w-2 h-2 bg-green-500 rounded-full"></span>
-                <span>Production Build: Working</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="w-2 h-2 bg-green-500 rounded-full"></span>
-                <span>Heroku Deployment: Working</span>
-              </div>
-            </div>
+      {/* Smart Calendar Components */}
+      <div className="space-y-6 p-6">
+        <CalendarHeader
+          currentDate={currentDate}
+          onPrevMonth={handlePrevMonth}
+          onNextMonth={handleNextMonth}
+          view={view}
+          onViewChange={setView}
+        />
+        
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+          <div className="lg:col-span-3">
+            <CalendarGrid
+              currentDate={currentDate}
+              events={events}
+              selectedDate={selectedDate}
+              onDateClick={handleDateClick}
+            />
           </div>
           
-          {/* Simple Calendar */}
-          <div className="bg-card border rounded-lg p-6">
-            <h3 className="text-xl font-semibold mb-4">Calendar View</h3>
-            <div className="grid grid-cols-7 gap-2 text-center">
-              {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
-                <div key={day} className="p-2 font-medium text-muted-foreground">
-                  {day}
-                </div>
-              ))}
-              {Array.from({ length: 35 }, (_, i) => (
-                <div key={i} className="p-2 h-20 border rounded hover:bg-muted cursor-pointer">
-                  {i > 6 && i < 32 ? i - 6 : ''}
-                </div>
-              ))}
-            </div>
+          <div className="space-y-6">
+            <AIPanel
+              upcomingEvents={upcomingEvents}
+              onCreateEvent={handleAICreateEvent}
+            />
           </div>
         </div>
       </div>
+
+      {/* Create Event Modal */}
+      {selectedDate && (
+        <CreateEventModal
+          isOpen={isCreateModalOpen}
+          onClose={() => {
+            setIsCreateModalOpen(false);
+            setSelectedDate(null);
+          }}
+          selectedDate={selectedDate}
+          onCreateEvent={handleCreateEvent}
+        />
+      )}
     </div>
   );
 };
