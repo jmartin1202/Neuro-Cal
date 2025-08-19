@@ -1,34 +1,56 @@
-import React, { useState, useCallback } from "react";
-import { CalendarHeader } from "@/components/CalendarHeader";
-import { CalendarGrid } from "@/components/CalendarGrid";
-import { AIPanel } from "@/components/AIPanel";
-import { CreateEventModal } from "@/components/CreateEventModal";
+import React, { useState, useCallback, Suspense, lazy } from "react";
 import { Event } from "@/components/EventCard";
 import { useToast } from "@/hooks/use-toast";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { LogOut, LogIn, Calendar, Sparkles, Zap, Users, Clock } from "lucide-react";
-import { LoginForm } from "@/components/auth/LoginForm";
-import { RegisterForm } from "@/components/auth/RegisterForm";
 
-// Error boundary component to catch component errors
-const ErrorBoundary = ({ 
-  children, 
-  fallback, 
-  componentName 
-}: { 
-  children: React.ReactNode; 
-  fallback: React.ReactNode; 
-  componentName: string;
-}) => {
-  try {
-    return <>{children}</>;
-  } catch (error) {
-    console.error(`🚨 Error in ${componentName}:`, error);
-    return <>{fallback}</>;
-  }
-};
+// Lazy load components to isolate issues
+const CalendarHeader = lazy(() => import("@/components/CalendarHeader").then(module => ({ default: module.CalendarHeader })));
+const CalendarGrid = lazy(() => import("@/components/CalendarGrid").then(module => ({ default: module.CalendarGrid })));
+const AIPanel = lazy(() => import("@/components/AIPanel").then(module => ({ default: module.AIPanel })));
+const CreateEventModal = lazy(() => import("@/components/CreateEventModal").then(module => ({ default: module.CreateEventModal })));
+const LoginForm = lazy(() => import("@/components/auth/LoginForm").then(module => ({ default: module.LoginForm })));
+const RegisterForm = lazy(() => import("@/components/auth/RegisterForm").then(module => ({ default: module.RegisterForm })));
+
+// Loading fallbacks for each component
+const CalendarHeaderFallback = () => (
+  <div className="p-4 bg-gradient-card border-b border-border rounded-lg mb-4">
+    <div className="flex items-center justify-between">
+      <div className="flex items-center gap-3">
+        <div className="w-8 h-8 bg-gradient-primary rounded-lg animate-pulse"></div>
+        <div className="space-y-2">
+          <div className="h-6 w-32 bg-gradient-primary rounded animate-pulse"></div>
+          <div className="h-4 w-20 bg-muted rounded animate-pulse"></div>
+        </div>
+      </div>
+      <div className="flex gap-2">
+        <div className="h-8 w-8 bg-muted rounded animate-pulse"></div>
+        <div className="h-8 w-24 bg-muted rounded animate-pulse"></div>
+        <div className="h-8 w-8 bg-muted rounded animate-pulse"></div>
+      </div>
+    </div>
+  </div>
+);
+
+const CalendarGridFallback = () => (
+  <div className="grid grid-cols-7 gap-2 p-4">
+    {Array.from({ length: 35 }).map((_, i) => (
+      <div key={i} className="h-24 bg-muted rounded-lg animate-pulse"></div>
+    ))}
+  </div>
+);
+
+const AIPanelFallback = () => (
+  <div className="p-4 bg-card border rounded-lg">
+    <div className="space-y-3">
+      <div className="h-6 w-32 bg-muted rounded animate-pulse"></div>
+      <div className="h-10 bg-muted rounded animate-pulse"></div>
+      <div className="h-20 bg-muted rounded animate-pulse"></div>
+    </div>
+  </div>
+);
 
 const Index = () => {
   console.log("🚀 Index component rendering..."); // Debug log
@@ -334,21 +356,13 @@ const Index = () => {
                   </Button>
                 </div>
                 
-                {authMode === "login" ? (
-                  <ErrorBoundary 
-                    componentName="LoginForm" 
-                    fallback={<div className="p-4 bg-red-100 text-red-700 rounded">Login form error - check console</div>}
-                  >
+                <Suspense fallback={<div className="p-4 text-center">Loading form...</div>}>
+                  {authMode === "login" ? (
                     <LoginForm />
-                  </ErrorBoundary>
-                ) : (
-                  <ErrorBoundary 
-                    componentName="RegisterForm" 
-                    fallback={<div className="p-4 bg-red-100 text-red-700 rounded">Register form error - check console</div>}
-                  >
+                  ) : (
                     <RegisterForm />
-                  </ErrorBoundary>
-                )}
+                  )}
+                </Suspense>
                 
                 <div className="mt-4 text-center">
                   <Button
@@ -418,10 +432,7 @@ const Index = () => {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Calendar Section */}
             <div className="lg:col-span-2">
-              <ErrorBoundary 
-                componentName="CalendarHeader" 
-                fallback={<div className="p-4 bg-red-100 text-red-700 rounded mb-4">Calendar Header Error - check console</div>}
-              >
+              <Suspense fallback={<CalendarHeaderFallback />}>
                 <CalendarHeader
                   currentDate={currentDate}
                   onPrevMonth={handlePrevMonth}
@@ -429,48 +440,39 @@ const Index = () => {
                   view={view}
                   onViewChange={setView}
                 />
-              </ErrorBoundary>
+              </Suspense>
               
-              <ErrorBoundary 
-                componentName="CalendarGrid" 
-                fallback={<div className="p-4 bg-red-100 text-red-700 rounded">Calendar Grid Error - check console</div>}
-              >
+              <Suspense fallback={<CalendarGridFallback />}>
                 <CalendarGrid
                   currentDate={currentDate}
                   events={events}
                   selectedDate={selectedDate}
                   onDateClick={handleDateClick}
                 />
-              </ErrorBoundary>
+              </Suspense>
             </div>
 
             {/* AI Panel */}
             <div className="space-y-4">
-              <ErrorBoundary 
-                componentName="AIPanel" 
-                fallback={<div className="p-4 bg-red-100 text-red-700 rounded">AI Panel Error - check console</div>}
-              >
+              <Suspense fallback={<AIPanelFallback />}>
                 <AIPanel 
                   upcomingEvents={events}
                   onCreateEvent={handleAICreateEvent} 
                 />
-              </ErrorBoundary>
+              </Suspense>
             </div>
           </div>
         </main>
 
         {/* Create Event Modal */}
-        <ErrorBoundary 
-          componentName="CreateEventModal" 
-          fallback={<div>Modal Error - check console</div>}
-        >
+        <Suspense fallback={<div>Loading modal...</div>}>
           <CreateEventModal
             isOpen={isCreateModalOpen}
             onClose={() => setIsCreateModalOpen(false)}
             onCreateEvent={handleCreateEvent}
             selectedDate={selectedDate}
           />
-        </ErrorBoundary>
+        </Suspense>
 
         {/* Auth Modal */}
         {showAuthModal && (
@@ -490,21 +492,13 @@ const Index = () => {
                 </Button>
               </div>
               
-              {authMode === "login" ? (
-                <ErrorBoundary 
-                  componentName="LoginForm" 
-                  fallback={<div className="p-4 bg-red-100 text-red-700 rounded">Login form error - check console</div>}
-                >
+              <Suspense fallback={<div className="p-4 text-center">Loading form...</div>}>
+                {authMode === "login" ? (
                   <LoginForm />
-                </ErrorBoundary>
-              ) : (
-                <ErrorBoundary 
-                  componentName="RegisterForm" 
-                  fallback={<div className="p-4 bg-red-100 text-red-700 rounded">Register form error - check console</div>}
-                >
+                ) : (
                   <RegisterForm />
-                </ErrorBoundary>
-              )}
+                )}
+              </Suspense>
               
               <div className="mt-4 text-center">
                 <Button
