@@ -7,14 +7,27 @@ import { pool } from '../server.js';
 
 const router = express.Router();
 
-// Initialize AI clients
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+// Initialize AI clients conditionally
+let openai = null;
+let anthropic = null;
 
-const anthropic = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY,
-});
+if (process.env.OPENAI_API_KEY) {
+  openai = new OpenAI({
+    apiKey: process.env.OPENAI_API_KEY,
+  });
+  console.log('✅ OpenAI client initialized');
+} else {
+  console.log('⚠️  OpenAI client skipped - missing OPENAI_API_KEY');
+}
+
+if (process.env.ANTHROPIC_API_KEY) {
+  anthropic = new Anthropic({
+    apiKey: process.env.ANTHROPIC_API_KEY,
+  });
+  console.log('✅ Anthropic client initialized');
+} else {
+  console.log('⚠️  Anthropic client skipped - missing ANTHROPIC_API_KEY');
+}
 
 // AI-powered event creation from natural language
 router.post('/create-event', authenticateToken, [
@@ -29,6 +42,11 @@ router.post('/create-event', authenticateToken, [
     }
 
     const { inputText, preferredDate, context } = req.body;
+
+    // Check if OpenAI client is available
+    if (!openai) {
+      return res.status(503).json({ error: 'AI service is not available. Please configure OpenAI API key.' });
+    }
 
     // Use OpenAI to parse natural language into structured event data
     const completion = await openai.chat.completions.create({
