@@ -12,11 +12,43 @@ import { LogOut, User, LogIn, Calendar, Sparkles, Zap, Users, Clock } from "luci
 import { LoginForm } from "@/components/auth/LoginForm";
 import { RegisterForm } from "@/components/auth/RegisterForm";
 
+// Simple fallback component for debugging
+const DebugFallback = ({ error }: { error: Error }) => (
+  <div className="min-h-screen flex items-center justify-center bg-red-50 p-8">
+    <div className="text-center max-w-2xl">
+      <h1 className="text-3xl font-bold text-red-800 mb-4">🚨 Debug Mode</h1>
+      <p className="text-red-600 mb-4">There was an error loading the application.</p>
+      <div className="bg-red-100 p-4 rounded-lg mb-4 text-left">
+        <h3 className="font-semibold text-red-800 mb-2">Error Details:</h3>
+        <pre className="text-sm text-red-700 whitespace-pre-wrap">
+          {error.message}
+        </pre>
+        <details className="mt-2">
+          <summary className="cursor-pointer text-red-700 font-semibold">Stack Trace</summary>
+          <pre className="text-xs text-red-600 mt-2 whitespace-pre-wrap">
+            {error.stack}
+          </pre>
+        </details>
+      </div>
+      <button 
+        onClick={() => window.location.reload()} 
+        className="px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 font-semibold"
+      >
+        🔄 Reload Page
+      </button>
+    </div>
+  </div>
+);
+
 const Index = () => {
   console.log("Index component rendering..."); // Debug log
   
-  // All React hooks must be at the top level
+  // All React hooks MUST be at the top level - never inside try-catch or conditions
+  console.log("About to call useAuth..."); // Debug log
   const { user, logout, isLoading } = useAuth();
+  console.log("useAuth called successfully:", { user, isLoading }); // Debug log
+  
+  console.log("About to call useState hooks..."); // Debug log
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -24,8 +56,15 @@ const Index = () => {
   const [events, setEvents] = useState<Event[]>([]);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [authMode, setAuthMode] = useState<"login" | "register">("login");
+  console.log("useState hooks called successfully"); // Debug log
+  
+  console.log("About to call useIsMobile..."); // Debug log
   const isMobile = useIsMobile();
+  console.log("useIsMobile called successfully:", isMobile); // Debug log
+  
+  console.log("About to call useToast..."); // Debug log
   const { toast } = useToast();
+  console.log("useToast called successfully"); // Debug log
 
   console.log("Auth state:", { user, isLoading }); // Debug log
 
