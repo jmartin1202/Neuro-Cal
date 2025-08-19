@@ -2,7 +2,9 @@ import express from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { body, validationResult } from 'express-validator';
+import passport from 'passport';
 import { pool } from '../server.js';
+import emailService from '../services/emailService.js';
 
 const router = express.Router();
 
@@ -20,7 +22,7 @@ export const authenticateToken = async (req, res, next) => {
 
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
-    const result = await pool.query('SELECT id, email, first_name, last_name FROM users WHERE id = $1', [decoded.userId]);
+    const result = await pool.query('SELECT id, email, display_name, first_name, last_name, email_verified FROM users WHERE id = $1', [decoded.userId]);
     
     if (result.rows.length === 0) {
       return res.status(401).json({ error: 'Invalid token' });
@@ -33,7 +35,110 @@ export const authenticateToken = async (req, res, next) => {
   }
 };
 
-// User registration
+// Check if email exists (for dynamic form switching)
+router.post('/check-email', [
+  body('email').isEmail().normalizeEmail()
+], async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    const { email } = req.body;
+
+    // Check if user exists
+    const userResult = await pool.query('SELECT id, email_verified FROM users WHERE email = $1', [email]);
+    
+    if (userResult.rows.length === 0) {
+      return res.json({ exists: false, hasPassword: false });
+    }
+
+    // Check if user has local authentication
+    const authProviderResult = await pool.query(
+      'SELECT provider FROM user_auth_providers WHERE user_id = $1 AND provider = $2',
+      [userResult.rows[0].id, 'local']
+    );
+
+    const hasPassword = authProviderResult.rows.length > 0;
+    
+    res.json({ 
+      exists: true, 
+      hasPassword,
+      emailVerified: userResult.rows[0].email_verified
+    });
+  } catch (error) {
+    console.error('Email check error:', error);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// OAuth Routes
+router.get('/google', passport.authenticate('google', { 
+  scope: ['profile', 'email', 'https://www.googleapis.com/auth/calendar'] 
+}));
+
+router.get('/google/callback', 
+  passport.authenticate('google', { failureRedirect: '/login' }),
+  async (req, res) => {
+    try {
+      const token = jwt.sign({ userId: req.user.id }, JWT_SECRET, { expiresIn: '7d' });
+      res.redirect(`${process.env.FRONTEND_URL}/dashboard?token=${token}`);
+    } catch (error) {
+      console.error('Google OAuth callback error:', error);
+      res.redirect(`${process.env.FRONTEND_URL}/login?error=oauth_failed`);
+    }
+  }
+);
+
+router.get('/microsoft', passport.authenticate('microsoft', {
+  scope: ['User.Read', 'Calendars.ReadWrite']
+}));
+
+router.get('/microsoft/callback',
+  passport.authenticate('microsoft', { failureRedirect: '/login' }),
+  async (req, res) => {
+    try {
+      const token = jwt.sign({ userId: req.user.id }, JWT_SECRET, { expiresIn: '7d' });
+      res.redirect(`${process.env.FRONTEND_URL}/dashboard?token=${token}`);
+    } catch (error) {
+      console.error('Microsoft OAuth callback error:', error);
+      res.redirect(`${process.env.FRONTEND_URL}/login?error=oauth_failed`);
+    }
+  }
+);
+
+router.get('/apple', passport.authenticate('apple'));
+
+router.get('/apple/callback',
+  passport.authenticate('apple', { failureRedirect: '/login' }),
+  async (req, res) => {
+    try {
+      const token = jwt.sign({ userId: req.user.id }, JWT_SECRET, { expiresIn: '7d' });
+      res.redirect(`${process.env.FRONTEND_URL}/dashboard?token=${token}`);
+    } catch (error) {
+      console.error('Apple OAuth callback error:', error);
+      res.redirect(`${process.env.FRONTEND_URL}/login?error=oauth_failed`);
+    }
+  }
+);
+
+router.get('/yahoo', passport.authenticate('yahoo'));
+
+router.get('/yahoo/callback',
+  passport.authenticate('yahoo', { failureRedirect: '/login' }),
+  async (req, res) => {
+    try {
+      const token = jwt.sign({ userId: req.user.id }, JWT_SECRET, { expiresIn: '7d' });
+      res.redirect(`${process.env.FRONTEND_URL}/dashboard?token=${token}`);
+    } catch (error) {
+      console.error('Yahoo OAuth callback error:', error);
+      res.redirect(`${process.env.FRONTEND_URL}/login?error=oauth_failed`);
+    }
+  }
+);
+
+// Email/Password Registration
 router.post('/register', [
   body('email').isEmail().normalizeEmail(),
   body('password').isLength({ min: 6 }),
@@ -59,25 +164,31 @@ router.post('/register', [
     const passwordHash = await bcrypt.hash(password, saltRounds);
 
     // Create user
-    const result = await pool.query(
-      'INSERT INTO users (email, password_hash, first_name, last_name) VALUES ($1, $2, $3, $4) RETURNING id, email, first_name, last_name',
-      [email, passwordHash, firstName, lastName]
+    const userResult = await pool.query(
+      'INSERT INTO users (email, first_name, last_name, display_name, email_verified) VALUES ($1, $2, $3, $4, $5) RETURNING id, email, first_name, last_name, display_name',
+      [email, firstName, lastName, `${firstName} ${lastName}`, false]
     );
 
-    const user = result.rows[0];
+    const user = userResult.rows[0];
 
-    // Generate JWT token
-    const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: '7d' });
+    // Create local auth provider record
+    await pool.query(
+      'INSERT INTO user_auth_providers (user_id, provider, provider_user_id, access_token, is_primary) VALUES ($1, $2, $3, $4, $5)',
+      [user.id, 'local', user.id, passwordHash, true]
+    );
+
+    // Send verification email
+    await emailService.sendVerificationEmail(email, user.id, firstName);
 
     res.status(201).json({
-      message: 'User created successfully',
+      message: 'Account created successfully. Please check your email to verify your account.',
       user: {
         id: user.id,
         email: user.email,
         firstName: user.first_name,
-        lastName: user.last_name
-      },
-      token
+        lastName: user.last_name,
+        displayName: user.display_name
+      }
     });
 
   } catch (error) {
@@ -86,7 +197,7 @@ router.post('/register', [
   }
 });
 
-// User login
+// Email/Password Login
 router.post('/login', [
   body('email').isEmail().normalizeEmail(),
   body('password').notEmpty()
@@ -100,21 +211,36 @@ router.post('/login', [
     const { email, password } = req.body;
 
     // Find user
-    const result = await pool.query(
-      'SELECT id, email, password_hash, first_name, last_name FROM users WHERE email = $1',
+    const userResult = await pool.query(
+      'SELECT id, email, first_name, last_name, display_name, email_verified FROM users WHERE email = $1',
       [email]
     );
 
-    if (result.rows.length === 0) {
+    if (userResult.rows.length === 0) {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
-    const user = result.rows[0];
+    const user = userResult.rows[0];
+
+    // Check if user has local authentication
+    const authProviderResult = await pool.query(
+      'SELECT access_token FROM user_auth_providers WHERE user_id = $1 AND provider = $2',
+      [user.id, 'local']
+    );
+
+    if (authProviderResult.rows.length === 0) {
+      return res.status(401).json({ error: 'Please sign in with your email provider' });
+    }
 
     // Check password
-    const isValidPassword = await bcrypt.compare(password, user.password_hash);
+    const isValidPassword = await bcrypt.compare(password, authProviderResult.rows[0].access_token);
     if (!isValidPassword) {
       return res.status(401).json({ error: 'Invalid credentials' });
+    }
+
+    // Check if email is verified
+    if (!user.email_verified) {
+      return res.status(401).json({ error: 'Please verify your email address before signing in' });
     }
 
     // Generate JWT token
@@ -126,7 +252,9 @@ router.post('/login', [
         id: user.id,
         email: user.email,
         firstName: user.first_name,
-        lastName: user.last_name
+        lastName: user.last_name,
+        displayName: user.display_name,
+        emailVerified: user.email_verified
       },
       token
     });
@@ -137,11 +265,149 @@ router.post('/login', [
   }
 });
 
+// Email verification
+router.post('/verify-email', [
+  body('token').notEmpty()
+], async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    const { token } = req.body;
+    const result = await emailService.verifyEmailToken(token);
+
+    if (!result.valid) {
+      return res.status(400).json({ error: result.message });
+    }
+
+    // Get user details
+    const userResult = await pool.query(
+      'SELECT id, email, first_name, last_name, display_name FROM users WHERE id = $1',
+      [result.userId]
+    );
+
+    if (userResult.rows.length === 0) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    const user = userResult.rows[0];
+
+    // Send welcome email
+    await emailService.sendWelcomeEmail(user.email, user.first_name);
+
+    res.json({
+      message: 'Email verified successfully',
+      user: {
+        id: user.id,
+        email: user.email,
+        firstName: user.first_name,
+        lastName: user.last_name,
+        displayName: user.display_name
+      }
+    });
+
+  } catch (error) {
+    console.error('Email verification error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Request password reset
+router.post('/forgot-password', [
+  body('email').isEmail().normalizeEmail()
+], async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    const { email } = req.body;
+
+    // Check if user exists
+    const userResult = await pool.query(
+      'SELECT id, first_name FROM users WHERE email = $1',
+      [email]
+    );
+
+    if (userResult.rows.length === 0) {
+      // Don't reveal if user exists
+      return res.json({ message: 'If an account with that email exists, a password reset link has been sent.' });
+    }
+
+    const user = userResult.rows[0];
+
+    // Check if user has local authentication
+    const authProviderResult = await pool.query(
+      'SELECT id FROM user_auth_providers WHERE user_id = $1 AND provider = $2',
+      [user.id, 'local']
+    );
+
+    if (authProviderResult.rows.length === 0) {
+      return res.json({ message: 'If an account with that email exists, a password reset link has been sent.' });
+    }
+
+    // Send password reset email
+    await emailService.sendPasswordResetEmail(email, user.id, user.first_name);
+
+    res.json({ message: 'If an account with that email exists, a password reset link has been sent.' });
+
+  } catch (error) {
+    console.error('Forgot password error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Reset password
+router.post('/reset-password', [
+  body('token').notEmpty(),
+  body('password').isLength({ min: 6 })
+], async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    const { token, password } = req.body;
+
+    // Verify token
+    const result = await emailService.verifyPasswordResetToken(token);
+    if (!result.valid) {
+      return res.status(400).json({ error: result.message });
+    }
+
+    // Hash new password
+    const saltRounds = 12;
+    const passwordHash = await bcrypt.hash(password, saltRounds);
+
+    // Update password
+    await pool.query(
+      'UPDATE user_auth_providers SET access_token = $1, updated_at = CURRENT_TIMESTAMP WHERE user_id = $2 AND provider = $3',
+      [passwordHash, result.userId, 'local']
+    );
+
+    // Delete used token
+    await pool.query(
+      'DELETE FROM password_reset_tokens WHERE user_id = $1',
+      [result.userId]
+    );
+
+    res.json({ message: 'Password reset successfully' });
+
+  } catch (error) {
+    console.error('Password reset error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 // Get current user profile
 router.get('/profile', authenticateToken, async (req, res) => {
   try {
     const result = await pool.query(
-      'SELECT id, email, first_name, last_name, timezone, preferences, created_at FROM users WHERE id = $1',
+      'SELECT id, email, first_name, last_name, display_name, timezone, preferences, created_at, email_verified FROM users WHERE id = $1',
       [req.user.id]
     );
 
@@ -150,15 +416,25 @@ router.get('/profile', authenticateToken, async (req, res) => {
     }
 
     const user = result.rows[0];
+
+    // Get connected providers
+    const providersResult = await pool.query(
+      'SELECT provider, provider_email, is_primary FROM user_auth_providers WHERE user_id = $1',
+      [req.user.id]
+    );
+
     res.json({
       user: {
         id: user.id,
         email: user.email,
         firstName: user.first_name,
         lastName: user.last_name,
+        displayName: user.display_name,
         timezone: user.timezone,
         preferences: user.preferences,
-        createdAt: user.created_at
+        createdAt: user.created_at,
+        emailVerified: user.email_verified,
+        providers: providersResult.rows
       }
     });
 
@@ -207,11 +483,24 @@ router.put('/profile', authenticateToken, [
       return res.status(400).json({ error: 'No fields to update' });
     }
 
+    // Update display name if first or last name changed
+    if (firstName || lastName) {
+      const currentUser = await pool.query(
+        'SELECT first_name, last_name FROM users WHERE id = $1',
+        [req.user.id]
+      );
+      
+      const newFirstName = firstName || currentUser.rows[0].first_name;
+      const newLastName = lastName || currentUser.rows[0].last_name;
+      updateFields.push(`display_name = $${paramCount++}`);
+      values.push(`${newFirstName} ${newLastName}`);
+    }
+
     updateFields.push(`updated_at = CURRENT_TIMESTAMP`);
     values.push(req.user.id);
 
     const result = await pool.query(
-      `UPDATE users SET ${updateFields.join(', ')} WHERE id = $${paramCount} RETURNING id, email, first_name, last_name, timezone, preferences`,
+      `UPDATE users SET ${updateFields.join(', ')} WHERE id = $${paramCount} RETURNING id, email, first_name, last_name, display_name, timezone, preferences`,
       values
     );
 
@@ -223,6 +512,7 @@ router.put('/profile', authenticateToken, [
         email: user.email,
         firstName: user.first_name,
         lastName: user.last_name,
+        displayName: user.display_name,
         timezone: user.timezone,
         preferences: user.preferences
       }
@@ -248,13 +538,17 @@ router.put('/change-password', authenticateToken, [
     const { currentPassword, newPassword } = req.body;
 
     // Get current password hash
-    const result = await pool.query('SELECT password_hash FROM users WHERE id = $1', [req.user.id]);
+    const result = await pool.query(
+      'SELECT access_token FROM user_auth_providers WHERE user_id = $1 AND provider = $2',
+      [req.user.id, 'local']
+    );
+    
     if (result.rows.length === 0) {
-      return res.status(404).json({ error: 'User not found' });
+      return res.status(400).json({ error: 'No local password set for this account' });
     }
 
     // Verify current password
-    const isValidPassword = await bcrypt.compare(currentPassword, result.rows[0].password_hash);
+    const isValidPassword = await bcrypt.compare(currentPassword, result.rows[0].access_token);
     if (!isValidPassword) {
       return res.status(401).json({ error: 'Current password is incorrect' });
     }
@@ -265,14 +559,86 @@ router.put('/change-password', authenticateToken, [
 
     // Update password
     await pool.query(
-      'UPDATE users SET password_hash = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2',
-      [newPasswordHash, req.user.id]
+      'UPDATE user_auth_providers SET access_token = $1, updated_at = CURRENT_TIMESTAMP WHERE user_id = $2 AND provider = $3',
+      [newPasswordHash, req.user.id, 'local']
     );
 
     res.json({ message: 'Password changed successfully' });
 
   } catch (error) {
     console.error('Password change error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Disconnect provider
+router.delete('/disconnect-provider/:provider', authenticateToken, async (req, res) => {
+  try {
+    const { provider } = req.params;
+
+    // Check if this is the primary provider
+    const providerResult = await pool.query(
+      'SELECT is_primary FROM user_auth_providers WHERE user_id = $1 AND provider = $2',
+      [req.user.id, provider]
+    );
+
+    if (providerResult.rows.length === 0) {
+      return res.status(404).json({ error: 'Provider not found' });
+    }
+
+    if (providerResult.rows[0].is_primary) {
+      return res.status(400).json({ error: 'Cannot disconnect primary authentication provider' });
+    }
+
+    // Delete provider connection
+    await pool.query(
+      'DELETE FROM user_auth_providers WHERE user_id = $1 AND provider = $2',
+      [req.user.id, provider]
+    );
+
+    res.json({ message: 'Provider disconnected successfully' });
+
+  } catch (error) {
+    console.error('Disconnect provider error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Resend verification email
+router.post('/resend-verification', [
+  body('email').isEmail().normalizeEmail()
+], async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    const { email } = req.body;
+
+    // Check if user exists and needs verification
+    const userResult = await pool.query(
+      'SELECT id, first_name, email_verified FROM users WHERE email = $1',
+      [email]
+    );
+
+    if (userResult.rows.length === 0) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    const user = userResult.rows[0];
+
+    if (user.email_verified) {
+      return res.status(400).json({ error: 'Email is already verified' });
+    }
+
+    // Send verification email
+    await emailService.sendVerificationEmail(email, user.id, user.first_name);
+
+    res.json({ message: 'Verification email sent successfully' });
+
+  } catch (error) {
+    console.error('Resend verification error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });

@@ -4,6 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Separator } from '@/components/ui/separator';
 import { Loader2, Mail, Lock, User, Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -22,9 +23,12 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchToLogin }) =
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isOAuthLoading, setIsOAuthLoading] = useState(false);
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
   
   const { register, error, clearError } = useAuth();
+
+  const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
   const validateForm = (): boolean => {
     const errors: string[] = [];
@@ -79,6 +83,18 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchToLogin }) =
     }
   };
 
+  const handleOAuthSignIn = async (provider: string) => {
+    try {
+      setIsOAuthLoading(true);
+      const redirectUrl = `${API_BASE_URL}/auth/${provider}?redirect=${encodeURIComponent(window.location.origin + '/dashboard')}`;
+      window.location.href = redirectUrl;
+    } catch (error) {
+      console.error(`OAuth sign in error for ${provider}:`, error);
+    } finally {
+      setIsOAuthLoading(false);
+    }
+  };
+
   const handleInputChange = (field: keyof typeof formData, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
     
@@ -104,7 +120,61 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchToLogin }) =
           Join NeuroCal and start managing your time intelligently
         </CardDescription>
       </CardHeader>
-      <CardContent>
+      <CardContent className="space-y-6">
+        {/* OAuth Buttons */}
+        <div className="space-y-3">
+          <Button
+            onClick={() => handleOAuthSignIn('google')}
+            variant="outline"
+            className="w-full h-12 bg-white hover:bg-gray-50 border-gray-300"
+            disabled={isOAuthLoading || isSubmitting}
+          >
+            <img src="/icons/google.svg" alt="Google" className="w-5 h-5 mr-3" />
+            Continue with Google
+          </Button>
+          
+          <Button
+            onClick={() => handleOAuthSignIn('microsoft')}
+            variant="outline"
+            className="w-full h-12 bg-white hover:bg-gray-50 border-gray-300"
+            disabled={isOAuthLoading || isSubmitting}
+          >
+            <img src="/icons/microsoft.svg" alt="Microsoft" className="w-5 h-5 mr-3" />
+            Continue with Microsoft
+          </Button>
+          
+          <Button
+            onClick={() => handleOAuthSignIn('apple')}
+            variant="outline"
+            className="w-full h-12 bg-white hover:bg-gray-50 border-gray-300"
+            disabled={isOAuthLoading || isSubmitting}
+          >
+            <img src="/icons/apple.svg" alt="Apple" className="w-5 h-5 mr-3" />
+            Continue with Apple
+          </Button>
+          
+          <Button
+            onClick={() => handleOAuthSignIn('yahoo')}
+            variant="outline"
+            className="w-full h-12 bg-white hover:bg-gray-50 border-gray-300"
+            disabled={isOAuthLoading || isSubmitting}
+          >
+            <img src="/icons/yahoo.svg" alt="Yahoo" className="w-5 h-5 mr-3" />
+            Continue with Yahoo
+          </Button>
+        </div>
+
+        {/* Divider */}
+        <div className="relative">
+          <div className="absolute inset-0 flex items-center">
+            <Separator className="w-full" />
+          </div>
+          <div className="relative flex justify-center text-xs uppercase">
+            <span className="bg-background px-2 text-muted-foreground">or</span>
+          </div>
+        </div>
+
+        {/* Email/Password Form */}
         <form onSubmit={handleSubmit} className="space-y-4">
           {(error || validationErrors.length > 0) && (
             <Alert variant="destructive">

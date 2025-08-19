@@ -5,6 +5,9 @@ import dotenv from 'dotenv';
 import rateLimit from 'express-rate-limit';
 import { createClient } from 'redis';
 import { Pool } from 'pg';
+import session from 'express-session';
+import connectRedis from 'connect-redis';
+import passport from './config/passport.js';
 
 // Load environment variables
 dotenv.config();
@@ -21,7 +24,7 @@ const pool = new Pool({
   port: process.env.DB_PORT || 5432,
 });
 
-// Redis connection for caching
+// Redis connection for caching and sessions
 const redisClient = createClient({
   url: process.env.REDIS_URL || 'redis://localhost:6379'
 });
@@ -29,18 +32,38 @@ const redisClient = createClient({
 redisClient.on('error', (err) => console.log('Redis Client Error', err));
 redisClient.connect().catch(console.error);
 
+// Redis store for sessions
+const RedisStore = connectRedis(session);
+
 // Rate limiting
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 100 // limit each IP to 100 requests per windowMs
 });
 
+// Session configuration
+app.use(session({
+  store: new RedisStore({ client: redisClient }),
+  secret: process.env.SESSION_SECRET || 'your-session-secret-change-in-production',
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    secure: process.env.NODE_ENV === 'production',
+    httpOnly: true,
+    maxAge: 24 * 60 * 60 * 1000 // 24 hours
+  }
+}));
+
+// Initialize Passport
+app.use(passport.initialize());
+app.use(passport.session());
+
 // Middleware
 app.use(helmet());
 app.use(cors({
   origin: process.env.FRONTEND_URL || 'http://localhost:8080',
   credentials: true
-}));
+});
 app.use(limiter);
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
@@ -82,6 +105,7 @@ app.use('*', (req, res) => {
 app.listen(PORT, () => {
   console.log(`🚀 NeuroCal Backend running on port ${PORT}`);
   console.log(`📊 Health check: http://localhost:${PORT}/health`);
+  console.log(`🔐 Authentication: OAuth + Email/Password enabled`);
 });
 
 export { pool, redisClient };
