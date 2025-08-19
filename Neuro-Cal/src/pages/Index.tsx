@@ -44,7 +44,7 @@ const Index = () => {
                     </div>
                   ) : (
                     <div className="flex items-center gap-2">
-                      <Link to="/auth">
+                      <Link to="/signin">
                         <Button variant="outline" size="sm" className="flex items-center gap-2">
                           <LogIn className="h-4 w-4" />
                           Sign In

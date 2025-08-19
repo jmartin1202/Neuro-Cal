@@ -11,6 +11,7 @@ import { ProtectedRoute } from "@/components/ProtectedRoute";
 // import { SupabaseExample } from "@/components/SupabaseExample";
 import { SimpleTest } from "@/components/SimpleTest";
 import NotFound from "./pages/NotFound";
+import NeurocalAuth from "./components/auth/NeurocalAuth";
 
 const queryClient = new QueryClient();
 
@@ -24,6 +25,7 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
+            <Route path="/signin" element={<NeurocalAuth />} />
             <Route path="/dev-analytics" element={
               <ProtectedRoute password="neurocal2024">
                 <DeveloperAnalytics />
