@@ -5,7 +5,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
-import { LogOut, LogIn, Calendar, Sparkles, Zap, Users, Clock, X, BarChart3, Crown, Star, Lock, Plus, Check, Badge, Brain, AlertTriangle, RefreshCw, Code, Settings, Bell, Palette, Globe } from "lucide-react";
+import { LogOut, LogIn, Calendar, Sparkles, Zap, Users, Clock, X, BarChart3, Crown, Star, Lock, Plus, Check, Badge, Brain, AlertTriangle, RefreshCw, Code, Settings, Bell, Palette, Globe, Search, Edit, Trash2 } from "lucide-react";
 import { useErrorPrevention } from "@/hooks/useErrorPrevention";
 import { ComponentSafetyWrapper } from "@/components/ComponentSafetyWrapper";
 
@@ -83,6 +83,7 @@ const Index = () => {
   ]);
   const [isDeveloperMode, setIsDeveloperMode] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const [activeTab, setActiveTab] = useState<'calendar' | 'crm' | 'settings'>('calendar');
   const [settings, setSettings] = useState({
     notifications: true,
     emailReminders: true,
@@ -93,6 +94,25 @@ const Index = () => {
     autoSync: true,
     defaultMeetingLength: 30
   });
+  
+  // CRM State
+  const [showContactModal, setShowContactModal] = useState(false);
+  const [editingContact, setEditingContact] = useState<any>(null);
+  const [contacts, setContacts] = useState([
+    { id: 1, name: 'John Smith', email: 'john@company.com', phone: '+1-555-0123', company: 'Tech Corp', status: 'Active', lastContact: '2025-08-15' },
+    { id: 2, name: 'Sarah Johnson', email: 'sarah@startup.io', phone: '+1-555-0124', company: 'StartupIO', status: 'Lead', lastContact: '2025-08-18' },
+    { id: 3, name: 'Mike Davis', email: 'mike@agency.com', phone: '+1-555-0125', company: 'Design Agency', status: 'Client', lastContact: '2025-08-10' }
+  ]);
+  const [contactForm, setContactForm] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    company: '',
+    status: 'Lead'
+  });
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState('All');
+  
   const { toast } = useToast();
   const isMobile = useIsMobile();
 
@@ -360,6 +380,72 @@ const Index = () => {
     }
   }, [errorPrevention]);
 
+  // CRM Functions
+  const handleContactSubmit = useCallback(() => {
+    try {
+      if (!contactForm.name.trim() || !contactForm.email.trim()) return;
+
+      if (editingContact) {
+        setContacts(prev => prev.map(contact => 
+          contact.id === editingContact.id 
+            ? { ...contactForm, id: editingContact.id, lastContact: new Date().toISOString().split('T')[0] }
+            : contact
+        ));
+        setEditingContact(null);
+        toast({
+          title: "Contact Updated",
+          description: "Contact has been updated successfully.",
+        });
+      } else {
+        const newContact = {
+          ...contactForm,
+          id: Date.now(),
+          lastContact: new Date().toISOString().split('T')[0]
+        };
+        setContacts(prev => [...prev, newContact]);
+        toast({
+          title: "Contact Added",
+          description: "New contact has been added successfully.",
+        });
+      }
+
+      setContactForm({ name: '', email: '', phone: '', company: '', status: 'Lead' });
+      setShowContactModal(false);
+    } catch (error) {
+      errorPrevention.trackError(error instanceof Error ? error : String(error), 'handleContactSubmit');
+    }
+  }, [contactForm, editingContact, toast, errorPrevention]);
+
+  const editContact = useCallback((contact: any) => {
+    try {
+      setContactForm(contact);
+      setEditingContact(contact);
+      setShowContactModal(true);
+    } catch (error) {
+      errorPrevention.trackError(error instanceof Error ? error : String(error), 'editContact');
+    }
+  }, [errorPrevention]);
+
+  const deleteContact = useCallback((contactId: number) => {
+    try {
+      setContacts(prev => prev.filter(contact => contact.id !== contactId));
+      toast({
+        title: "Contact Deleted",
+        description: "Contact has been removed successfully.",
+      });
+    } catch (error) {
+      errorPrevention.trackError(error instanceof Error ? error : String(error), 'deleteContact');
+    }
+  }, [toast, errorPrevention]);
+
+  const filteredContacts = contacts.filter(contact => {
+    const matchesSearch = contact.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         contact.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         contact.company.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesStatus = statusFilter === 'All' || contact.status === statusFilter;
+    return matchesSearch && matchesStatus;
+  });
+
   // Loading state
   if (isLoading) {
     return (
@@ -444,16 +530,36 @@ const Index = () => {
               </span>
             </Button>
             
-            {/* Settings Button - Available to all users */}
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={toggleSettings}
-              className="btn btn-outline"
-            >
-              <Settings className="h-4 w-4 mr-2" />
-              Settings
-            </Button>
+            {/* Tab Navigation - Available to all users */}
+            <div className="flex space-x-1 bg-muted rounded-lg p-1">
+              <button
+                onClick={() => setActiveTab('calendar')}
+                className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors text-sm ${
+                  activeTab === 'calendar' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                <Calendar size={16} />
+                Calendar
+              </button>
+              <button
+                onClick={() => setActiveTab('crm')}
+                className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors text-sm ${
+                  activeTab === 'crm' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                <Users size={16} />
+                CRM
+              </button>
+              <button
+                onClick={() => setActiveTab('settings')}
+                className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors text-sm ${
+                  activeTab === 'settings' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                <Settings size={16} />
+                Settings
+              </button>
+            </div>
 
             {(user || isDeveloperMode) ? (
               <>
@@ -537,12 +643,12 @@ const Index = () => {
               <Button 
                 size="sm" 
                 variant="outline" 
-                onClick={toggleSettings}
+                onClick={() => setActiveTab('crm')}
                 className="border-accent text-accent w-full sm:w-auto"
               >
-                <Settings className="h-4 w-4 mr-2" />
-                <span className="hidden sm:inline">Settings</span>
-                <span className="sm:hidden">Settings</span>
+                <Users className="h-4 w-4 mr-2" />
+                <span className="hidden sm:inline">Test CRM</span>
+                <span className="sm:hidden">CRM</span>
               </Button>
               <Button 
                 onClick={() => setIsDeveloperMode(false)}
@@ -560,112 +666,163 @@ const Index = () => {
 
         {/* Main Content */}
         <main className="space-y-6">
-          {/* Calendar */}
-          <div className="calendar-container">
-            <Suspense fallback={<div className="p-4 bg-card rounded-lg animate-pulse border border-border">
-              <div className="h-96 bg-muted rounded-lg"></div>
-            </div>}>
-              <ComponentSafetyWrapper
-                componentName="InteractiveCalendar"
-                isolationLevel="moderate"
-                autoRecover={true}
-                retryCount={3}
-              >
-                <InteractiveCalendar 
-                  events={events}
-                  onCreateEvent={handleCreateEvent}
-                  onDeleteEvent={handleDeleteEvent}
-                  currentDate={currentDate}
-                  onMonthChange={safeSetCurrentDate}
-                />
-              </ComponentSafetyWrapper>
-            </Suspense>
-          </div>
+          {/* Tab Content */}
+          {activeTab === 'calendar' && (
+            <>
+              {/* Calendar */}
+              <div className="calendar-container">
+                <Suspense fallback={<div className="p-4 bg-card rounded-lg animate-pulse border border-border">
+                  <div className="h-96 bg-muted rounded-lg"></div>
+                </div>}>
+                  <ComponentSafetyWrapper
+                    componentName="InteractiveCalendar"
+                    isolationLevel="moderate"
+                    autoRecover={true}
+                    retryCount={3}
+                  >
+                    <InteractiveCalendar 
+                      events={events}
+                      onCreateEvent={handleCreateEvent}
+                      onDeleteEvent={handleDeleteEvent}
+                      currentDate={currentDate}
+                      onMonthChange={safeSetCurrentDate}
+                    />
+                  </ComponentSafetyWrapper>
+                </Suspense>
+              </div>
 
-          {/* AI Panel */}
-          <div className="space-y-4">
-            {!user && !isDeveloperMode ? (
-              <div className="demo-banner">
-                <div className="demo-content">
-                  <Lock className="h-6 w-6 text-accent flex-shrink-0" />
-                  <div className="demo-text">
-                    <h3>Premium Feature</h3>
-                    <p>AI Event Creation requires Basic plan</p>
+              {/* AI Panel */}
+              <div className="space-y-4">
+                {!user && !isDeveloperMode ? (
+                  <div className="demo-banner">
+                    <div className="demo-content">
+                      <Lock className="h-6 w-6 text-accent flex-shrink-0" />
+                      <div className="demo-text">
+                        <h3>Premium Feature</h3>
+                        <p>AI Event Creation requires Basic plan</p>
+                      </div>
+                    </div>
+                    <Button 
+                      onClick={handleUpgradeClick}
+                      size="sm"
+                      className="btn btn-primary"
+                    >
+                      <Crown className="h-4 w-4 mr-2" />
+                      Upgrade to Basic
+                    </Button>
                   </div>
-                </div>
-                <Button 
-                  onClick={handleUpgradeClick}
-                  size="sm"
+                ) : (
+                  <Suspense fallback={<AIPanelFallback />}>
+                    <ComponentSafetyWrapper
+                      componentName="AIPanel"
+                      isolationLevel="loose"
+                      autoRecover={true}
+                      retryCount={5}
+                    >
+                      <AIPanel 
+                        upcomingEvents={events}
+                        onCreateEvent={handleAICreateEvent} 
+                      />
+                    </ComponentSafetyWrapper>
+                  </Suspense>
+                )}
+              </div>
+            </>
+          )}
+
+          {/* CRM Tab */}
+          {activeTab === 'crm' && (
+            <div className="space-y-6">
+              <div className="flex items-center justify-between">
+                <h2 className="text-2xl font-bold text-foreground">Contact Management</h2>
+                <Button
+                  onClick={() => setShowContactModal(true)}
                   className="btn btn-primary"
                 >
-                  <Crown className="h-4 w-4 mr-2" />
-                  Upgrade to Basic
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Contact
                 </Button>
               </div>
-            ) : (
-              <Suspense fallback={<AIPanelFallback />}>
-                <ComponentSafetyWrapper
-                  componentName="AIPanel"
-                  isolationLevel="loose"
-                  autoRecover={true}
-                  retryCount={5}
-                >
-                  <AIPanel 
-                    upcomingEvents={events}
-                    onCreateEvent={handleAICreateEvent} 
-                  />
-                </ComponentSafetyWrapper>
-              </Suspense>
-            )}
-          </div>
 
-          {/* Developer Mode Events Display */}
-          {isDeveloperMode && events.length > 0 && (
-            <div className="bg-accent/10 border border-accent/30 rounded-lg p-4">
-              <h3 className="text-lg font-semibold text-accent mb-3 flex items-center gap-2">
-                <Code className="h-5 w-5" />
-                <span className="hidden sm:inline">Developer Mode Events</span>
-                <span className="sm:hidden">Dev Events</span>
-                <span className="text-accent/70">({events.length})</span>
-              </h3>
-              <div className="space-y-2">
-                {events.map((event) => (
-                  <div key={event.id} className="bg-white dark:bg-gray-800 rounded-md p-3 border border-accent/20">
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="flex-1 min-w-0">
-                        <h4 className="font-medium text-foreground truncate">{event.title}</h4>
-                        <p className="text-sm text-muted-foreground">
-                          <span className="hidden sm:inline">{event.date.toLocaleDateString()}</span>
-                          <span className="sm:hidden">{event.date.toLocaleDateString('short')}</span>
-                          {' '}at {event.time} ({event.duration})
-                        </p>
-                        {event.location && (
-                          <p className="text-sm text-muted-foreground truncate">📍 {event.location}</p>
-                        )}
-                      </div>
-                      <div className={`w-4 h-4 rounded-full ${event.color} flex-shrink-0`}></div>
-                    </div>
-                  </div>
-                ))}
+              {/* Search and Filter */}
+              <div className="flex gap-4">
+                <div className="flex-1 relative">
+                  <Search size={16} className="absolute left-3 top-3 text-muted-foreground" />
+                  <input
+                    type="text"
+                    placeholder="Search contacts..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="w-full pl-10 pr-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-primary bg-background text-foreground"
+                  />
+                </div>
+                <select
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value)}
+                  className="px-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-primary bg-background text-foreground"
+                >
+                  <option value="All">All Status</option>
+                  <option value="Lead">Lead</option>
+                  <option value="Client">Client</option>
+                  <option value="Active">Active</option>
+                </select>
+              </div>
+
+              {/* Contacts Table */}
+              <div className="bg-card border border-border rounded-lg overflow-hidden">
+                <table className="w-full">
+                  <thead className="bg-muted/50">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-sm font-medium text-muted-foreground">Name</th>
+                      <th className="px-6 py-3 text-left text-sm font-medium text-muted-foreground">Email</th>
+                      <th className="px-6 py-3 text-left text-sm font-medium text-muted-foreground">Company</th>
+                      <th className="px-6 py-3 text-left text-sm font-medium text-muted-foreground">Status</th>
+                      <th className="px-6 py-3 text-left text-sm font-medium text-muted-foreground">Last Contact</th>
+                      <th className="px-6 py-3 text-left text-sm font-medium text-muted-foreground">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-border">
+                    {filteredContacts.map(contact => (
+                      <tr key={contact.id} className="hover:bg-muted/30">
+                        <td className="px-6 py-4 text-sm font-medium text-foreground">{contact.name}</td>
+                        <td className="px-6 py-4 text-sm text-muted-foreground">{contact.email}</td>
+                        <td className="px-6 py-4 text-sm text-muted-foreground">{contact.company}</td>
+                        <td className="px-6 py-4">
+                          <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                            contact.status === 'Active' ? 'bg-green-100 text-green-800' :
+                            contact.status === 'Client' ? 'bg-blue-100 text-blue-800' :
+                            'bg-yellow-100 text-yellow-800'
+                          }`}>
+                            {contact.status}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 text-sm text-muted-foreground">{contact.lastContact}</td>
+                        <td className="px-6 py-4 text-sm space-x-2">
+                          <button
+                            onClick={() => editContact(contact)}
+                            className="text-primary hover:text-primary/80"
+                          >
+                            <Edit size={16} />
+                          </button>
+                          <button
+                            onClick={() => deleteContact(contact.id)}
+                            className="text-destructive hover:text-destructive/80"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             </div>
           )}
 
-          {/* Settings Section */}
-          {showSettings && (
+          {/* Settings Tab */}
+          {activeTab === 'settings' && (
             <div className="space-y-6">
-              <div className="flex items-center justify-between">
-                <h2 className="text-2xl font-bold text-foreground">Settings</h2>
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  onClick={toggleSettings}
-                  className="btn btn-outline"
-                >
-                  <X className="h-4 w-4 mr-2" />
-                  Close
-                </Button>
-              </div>
+              <h2 className="text-2xl font-bold text-foreground">Settings</h2>
 
               {/* Notice for non-authenticated users */}
               {!user && !isDeveloperMode && (
@@ -819,6 +976,38 @@ const Index = () => {
                     </select>
                   </div>
                 </div>
+              </div>
+            </div>
+          )}
+
+          {/* Developer Mode Events Display */}
+          {isDeveloperMode && events.length > 0 && activeTab === 'calendar' && (
+            <div className="bg-accent/10 border border-accent/30 rounded-lg p-4">
+              <h3 className="text-lg font-semibold text-accent mb-3 flex items-center gap-2">
+                <Code className="h-5 w-5" />
+                <span className="hidden sm:inline">Developer Mode Events</span>
+                <span className="sm:hidden">Dev Events</span>
+                <span className="text-accent/70">({events.length})</span>
+              </h3>
+              <div className="space-y-2">
+                {events.map((event) => (
+                  <div key={event.id} className="bg-white dark:bg-gray-800 rounded-md p-3 border border-accent/20">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex-1 min-w-0">
+                        <h4 className="font-medium text-foreground truncate">{event.title}</h4>
+                        <p className="text-sm text-muted-foreground">
+                          <span className="hidden sm:inline">{event.date.toLocaleDateString()}</span>
+                          <span className="sm:hidden">{event.date.toLocaleDateString('short')}</span>
+                          {' '}at {event.time} ({event.duration})
+                        </p>
+                        {event.location && (
+                          <p className="text-sm text-muted-foreground truncate">📍 {event.location}</p>
+                        )}
+                      </div>
+                      <div className={`w-4 h-4 rounded-full ${event.color} flex-shrink-0`}></div>
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
           )}
@@ -1082,6 +1271,108 @@ const Index = () => {
                     Choose Pro
                   </Button>
                 </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Contact Modal */}
+      {showContactModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-background rounded-lg p-6 w-96 border border-border shadow-lg">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-semibold text-foreground">
+                {editingContact ? 'Edit Contact' : 'Add New Contact'}
+              </h3>
+              <button
+                onClick={() => {
+                  setShowContactModal(false);
+                  setEditingContact(null);
+                  setContactForm({ name: '', email: '', phone: '', company: '', status: 'Lead' });
+                }}
+                className="text-muted-foreground hover:text-foreground"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-1">Name *</label>
+                <input
+                  type="text"
+                  value={contactForm.name}
+                  onChange={(e) => setContactForm(prev => ({ ...prev, name: e.target.value }))}
+                  className="w-full p-2 border border-border rounded-lg focus:ring-2 focus:ring-primary bg-background text-foreground"
+                  placeholder="Enter contact name"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-1">Email *</label>
+                <input
+                  type="email"
+                  value={contactForm.email}
+                  onChange={(e) => setContactForm(prev => ({ ...prev, email: e.target.value }))}
+                  className="w-full p-2 border border-border rounded-lg focus:ring-2 focus:ring-primary bg-background text-foreground"
+                  placeholder="Enter email address"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-1">Phone</label>
+                <input
+                  type="tel"
+                  value={contactForm.phone}
+                  onChange={(e) => setContactForm(prev => ({ ...prev, phone: e.target.value }))}
+                  className="w-full p-2 border border-border rounded-lg focus:ring-2 focus:ring-primary bg-background text-foreground"
+                  placeholder="Enter phone number"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-1">Company</label>
+                <input
+                  type="text"
+                  value={contactForm.company}
+                  onChange={(e) => setContactForm(prev => ({ ...prev, company: e.target.value }))}
+                  className="w-full p-2 border border-border rounded-lg focus:ring-2 focus:ring-primary bg-background text-foreground"
+                  placeholder="Enter company name"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-1">Status</label>
+                <select
+                  value={contactForm.status}
+                  onChange={(e) => setContactForm(prev => ({ ...prev, status: e.target.value }))}
+                  className="w-full p-2 border border-border rounded-lg focus:ring-2 focus:ring-primary bg-background text-foreground"
+                >
+                  <option value="Lead">Lead</option>
+                  <option value="Client">Client</option>
+                  <option value="Active">Active</option>
+                </select>
+              </div>
+
+              <div className="flex gap-3 pt-4">
+                <button
+                  onClick={handleContactSubmit}
+                  className="flex-1 bg-primary text-primary-foreground py-2 px-4 rounded-lg hover:bg-primary/90 flex items-center justify-center gap-2"
+                >
+                  {editingContact ? <Edit size={16} /> : <Plus size={16} />}
+                  {editingContact ? 'Update Contact' : 'Add Contact'}
+                </button>
+                <button
+                  onClick={() => {
+                    setShowContactModal(false);
+                    setEditingContact(null);
+                    setContactForm({ name: '', email: '', phone: '', company: '', status: 'Lead' });
+                  }}
+                  className="px-4 py-2 border border-border rounded-lg hover:bg-muted text-foreground"
+                >
+                  Cancel
+                </button>
               </div>
             </div>
           </div>
