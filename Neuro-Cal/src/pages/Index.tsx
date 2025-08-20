@@ -15,6 +15,7 @@ const AIPanel = lazy(() => import("@/components/AIPanel").then(module => ({ defa
 const CreateEventModal = lazy(() => import("@/components/CreateEventModal").then(module => ({ default: module.CreateEventModal })));
 const LoginForm = lazy(() => import("@/components/auth/LoginForm").then(module => ({ default: module.LoginForm })));
 const RegisterForm = lazy(() => import("@/components/auth/RegisterForm").then(module => ({ default: module.RegisterForm })));
+const CRMDashboard = lazy(() => import("@/components/CRMDashboard"));
 
 
 
@@ -118,22 +119,9 @@ const Index = () => {
   });
   
   // CRM State
-  const [showContactModal, setShowContactModal] = useState(false);
-  const [editingContact, setEditingContact] = useState<any>(null);
-  const [contacts, setContacts] = useState([
-    { id: 1, name: 'John Smith', email: 'john@company.com', phone: '+1-555-0123', company: 'Tech Corp', status: 'Active', lastContact: '2025-08-15' },
-    { id: 2, name: 'Sarah Johnson', email: 'sarah@startup.io', phone: '+1-555-0124', company: 'StartupIO', status: 'Lead', lastContact: '2025-08-18' },
-    { id: 3, name: 'Mike Davis', email: 'mike@agency.com', phone: '+1-555-0125', company: 'Design Agency', status: 'Client', lastContact: '2025-08-10' }
-  ]);
-  const [contactForm, setContactForm] = useState({
-    name: '',
-    email: '',
-    phone: '',
-    company: '',
-    status: 'Lead'
-  });
-  const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('All');
+
+
+
   
   const { toast } = useToast();
   const isMobile = useIsMobile();
@@ -549,71 +537,7 @@ const Index = () => {
     }
   }, [errorPrevention]);
 
-  // CRM Functions
-  const handleContactSubmit = useCallback(() => {
-    try {
-      if (!contactForm.name.trim() || !contactForm.email.trim()) return;
 
-      if (editingContact) {
-        setContacts(prev => prev.map(contact => 
-          contact.id === editingContact.id 
-            ? { ...contactForm, id: editingContact.id, lastContact: new Date().toISOString().split('T')[0] }
-            : contact
-        ));
-        setEditingContact(null);
-        toast({
-          title: "Contact Updated",
-          description: "Contact has been updated successfully.",
-        });
-      } else {
-        const newContact = {
-          ...contactForm,
-          id: Date.now(),
-          lastContact: new Date().toISOString().split('T')[0]
-        };
-        setContacts(prev => [...prev, newContact]);
-        toast({
-          title: "Contact Added",
-          description: "New contact has been added successfully.",
-        });
-      }
-
-      setContactForm({ name: '', email: '', phone: '', company: '', status: 'Lead' });
-      setShowContactModal(false);
-    } catch (error) {
-      errorPrevention.trackError(error instanceof Error ? error : String(error), 'handleContactSubmit');
-    }
-  }, [contactForm, editingContact, toast, errorPrevention]);
-
-  const editContact = useCallback((contact: any) => {
-    try {
-      setContactForm(contact);
-      setEditingContact(contact);
-      setShowContactModal(true);
-    } catch (error) {
-      errorPrevention.trackError(error instanceof Error ? error : String(error), 'editContact');
-    }
-  }, [errorPrevention]);
-
-  const deleteContact = useCallback((contactId: number) => {
-    try {
-      setContacts(prev => prev.filter(contact => contact.id !== contactId));
-      toast({
-        title: "Contact Deleted",
-        description: "Contact has been removed successfully.",
-      });
-    } catch (error) {
-      errorPrevention.trackError(error instanceof Error ? error : String(error), 'deleteContact');
-    }
-  }, [toast, errorPrevention]);
-
-  const filteredContacts = contacts.filter(contact => {
-    const matchesSearch = contact.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         contact.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         contact.company.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = statusFilter === 'All' || contact.status === statusFilter;
-    return matchesSearch && matchesStatus;
-  });
 
   // Loading state
   if (isLoading) {
@@ -1058,92 +982,21 @@ const Index = () => {
 
           {/* CRM Tab */}
           {activeTab === 'crm' && (
-            <div className="space-y-6">
-              <div className="flex items-center justify-between">
-                <h2 className="text-2xl font-bold text-foreground">Contact Management</h2>
-                <Button
-                  onClick={() => setShowContactModal(true)}
-                  className="btn btn-primary"
-                >
-                  <Plus className="h-4 w-4 mr-2" />
-                  Add Contact
-                </Button>
-              </div>
-
-              {/* Search and Filter */}
-              <div className="flex gap-4">
-                <div className="flex-1 relative">
-                  <Search size={16} className="absolute left-3 top-3 text-muted-foreground" />
-                  <input
-                    type="text"
-                    placeholder="Search contacts..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-primary bg-background text-foreground"
-                  />
+            <Suspense fallback={
+              <div className="p-4 bg-card rounded-lg border border-border">
+                <div className="space-y-3">
+                  <div className="h-6 w-32 bg-primary/20 rounded animate-pulse"></div>
+                  <div className="h-4 w-48 bg-muted rounded animate-pulse"></div>
+                  <div className="h-10 bg-muted rounded animate-pulse"></div>
+                  <div className="h-20 bg-muted rounded animate-pulse"></div>
                 </div>
-                <select
-                  value={statusFilter}
-                  onChange={(e) => setStatusFilter(e.target.value)}
-                  className="px-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-primary bg-background text-foreground"
-                >
-                  <option value="All">All Status</option>
-                  <option value="Lead">Lead</option>
-                  <option value="Client">Client</option>
-                  <option value="Active">Active</option>
-                </select>
               </div>
-
-              {/* Contacts Table */}
-              <div className="bg-card border border-border rounded-lg overflow-hidden">
-                <table className="w-full">
-                  <thead className="bg-muted/50">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-sm font-medium text-muted-foreground">Name</th>
-                      <th className="px-6 py-3 text-left text-sm font-medium text-muted-foreground">Email</th>
-                      <th className="px-6 py-3 text-left text-sm font-medium text-muted-foreground">Company</th>
-                      <th className="px-6 py-3 text-left text-sm font-medium text-muted-foreground">Status</th>
-                      <th className="px-6 py-3 text-left text-sm font-medium text-muted-foreground">Last Contact</th>
-                      <th className="px-6 py-3 text-left text-sm font-medium text-muted-foreground">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-border">
-                    {filteredContacts.map(contact => (
-                      <tr key={contact.id} className="hover:bg-muted/30">
-                        <td className="px-6 py-4 text-sm font-medium text-foreground">{contact.name}</td>
-                        <td className="px-6 py-4 text-sm text-muted-foreground">{contact.email}</td>
-                        <td className="px-6 py-4 text-sm text-muted-foreground">{contact.company}</td>
-                        <td className="px-6 py-4">
-                          <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                            contact.status === 'Active' ? 'bg-green-100 text-green-800' :
-                            contact.status === 'Client' ? 'bg-blue-100 text-blue-800' :
-                            'bg-yellow-100 text-yellow-800'
-                          }`}>
-                            {contact.status}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 text-sm text-muted-foreground">{contact.lastContact}</td>
-                        <td className="px-6 py-4 text-sm space-x-2">
-                          <button
-                            onClick={() => editContact(contact)}
-                            className="text-primary hover:text-primary/80"
-                          >
-                            <Edit size={16} />
-                          </button>
-                          <button
-                            onClick={() => deleteContact(contact.id)}
-                            className="text-destructive hover:text-destructive/80"
-                          >
-                            <Trash2 size={16} />
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
+            }>
+              <CRMDashboard />
+            </Suspense>
           )}
+
+
 
           {/* Settings Tab */}
           {activeTab === 'settings' && (
@@ -1606,107 +1459,8 @@ const Index = () => {
         </div>
       )}
 
-      {/* Contact Modal */}
-      {showContactModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-background rounded-lg p-6 w-96 border border-border shadow-lg">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-semibold text-foreground">
-                {editingContact ? 'Edit Contact' : 'Add New Contact'}
-              </h3>
-              <button
-                onClick={() => {
-                  setShowContactModal(false);
-                  setEditingContact(null);
-                  setContactForm({ name: '', email: '', phone: '', company: '', status: 'Lead' });
-                }}
-                className="text-muted-foreground hover:text-foreground"
-              >
-                <X size={20} />
-              </button>
-            </div>
 
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-foreground mb-1">Name *</label>
-                <input
-                  type="text"
-                  value={contactForm.name}
-                  onChange={(e) => setContactForm(prev => ({ ...prev, name: e.target.value }))}
-                  className="w-full p-2 border border-border rounded-lg focus:ring-2 focus:ring-primary bg-background text-foreground"
-                  placeholder="Enter contact name"
-                />
-              </div>
 
-              <div>
-                <label className="block text-sm font-medium text-foreground mb-1">Email *</label>
-                <input
-                  type="email"
-                  value={contactForm.email}
-                  onChange={(e) => setContactForm(prev => ({ ...prev, email: e.target.value }))}
-                  className="w-full p-2 border border-border rounded-lg focus:ring-2 focus:ring-primary bg-background text-foreground"
-                  placeholder="Enter email address"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-foreground mb-1">Phone</label>
-                <input
-                  type="tel"
-                  value={contactForm.phone}
-                  onChange={(e) => setContactForm(prev => ({ ...prev, phone: e.target.value }))}
-                  className="w-full p-2 border border-border rounded-lg focus:ring-2 focus:ring-primary bg-background text-foreground"
-                  placeholder="Enter phone number"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-foreground mb-1">Company</label>
-                <input
-                  type="text"
-                  value={contactForm.company}
-                  onChange={(e) => setContactForm(prev => ({ ...prev, company: e.target.value }))}
-                  className="w-full p-2 border border-border rounded-lg focus:ring-2 focus:ring-primary bg-background text-foreground"
-                  placeholder="Enter company name"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-foreground mb-1">Status</label>
-                <select
-                  value={contactForm.status}
-                  onChange={(e) => setContactForm(prev => ({ ...prev, status: e.target.value }))}
-                  className="w-full p-2 border border-border rounded-lg focus:ring-2 focus:ring-primary bg-background text-foreground"
-                >
-                  <option value="Lead">Lead</option>
-                  <option value="Client">Client</option>
-                  <option value="Active">Active</option>
-                </select>
-              </div>
-
-              <div className="flex gap-3 pt-4">
-                <button
-                  onClick={handleContactSubmit}
-                  className="flex-1 bg-primary text-primary-foreground py-2 px-4 rounded-lg hover:bg-primary/90 flex items-center justify-center gap-2"
-                >
-                  {editingContact ? <Edit size={16} /> : <Plus size={16} />}
-                  {editingContact ? 'Update Contact' : 'Add Contact'}
-                </button>
-                <button
-                  onClick={() => {
-                    setShowContactModal(false);
-                    setEditingContact(null);
-                    setContactForm({ name: '', email: '', phone: '', company: '', status: 'Lead' });
-                  }}
-                  className="px-4 py-2 border border-border rounded-lg hover:bg-muted text-foreground"
-                >
-                  Cancel
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Event Edit Modal */}
       {showEventEditModal && editingEvent && (
