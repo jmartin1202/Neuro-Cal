@@ -7,7 +7,7 @@ import Index from "./pages/Index";
 import AnalyticsDashboard from "./pages/AnalyticsDashboard";
 import CRMDashboard from "./components/CRMDashboard";
 import NeuroCalMain from "./components/NeuroCalMain";
-import ExtendedCalendarView from "./components/ExtendedCalendarView";
+
 
 const App = () => {
   return (
@@ -21,7 +21,7 @@ const App = () => {
               <Route path="/analytics" element={<Navigate to="/dashboard" replace />} />
               <Route path="/crm" element={<CRMDashboard />} />
               <Route path="/main" element={<NeuroCalMain />} />
-              <Route path="/calendar" element={<ExtendedCalendarView />} />
+
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
             <Toaster />

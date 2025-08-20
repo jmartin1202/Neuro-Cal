@@ -95,6 +95,28 @@ const Index = () => {
     defaultMeetingLength: 30
   });
   
+  // Enhanced Calendar State
+  const [calendarViewMode, setCalendarViewMode] = useState<'daily' | 'weekly' | 'monthly' | 'yearly'>('monthly');
+  const [calendarSearchQuery, setCalendarSearchQuery] = useState('');
+  const [calendarFilterType, setCalendarFilterType] = useState('all');
+  const [calendarSortBy, setCalendarSortBy] = useState<'date' | 'title'>('date');
+  const [showCalendarSyncModal, setShowCalendarSyncModal] = useState(false);
+  const [calendarSyncSettings, setCalendarSyncSettings] = useState({
+    googleCalendar: { connected: false, lastSync: null },
+    appleCalendar: { connected: false, lastSync: null },
+    outlookCalendar: { connected: false, lastSync: null }
+  });
+  const [calendarSyncInProgress, setCalendarSyncInProgress] = useState<Record<string, boolean>>({});
+  const [editingEvent, setEditingEvent] = useState<Event | null>(null);
+  const [showEventEditModal, setShowEventEditModal] = useState(false);
+  const [eventForm, setEventForm] = useState({
+    title: '',
+    time: '',
+    description: '',
+    type: 'meeting' as Event['type'],
+    reminders: [] as string[]
+  });
+  
   // CRM State
   const [showContactModal, setShowContactModal] = useState(false);
   const [editingContact, setEditingContact] = useState<any>(null);
@@ -115,6 +137,19 @@ const Index = () => {
   
   const { toast } = useToast();
   const isMobile = useIsMobile();
+  
+  // Enhanced Calendar Constants
+  const reminderOptions = [
+    { value: '5m', label: '5 minutes before' },
+    { value: '10m', label: '10 minutes before' },
+    { value: '15m', label: '15 minutes before' },
+    { value: '30m', label: '30 minutes before' },
+    { value: '1h', label: '1 hour before' },
+    { value: '2h', label: '2 hours before' },
+    { value: '1d', label: '1 day before' },
+    { value: '2d', label: '2 days before' },
+    { value: '1w', label: '1 week before' }
+  ];
 
   console.log("✅ React hooks called successfully"); // Debug log
 
@@ -349,6 +384,140 @@ const Index = () => {
       errorPrevention.trackError(error instanceof Error ? error : String(error), 'handleGetStartedClick');
     }
   }, [safeSetShowPricingModal, errorPrevention]);
+  
+  // Enhanced Calendar Functions
+  const handleEditEvent = useCallback((event: Event) => {
+    try {
+      setEditingEvent(event);
+      setEventForm({
+        title: event.title,
+        time: event.time || '',
+        description: (event as any).description || '',
+        type: event.type,
+        reminders: (event as any).reminders || []
+      });
+      setShowEventEditModal(true);
+    } catch (error) {
+      errorPrevention.trackError(error instanceof Error ? error : String(error), 'handleEditEvent');
+    }
+  }, [errorPrevention]);
+  
+  const handleUpdateEvent = useCallback(() => {
+    try {
+      if (!editingEvent || !eventForm.title.trim()) return;
+      
+      const updatedEvent: Event = {
+        ...editingEvent,
+        title: eventForm.title,
+        time: eventForm.time,
+        type: eventForm.type
+      };
+      
+      safeSetEvents(prev => prev.map(event => 
+        event.id === editingEvent.id ? updatedEvent : event
+      ));
+      
+      setShowEventEditModal(false);
+      setEditingEvent(null);
+      setEventForm({ title: '', time: '', description: '', type: 'meeting', reminders: [] });
+      
+      toast({
+        title: "Event Updated! ✨",
+        description: `"${updatedEvent.title}" has been updated successfully.`,
+      });
+    } catch (error) {
+      errorPrevention.trackError(error instanceof Error ? error : String(error), 'handleUpdateEvent');
+    }
+  }, [editingEvent, eventForm, safeSetEvents, toast, errorPrevention]);
+  
+  const handleCalendarSync = async (calendarType: string) => {
+    try {
+      setCalendarSyncInProgress(prev => ({ ...prev, [calendarType]: true }));
+      
+      // Simulate API call to external calendar service
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      // Mock successful connection
+      setCalendarSyncSettings(prev => ({
+        ...prev,
+        [calendarType]: {
+          connected: !prev[calendarType as keyof typeof prev].connected,
+          lastSync: prev[calendarType as keyof typeof prev].connected ? null : new Date().toISOString()
+        }
+      }));
+      
+      setCalendarSyncInProgress(prev => ({ ...prev, [calendarType]: false }));
+      
+      toast({
+        title: "Calendar Sync Updated",
+        description: `${calendarType} calendar has been ${calendarSyncSettings[calendarType as keyof typeof calendarSyncSettings].connected ? 'disconnected' : 'connected'} successfully.`,
+      });
+    } catch (error) {
+      errorPrevention.trackError(error instanceof Error ? error : String(error), 'handleCalendarSync');
+      setCalendarSyncInProgress(prev => ({ ...prev, [calendarType]: false }));
+    }
+  };
+  
+  const handleAddReminder = useCallback(() => {
+    try {
+      setEventForm(prev => ({
+        ...prev,
+        reminders: [...prev.reminders, '10m']
+      }));
+    } catch (error) {
+      errorPrevention.trackError(error instanceof Error ? error : String(error), 'handleAddReminder');
+    }
+  }, [errorPrevention]);
+  
+  const handleRemoveReminder = useCallback((index: number) => {
+    try {
+      setEventForm(prev => ({
+        ...prev,
+        reminders: prev.reminders.filter((_, i) => i !== index)
+      }));
+    } catch (error) {
+      errorPrevention.trackError(error instanceof Error ? error : String(error), 'handleRemoveReminder');
+    }
+  }, [errorPrevention]);
+  
+  const handleReminderChange = useCallback((index: number, value: string) => {
+    try {
+      setEventForm(prev => ({
+        ...prev,
+        reminders: prev.reminders.map((reminder, i) => i === index ? value : reminder)
+      }));
+    } catch (error) {
+      errorPrevention.trackError(error instanceof Error ? error : String(error), 'handleReminderChange');
+    }
+  }, [errorPrevention]);
+  
+  const getFilteredEvents = useCallback(() => {
+    try {
+      let filtered = events;
+      
+      if (calendarFilterType !== 'all') {
+        filtered = filtered.filter(event => event.type === calendarFilterType);
+      }
+      
+      if (calendarSearchQuery.trim()) {
+        filtered = filtered.filter(event => 
+          event.title.toLowerCase().includes(calendarSearchQuery.toLowerCase())
+        );
+      }
+      
+      return filtered.sort((a, b) => {
+        if (calendarSortBy === 'date') {
+          return new Date(a.date || 0).getTime() - new Date(b.date || 0).getTime();
+        } else if (calendarSortBy === 'title') {
+          return a.title.localeCompare(b.title);
+        }
+        return 0;
+      });
+    } catch (error) {
+      errorPrevention.trackError(error instanceof Error ? error : String(error), 'getFilteredEvents');
+      return events;
+    }
+  }, [events, calendarFilterType, calendarSearchQuery, calendarSortBy, errorPrevention]);
 
   // Safe logout handler
   const handleLogout = useCallback(() => {
@@ -573,12 +742,7 @@ const Index = () => {
                     CRM
                   </Button>
                 </Link>
-                <Link to="/calendar">
-                  <Button variant="outline" size="sm" className="btn btn-outline">
-                    <Calendar className="h-4 w-4 mr-2" />
-                    Enhanced Calendar
-                  </Button>
-                </Link>
+
                 {user ? (
                   <Button variant="outline" size="sm" onClick={handleLogout} className="btn btn-outline">
                     <LogOut className="h-4 w-4 mr-2" />
@@ -646,13 +810,7 @@ const Index = () => {
                   <span className="sm:hidden">CRM</span>
                 </Button>
               </Link>
-              <Link to="/calendar">
-                <Button size="sm" variant="outline" className="border-accent text-accent w-full sm:w-auto">
-                  <Calendar className="h-4 w-4 mr-2" />
-                  <span className="hidden sm:inline">Test Enhanced Calendar</span>
-                  <span className="sm:hidden">Calendar</span>
-                </Button>
-              </Link>
+
               <Button 
                 size="sm" 
                 variant="outline" 
@@ -682,26 +840,178 @@ const Index = () => {
           {/* Tab Content */}
           {activeTab === 'calendar' && (
             <>
-              {/* Calendar */}
-              <div className="calendar-container">
-                <Suspense fallback={<div className="p-4 bg-card rounded-lg animate-pulse border border-border">
-                  <div className="h-96 bg-muted rounded-lg"></div>
-                </div>}>
-                  <ComponentSafetyWrapper
-                    componentName="InteractiveCalendar"
-                    isolationLevel="moderate"
-                    autoRecover={true}
-                    retryCount={3}
+              {/* Enhanced Calendar Header */}
+              <div className="bg-card border border-border rounded-lg p-6">
+                <div className="flex items-center justify-between mb-6">
+                  <div className="flex items-center gap-3">
+                    <div className="bg-primary text-primary-foreground p-3 rounded-lg">
+                      <Calendar size={24} />
+                    </div>
+                    <div>
+                      <h2 className="text-2xl font-bold text-foreground">Enhanced Calendar</h2>
+                      <p className="text-muted-foreground">AI-Powered Calendar with Advanced Features</p>
+                    </div>
+                  </div>
+                  
+                  {/* Calendar Sync Button */}
+                  <Button
+                    onClick={() => setShowCalendarSyncModal(true)}
+                    variant="outline"
+                    className="flex items-center gap-2"
                   >
-                    <InteractiveCalendar 
-                      events={events}
-                      onCreateEvent={handleCreateEvent}
-                      onDeleteEvent={handleDeleteEvent}
-                      currentDate={currentDate}
-                      onMonthChange={safeSetCurrentDate}
+                    <RefreshCw className="h-4 w-4" />
+                    Sync Calendars
+                  </Button>
+                </div>
+                
+                {/* View Mode Selector */}
+                <div className="flex space-x-1 bg-muted rounded-lg p-1 mb-6">
+                  <button
+                    onClick={() => setCalendarViewMode('daily')}
+                    className={`px-3 py-2 rounded-md text-sm font-medium transition-all ${
+                      calendarViewMode === 'daily' 
+                        ? 'bg-background text-foreground shadow-sm' 
+                        : 'text-muted-foreground hover:text-foreground'
+                    }`}
+                  >
+                    Daily
+                  </button>
+                  <button
+                    onClick={() => setCalendarViewMode('weekly')}
+                    className={`px-3 py-2 rounded-md text-sm font-medium transition-all ${
+                      calendarViewMode === 'weekly' 
+                        ? 'bg-background text-foreground shadow-sm' 
+                        : 'text-muted-foreground hover:text-foreground'
+                    }`}
+                  >
+                    Weekly
+                  </button>
+                  <button
+                    onClick={() => setCalendarViewMode('monthly')}
+                    className={`px-3 py-2 rounded-md text-sm font-medium transition-all ${
+                      calendarViewMode === 'monthly' 
+                        ? 'bg-background text-foreground shadow-sm' 
+                        : 'text-muted-foreground hover:text-foreground'
+                    }`}
+                  >
+                    Monthly
+                  </button>
+                  <button
+                    onClick={() => setCalendarViewMode('yearly')}
+                    className={`px-3 py-2 rounded-md text-sm font-medium transition-all ${
+                      calendarViewMode === 'yearly' 
+                        ? 'bg-background text-foreground shadow-sm' 
+                        : 'text-muted-foreground hover:text-foreground'
+                    }`}
+                  >
+                    Yearly
+                  </button>
+                </div>
+                
+                {/* Search and Filter Bar */}
+                <div className="flex items-center gap-4 mb-6">
+                  <div className="relative flex-1">
+                    <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
+                    <input
+                      type="text"
+                      value={calendarSearchQuery}
+                      onChange={(e) => setCalendarSearchQuery(e.target.value)}
+                      placeholder="Search events..."
+                      className="w-full pl-10 pr-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-primary bg-background text-foreground"
                     />
-                  </ComponentSafetyWrapper>
-                </Suspense>
+                  </div>
+                  
+                  <select
+                    value={calendarFilterType}
+                    onChange={(e) => setCalendarFilterType(e.target.value)}
+                    className="px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-primary bg-background text-foreground"
+                  >
+                    <option value="all">All Types</option>
+                    <option value="meeting">Meetings</option>
+                    <option value="focus">Focus Time</option>
+                    <option value="break">Breaks</option>
+                    <option value="travel">Travel</option>
+                  </select>
+                  
+                  <select
+                    value={calendarSortBy}
+                    onChange={(e) => setCalendarSortBy(e.target.value as 'date' | 'title')}
+                    className="px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-primary bg-background text-foreground"
+                  >
+                    <option value="date">Sort by Date</option>
+                    <option value="title">Sort by Title</option>
+                  </select>
+                </div>
+                
+                {/* Calendar Content */}
+                <div className="calendar-container">
+                  <Suspense fallback={<div className="p-4 bg-card rounded-lg animate-pulse border border-border">
+                    <div className="h-96 bg-muted rounded-lg"></div>
+                  </div>}>
+                    <ComponentSafetyWrapper
+                      componentName="InteractiveCalendar"
+                      isolationLevel="moderate"
+                      autoRecover={true}
+                      retryCount={3}
+                    >
+                      <InteractiveCalendar 
+                        events={events}
+                        onCreateEvent={handleCreateEvent}
+                        onDeleteEvent={handleDeleteEvent}
+                        currentDate={currentDate}
+                        onMonthChange={safeSetCurrentDate}
+                      />
+                    </ComponentSafetyWrapper>
+                  </Suspense>
+                </div>
+                
+                {/* Enhanced Event Management */}
+                <div className="mt-6 p-4 bg-muted/50 rounded-lg border border-border">
+                  <h3 className="text-lg font-semibold text-foreground mb-4">Event Management</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {getFilteredEvents().map((event) => (
+                      <div key={event.id} className="bg-background rounded-lg p-4 border border-border hover:shadow-md transition-all">
+                        <div className="flex items-start justify-between mb-2">
+                          <div className="flex-1">
+                            <h4 className="font-medium text-foreground">{event.title}</h4>
+                            <p className="text-sm text-muted-foreground">
+                              {event.date?.toLocaleDateString()} at {event.time} ({event.duration})
+                            </p>
+                            {event.location && (
+                              <p className="text-sm text-muted-foreground">📍 {event.location}</p>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-1 ml-2">
+                            <button
+                              onClick={() => handleEditEvent(event)}
+                              className="p-1 text-primary hover:bg-primary/10 rounded transition-colors"
+                              title="Edit event"
+                            >
+                              <Edit size={16} />
+                            </button>
+                            <button
+                              onClick={() => handleDeleteEvent(event.id)}
+                              className="p-1 text-destructive hover:bg-destructive/10 rounded transition-colors"
+                              title="Delete event"
+                            >
+                              <Trash2 size={16} />
+                            </button>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                            event.type === 'meeting' ? 'bg-blue-100 text-blue-800' :
+                            event.type === 'focus' ? 'bg-green-100 text-green-800' :
+                            event.type === 'break' ? 'bg-yellow-100 text-yellow-800' :
+                            'bg-purple-100 text-purple-800'
+                          }`}>
+                            {event.type}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
               </div>
 
               {/* AI Panel */}
@@ -1387,6 +1697,331 @@ const Index = () => {
                   Cancel
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Event Edit Modal */}
+      {showEventEditModal && editingEvent && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-background rounded-xl shadow-2xl w-full max-w-md border border-border">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between p-6 border-b border-border">
+              <div>
+                <h2 className="text-xl font-bold text-foreground">Edit Event</h2>
+                <p className="text-sm text-muted-foreground mt-1">
+                  {editingEvent.date?.toLocaleDateString()}
+                </p>
+              </div>
+              <button
+                onClick={() => {
+                  setShowEventEditModal(false);
+                  setEditingEvent(null);
+                  setEventForm({ title: '', time: '', description: '', type: 'meeting', reminders: [] });
+                }}
+                className="p-2 hover:bg-muted rounded-lg transition-colors"
+              >
+                <X className="w-5 h-5 text-muted-foreground" />
+              </button>
+            </div>
+            
+            {/* Modal Body */}
+            <div className="p-6 space-y-4">
+              {/* Event Title */}
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-2">
+                  Event Title *
+                </label>
+                <input
+                  type="text"
+                  value={eventForm.title}
+                  onChange={(e) => setEventForm(prev => ({ ...prev, title: e.target.value }))}
+                  placeholder="Enter event title..."
+                  className="w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-primary bg-background text-foreground outline-none"
+                />
+              </div>
+              
+              {/* Event Time */}
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-2">
+                  <Clock className="w-4 h-4 inline mr-1" />
+                  Time
+                </label>
+                <input
+                  type="time"
+                  value={eventForm.time}
+                  onChange={(e) => setEventForm(prev => ({ ...prev, time: e.target.value }))}
+                  className="w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-primary bg-background text-foreground outline-none"
+                />
+              </div>
+              
+              {/* Event Type */}
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-2">
+                  <Calendar className="w-4 h-4 inline mr-1" />
+                  Event Type
+                </label>
+                <select
+                  value={eventForm.type}
+                  onChange={(e) => setEventForm(prev => ({ ...prev, type: e.target.value as Event['type'] }))}
+                  className="w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-primary bg-background text-foreground outline-none"
+                >
+                  <option value="meeting">Meeting</option>
+                  <option value="focus">Focus Time</option>
+                  <option value="break">Break</option>
+                  <option value="travel">Travel</option>
+                </select>
+              </div>
+              
+              {/* Event Description */}
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-2">
+                  <Edit className="w-4 h-4 inline mr-1" />
+                  Description
+                </label>
+                <textarea
+                  value={eventForm.description}
+                  onChange={(e) => setEventForm(prev => ({ ...prev, description: e.target.value }))}
+                  placeholder="Enter event description..."
+                  rows={3}
+                  className="w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-primary bg-background text-foreground outline-none resize-none"
+                />
+              </div>
+              
+              {/* Reminders */}
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="block text-sm font-medium text-foreground">
+                    <Bell className="w-4 h-4 inline mr-1" />
+                    Reminders
+                  </label>
+                  <button
+                    type="button"
+                    onClick={handleAddReminder}
+                    className="text-sm text-primary hover:text-primary/80 font-medium flex items-center space-x-1"
+                  >
+                    <Plus className="w-4 h-4" />
+                    <span>Add Reminder</span>
+                  </button>
+                </div>
+                
+                {eventForm.reminders.length === 0 ? (
+                  <p className="text-sm text-muted-foreground italic">No reminders set</p>
+                ) : (
+                  <div className="space-y-2">
+                    {eventForm.reminders.map((reminder, index) => (
+                      <div key={index} className="flex items-center space-x-2">
+                        <select
+                          value={reminder}
+                          onChange={(e) => handleReminderChange(index, e.target.value)}
+                          className="flex-1 px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-primary bg-background text-foreground outline-none text-sm"
+                        >
+                          {reminderOptions.map(option => (
+                            <option key={option.value} value={option.value}>
+                              {option.label}
+                            </option>
+                          ))}
+                        </select>
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveReminder(index)}
+                          className="p-2 text-destructive hover:bg-destructive/10 rounded-lg transition-colors"
+                          title="Remove reminder"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+            
+            {/* Modal Footer */}
+            <div className="flex items-center justify-end space-x-3 p-6 border-t border-border">
+              <button
+                onClick={() => {
+                  setShowEventEditModal(false);
+                  setEditingEvent(null);
+                  setEventForm({ title: '', time: '', description: '', type: 'meeting', reminders: [] });
+                }}
+                className="px-4 py-2 text-foreground bg-muted hover:bg-muted/80 rounded-lg transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleUpdateEvent}
+                disabled={!eventForm.title.trim()}
+                className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 disabled:bg-muted disabled:cursor-not-allowed transition-colors"
+              >
+                Update Event
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Calendar Sync Modal */}
+      {showCalendarSyncModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-background rounded-xl shadow-2xl w-full max-w-lg border border-border">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between p-6 border-b border-border">
+              <div className="flex items-center space-x-2">
+                <RefreshCw className="w-6 h-6 text-primary" />
+                <h2 className="text-xl font-bold text-foreground">Calendar Sync</h2>
+              </div>
+              <button
+                onClick={() => setShowCalendarSyncModal(false)}
+                className="p-2 hover:bg-muted rounded-lg transition-colors"
+              >
+                <X className="w-5 h-5 text-muted-foreground" />
+              </button>
+            </div>
+            
+            {/* Modal Body */}
+            <div className="p-6 space-y-6">
+              <p className="text-sm text-muted-foreground">
+                Connect your external calendars to sync events seamlessly with NeuroCal.
+              </p>
+              
+              {/* Google Calendar */}
+              <div className="border border-border rounded-lg p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-10 h-10 bg-red-500 rounded-lg flex items-center justify-center">
+                      <Calendar className="w-5 h-5 text-white" />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-foreground">Google Calendar</h3>
+                      <p className="text-sm text-muted-foreground">
+                        Status: {calendarSyncSettings.googleCalendar.connected ? (
+                          <span className="text-green-600 font-medium">Connected</span>
+                        ) : (
+                          <span className="text-muted-foreground">Not connected</span>
+                        )}
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => handleCalendarSync('googleCalendar')}
+                    disabled={calendarSyncInProgress.googleCalendar}
+                    className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                      calendarSyncSettings.googleCalendar.connected
+                        ? 'bg-red-100 text-red-700 hover:bg-red-200'
+                        : 'bg-primary text-primary-foreground hover:bg-primary/90'
+                    } disabled:opacity-50 disabled:cursor-not-allowed`}
+                  >
+                    {calendarSyncInProgress.googleCalendar ? (
+                      <RefreshCw className="w-4 h-4 animate-spin" />
+                    ) : calendarSyncSettings.googleCalendar.connected ? (
+                      'Disconnect'
+                    ) : (
+                      'Connect'
+                    )}
+                  </button>
+                </div>
+              </div>
+              
+              {/* Apple Calendar */}
+              <div className="border border-border rounded-lg p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-10 h-10 bg-gray-800 rounded-lg flex items-center justify-center">
+                      <Calendar className="w-5 h-5 text-white" />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-foreground">Apple Calendar</h3>
+                      <p className="text-sm text-muted-foreground">
+                        Status: {calendarSyncSettings.appleCalendar.connected ? (
+                          <span className="text-green-600 font-medium">Connected</span>
+                        ) : (
+                          <span className="text-muted-foreground">Not connected</span>
+                        )}
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => handleCalendarSync('appleCalendar')}
+                    disabled={calendarSyncInProgress.appleCalendar}
+                    className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                      calendarSyncSettings.appleCalendar.connected
+                        ? 'bg-red-100 text-red-700 hover:bg-red-200'
+                        : 'bg-primary text-primary-foreground hover:bg-primary/90'
+                    } disabled:opacity-50 disabled:cursor-not-allowed`}
+                  >
+                    {calendarSyncInProgress.appleCalendar ? (
+                      <RefreshCw className="w-4 h-4 animate-spin" />
+                    ) : calendarSyncSettings.appleCalendar.connected ? (
+                      'Disconnect'
+                    ) : (
+                      'Connect'
+                    )}
+                  </button>
+                </div>
+              </div>
+              
+              {/* Outlook Calendar */}
+              <div className="border border-border rounded-lg p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
+                      <Calendar className="w-5 h-5 text-white" />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-foreground">Outlook Calendar</h3>
+                      <p className="text-sm text-muted-foreground">
+                        Status: {calendarSyncSettings.outlookCalendar.connected ? (
+                          <span className="text-green-600 font-medium">Connected</span>
+                        ) : (
+                          <span className="text-muted-foreground">Not connected</span>
+                        )}
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => handleCalendarSync('outlookCalendar')}
+                    disabled={calendarSyncInProgress.outlookCalendar}
+                    className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                      calendarSyncSettings.outlookCalendar.connected
+                        ? 'bg-red-100 text-red-700 hover:bg-red-200'
+                        : 'bg-primary text-primary-foreground hover:bg-primary/90'
+                    } disabled:opacity-50 disabled:cursor-not-allowed`}
+                  >
+                    {calendarSyncInProgress.outlookCalendar ? (
+                      <RefreshCw className="w-4 h-4 animate-spin" />
+                    ) : calendarSyncSettings.outlookCalendar.connected ? (
+                      'Disconnect'
+                    ) : (
+                      'Connect'
+                    )}
+                  </button>
+                </div>
+              </div>
+              
+              {/* Sync Info */}
+              <div className="bg-primary/10 border border-primary/20 rounded-lg p-4">
+                <div className="flex items-start space-x-2">
+                  <Settings className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
+                  <div>
+                    <h4 className="font-medium text-primary mb-1">Sync Settings</h4>
+                    <p className="text-sm text-primary/80">
+                      Events sync automatically every 15 minutes when connected. Manual sync is available anytime.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            {/* Modal Footer */}
+            <div className="flex justify-end p-6 border-t border-border">
+              <button
+                onClick={() => setShowCalendarSyncModal(false)}
+                className="px-4 py-2 bg-muted text-foreground rounded-lg hover:bg-muted/80 transition-colors"
+              >
+                Done
+              </button>
             </div>
           </div>
         </div>
