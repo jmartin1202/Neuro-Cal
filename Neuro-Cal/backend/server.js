@@ -50,6 +50,7 @@ app.get('/health', (req, res) => {
 import authRoutes from './routes/auth.js';
 import aiRoutes from './routes/ai.js';
 import billingRoutes from './routes/billing.js';
+import crmRoutes from './routes/crm.js';
 
 // Import webhook handler
 import { handleStripeWebhook } from './services/stripeWebhookHandler.js';
@@ -61,6 +62,7 @@ import { initializeCronJobs } from './services/cronJobs.js';
 app.use('/api/auth', authRoutes);
 app.use('/api/ai', aiRoutes);
 app.use('/api/billing', billingRoutes);
+app.use('/api/crm', crmRoutes);
 
 // Stripe webhook endpoint (no body parsing for webhook verification)
 app.post('/webhooks/stripe', express.raw({ type: 'application/json' }), handleStripeWebhook);
