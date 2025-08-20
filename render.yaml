@@ -3,6 +3,7 @@ services:
   - type: web
     name: neurocal-frontend
     env: static
+    rootDir: Neuro-Cal
     buildCommand: npm install && npm run build
     staticPublishPath: ./dist
     routes:
@@ -26,6 +27,7 @@ services:
     name: neurocal-backend
     env: node
     plan: free
+    rootDir: Neuro-Cal
     buildCommand: npm install
     startCommand: npm start
     envVars:
