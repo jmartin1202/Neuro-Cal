@@ -63,22 +63,9 @@ interface PerformanceMetrics {
 export const PerformanceMonitoring = () => {
   const { metrics, isMonitoring, alerts, startMonitoring, stopMonitoring, clearAlerts } = usePerformanceMonitor();
   
-  const [localMetrics, setLocalMetrics] = useState<PerformanceMetrics>({
-    coreWebVitals: { lcp: 0, fid: 0, cls: 0, ttfb: 0 },
-    pagePerformance: { loadTime: 0, domContentLoaded: 0, firstPaint: 0, firstContentfulPaint: 0 },
-    resourcePerformance: { totalResources: 0, slowResources: 0, averageLoadTime: 0, largestResource: '' },
-    errors: { total: 0, critical: 0, warnings: 0 },
-    system: { memoryUsage: 0, cpuUsage: 0, networkLatency: 0, databaseResponseTime: 0 }
-  });
 
-  const [isMonitoring, setIsMonitoring] = useState(true);
-  const [alerts, setAlerts] = useState<Array<{
-    id: string;
-    type: 'error' | 'warning' | 'info';
-    message: string;
-    timestamp: Date;
-    severity: 'low' | 'medium' | 'high';
-  }>>([]);
+
+
 
   const updatePerformanceMetrics = useCallback(() => {
     // Simulate performance metrics collection
