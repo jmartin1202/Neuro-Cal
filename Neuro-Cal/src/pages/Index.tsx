@@ -10,7 +10,6 @@ import { useErrorPrevention } from "@/hooks/useErrorPrevention";
 import { ComponentSafetyWrapper } from "@/components/ComponentSafetyWrapper";
 
 // Lazy load components to isolate issues
-const SmartCalendar = lazy(() => import("@/components/SmartCalendar"));
 const InteractiveCalendar = lazy(() => import("@/components/InteractiveCalendar"));
 const AIPanel = lazy(() => import("@/components/AIPanel").then(module => ({ default: module.AIPanel })));
 const CreateEventModal = lazy(() => import("@/components/CreateEventModal").then(module => ({ default: module.CreateEventModal })));
@@ -83,7 +82,6 @@ const Index = () => {
     }
   ]);
   const [isDeveloperMode, setIsDeveloperMode] = useState(false);
-  const [useInteractiveCalendar, setUseInteractiveCalendar] = useState(true);
   const { toast } = useToast();
   const isMobile = useIsMobile();
 
@@ -509,59 +507,25 @@ const Index = () => {
 
         {/* Main Content */}
         <main className="space-y-6">
-          {/* Calendar Toggle */}
-          <div className="flex items-center justify-between">
-            <h2 className="text-xl font-semibold text-foreground">Calendar View</h2>
-            <div className="flex items-center gap-2">
-              <Button
-                variant={useInteractiveCalendar ? "default" : "outline"}
-                size="sm"
-                onClick={() => setUseInteractiveCalendar(true)}
-              >
-                <Calendar className="h-4 w-4 mr-2" />
-                Interactive
-              </Button>
-              <Button
-                variant={!useInteractiveCalendar ? "default" : "outline"}
-                size="sm"
-                onClick={() => setUseInteractiveCalendar(false)}
-              >
-                <Calendar className="h-4 w-4 mr-2" />
-                Classic
-              </Button>
-            </div>
-          </div>
-
           {/* Calendar */}
           <div className="calendar-container">
             <Suspense fallback={<div className="p-4 bg-card rounded-lg animate-pulse border border-border">
               <div className="h-96 bg-muted rounded-lg"></div>
             </div>}>
-              {useInteractiveCalendar ? (
-                <ComponentSafetyWrapper
-                  componentName="InteractiveCalendar"
-                  isolationLevel="moderate"
-                  autoRecover={true}
-                  retryCount={3}
-                >
-                  <InteractiveCalendar 
-                    events={events}
-                    onCreateEvent={handleCreateEvent}
-                    onDeleteEvent={handleDeleteEvent}
-                    currentDate={currentDate}
-                    onMonthChange={safeSetCurrentDate}
-                  />
-                </ComponentSafetyWrapper>
-              ) : (
-                <ComponentSafetyWrapper
-                  componentName="SmartCalendar"
-                  isolationLevel="moderate"
-                  autoRecover={true}
-                  retryCount={3}
-                >
-                  <SmartCalendar events={events} />
-                </ComponentSafetyWrapper>
-              )}
+              <ComponentSafetyWrapper
+                componentName="InteractiveCalendar"
+                isolationLevel="moderate"
+                autoRecover={true}
+                retryCount={3}
+              >
+                <InteractiveCalendar 
+                  events={events}
+                  onCreateEvent={handleCreateEvent}
+                  onDeleteEvent={handleDeleteEvent}
+                  currentDate={currentDate}
+                  onMonthChange={safeSetCurrentDate}
+                />
+              </ComponentSafetyWrapper>
             </Suspense>
           </div>
 

@@ -42,24 +42,24 @@ const InteractiveCalendar = ({
 
   const weekdays = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
   const eventTypes = {
-    meeting: 'bg-blue-500',
-    focus: 'bg-green-500',
-    break: 'bg-yellow-500',
-    travel: 'bg-red-500'
+    meeting: 'bg-calendar-event',
+    focus: 'bg-primary',
+    break: 'bg-accent',
+    travel: 'bg-destructive'
   };
 
   const getEventColor = (type: Event['type']) => {
     switch (type) {
       case "meeting":
-        return "bg-blue-500";
+        return "bg-calendar-event";
       case "focus":
-        return "bg-green-500";
+        return "bg-primary";
       case "break":
-        return "bg-yellow-500";
+        return "bg-accent";
       case "travel":
-        return "bg-red-500";
+        return "bg-destructive";
       default:
-        return "bg-blue-500";
+        return "bg-calendar-event";
     }
   };
 
@@ -128,7 +128,7 @@ const InteractiveCalendar = ({
     for (let i = firstDayOfMonth - 1; i >= 0; i--) {
       const prevMonthDay = new Date(currentYear, currentMonth, -i).getDate();
       days.push(
-        <div key={`prev-${prevMonthDay}`} className="h-20 p-1 text-gray-400 cursor-pointer hover:bg-gray-50">
+        <div key={`prev-${prevMonthDay}`} className="h-20 p-1 text-muted-foreground cursor-pointer hover:bg-muted">
           <div className="text-sm">{prevMonthDay}</div>
         </div>
       );
@@ -147,11 +147,11 @@ const InteractiveCalendar = ({
         <div
           key={day}
           onClick={() => handleDateClick(day)}
-          className={`h-20 p-1 border-l border-b cursor-pointer hover:bg-blue-50 transition-colors ${
-            isToday ? 'bg-blue-100 border-blue-300' : ''
+          className={`h-20 p-1 border-l border-b cursor-pointer hover:bg-muted transition-colors ${
+            isToday ? 'bg-calendar-today/20 border-calendar-today' : ''
           }`}
         >
-          <div className={`text-sm font-medium ${isToday ? 'text-blue-600' : 'text-gray-900'}`}>
+          <div className={`text-sm font-medium ${isToday ? 'text-calendar-today font-bold' : 'text-foreground'}`}>
             {day}
           </div>
           <div className="mt-1 space-y-1">
@@ -175,7 +175,7 @@ const InteractiveCalendar = ({
     const remainingCells = totalCells - days.length;
     for (let day = 1; day <= remainingCells; day++) {
       days.push(
-        <div key={`next-${day}`} className="h-20 p-1 text-gray-400 cursor-pointer hover:bg-gray-50">
+        <div key={`next-${day}`} className="h-20 p-1 text-muted-foreground cursor-pointer hover:bg-muted">
           <div className="text-sm">{day}</div>
         </div>
       );
@@ -190,31 +190,31 @@ const InteractiveCalendar = ({
   ];
 
   return (
-    <div className="max-w-6xl mx-auto p-6 bg-white">
+    <div className="max-w-6xl mx-auto p-6 bg-background">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
-          <div className="bg-indigo-600 text-white p-2 rounded-lg">
+          <div className="bg-primary text-primary-foreground p-2 rounded-lg">
             <Calendar size={24} />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">NeuroCal</h1>
-            <p className="text-gray-500">AI-Powered Calendar</p>
+            <h1 className="text-2xl font-bold text-foreground">NeuroCal</h1>
+            <p className="text-muted-foreground">AI-Powered Calendar</p>
           </div>
         </div>
         <div className="flex items-center gap-4">
           <button
             onClick={() => navigateMonth(-1)}
-            className="w-8 h-8 border border-gray-300 bg-white rounded-md flex items-center justify-center cursor-pointer transition-all duration-150 ease-in-out text-gray-600 hover:bg-gray-50"
+            className="w-8 h-8 border border-border bg-card rounded-md flex items-center justify-center cursor-pointer transition-all duration-150 ease-in-out text-muted-foreground hover:bg-muted"
           >
             ‹
           </button>
-          <h2 className="text-xl font-semibold text-gray-800">
+          <h2 className="text-xl font-semibold text-foreground">
             {monthNames[currentMonth]} {currentYear}
           </h2>
           <button
             onClick={() => navigateMonth(1)}
-            className="w-8 h-8 border border-gray-300 bg-white rounded-md flex items-center justify-center cursor-pointer transition-all duration-150 ease-in-out text-gray-600 hover:bg-gray-50"
+            className="w-8 h-8 border border-border bg-card rounded-md flex items-center justify-center cursor-pointer transition-all duration-150 ease-in-out text-muted-foreground hover:bg-muted"
           >
             ›
           </button>
@@ -226,7 +226,7 @@ const InteractiveCalendar = ({
                 onMonthChange(today);
               }
             }}
-            className="px-3 py-1 text-sm border border-gray-300 bg-white rounded-md cursor-pointer transition-all duration-150 ease-in-out text-gray-600 hover:bg-gray-50"
+            className="px-3 py-1 text-sm border border-border bg-card rounded-md cursor-pointer transition-all duration-150 ease-in-out text-muted-foreground hover:bg-muted"
           >
             Today
           </button>
@@ -234,11 +234,11 @@ const InteractiveCalendar = ({
       </div>
 
       {/* Calendar Grid */}
-      <div className="border border-gray-200 rounded-lg overflow-hidden">
+      <div className="border border-border rounded-lg overflow-hidden">
         {/* Week headers */}
-        <div className="grid grid-cols-7 bg-indigo-600">
+        <div className="grid grid-cols-7 bg-primary">
           {weekdays.map(day => (
-            <div key={day} className="p-3 text-center text-white font-medium">
+            <div key={day} className="p-3 text-center text-primary-foreground font-medium">
               {day}
             </div>
           ))}
@@ -253,14 +253,14 @@ const InteractiveCalendar = ({
       {/* Event Input Modal */}
       {showEventModal && selectedDate && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-96 max-w-90vw max-h-[90vh] overflow-y-auto">
+          <div className="bg-card rounded-lg p-6 w-96 max-w-90vw max-h-[90vh] overflow-y-auto border border-border">
             <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-semibold">
+              <h3 className="text-lg font-semibold text-card-foreground">
                 Add Event - {monthNames[currentMonth]} {selectedDate.day}, {currentYear}
               </h3>
               <button
                 onClick={closeModal}
-                className="text-gray-500 hover:text-gray-700"
+                className="text-muted-foreground hover:text-foreground"
               >
                 <X size={20} />
               </button>
@@ -268,7 +268,7 @@ const InteractiveCalendar = ({
 
             <form onSubmit={handleEventSubmit} className="space-y-4">
               <div>
-                <Label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">
+                <Label htmlFor="title" className="block text-sm font-medium text-foreground mb-1">
                   Event Title *
                 </Label>
                 <Input
@@ -283,7 +283,7 @@ const InteractiveCalendar = ({
               </div>
 
               <div>
-                <Label htmlFor="time" className="block text-sm font-medium text-gray-700 mb-1">
+                <Label htmlFor="time" className="block text-sm font-medium text-foreground mb-1">
                   Time
                 </Label>
                 <Input
@@ -296,7 +296,7 @@ const InteractiveCalendar = ({
               </div>
 
               <div>
-                <Label htmlFor="duration" className="block text-sm font-medium text-gray-700 mb-1">
+                <Label htmlFor="duration" className="block text-sm font-medium text-foreground mb-1">
                   Duration
                 </Label>
                 <Select
@@ -320,7 +320,7 @@ const InteractiveCalendar = ({
               </div>
 
               <div>
-                <Label htmlFor="type" className="block text-sm font-medium text-gray-700 mb-1">
+                <Label htmlFor="type" className="block text-sm font-medium text-foreground mb-1">
                   Event Type
                 </Label>
                 <Select
@@ -340,7 +340,7 @@ const InteractiveCalendar = ({
               </div>
 
               <div>
-                <Label htmlFor="location" className="block text-sm font-medium text-gray-700 mb-1">
+                <Label htmlFor="location" className="block text-sm font-medium text-foreground mb-1">
                   Location
                 </Label>
                 <Input
@@ -354,7 +354,7 @@ const InteractiveCalendar = ({
               </div>
 
               <div>
-                <Label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
+                <Label htmlFor="description" className="block text-sm font-medium text-foreground mb-1">
                   Description
                 </Label>
                 <Textarea
@@ -370,7 +370,7 @@ const InteractiveCalendar = ({
               <div className="flex gap-3 pt-4">
                 <Button
                   type="submit"
-                  className="flex-1 bg-indigo-600 hover:bg-indigo-700 flex items-center justify-center gap-2"
+                  className="flex-1 flex items-center justify-center gap-2"
                 >
                   <Plus size={16} />
                   Add Event
@@ -387,18 +387,18 @@ const InteractiveCalendar = ({
 
             {/* Show existing events for this date */}
             {selectedDate && getEventsForDate(selectedDate.dateKey).length > 0 && (
-              <div className="mt-6 pt-4 border-t border-gray-200">
-                <h4 className="text-sm font-medium text-gray-700 mb-2">Existing Events:</h4>
+              <div className="mt-6 pt-4 border-t border-border">
+                <h4 className="text-sm font-medium text-foreground mb-2">Existing Events:</h4>
                 <div className="space-y-2">
                   {getEventsForDate(selectedDate.dateKey).map(event => (
-                    <div key={event.id} className="flex items-center justify-between p-2 bg-gray-50 rounded">
+                    <div key={event.id} className="flex items-center justify-between p-2 bg-muted rounded">
                       <div>
-                        <div className="font-medium text-sm">{event.title}</div>
-                        {event.time && <div className="text-xs text-gray-500">{event.time}</div>}
+                        <div className="font-medium text-sm text-foreground">{event.title}</div>
+                        {event.time && <div className="text-xs text-muted-foreground">{event.time}</div>}
                       </div>
                       <button
                         onClick={() => deleteEvent(event.id)}
-                        className="text-red-500 hover:text-red-700"
+                        className="text-destructive hover:text-destructive/80"
                       >
                         <X size={16} />
                       </button>
@@ -412,11 +412,11 @@ const InteractiveCalendar = ({
       )}
 
       {/* Instructions */}
-      <div className="mt-6 p-4 bg-blue-50 rounded-lg">
-        <h3 className="font-medium text-blue-900 mb-2">How to use:</h3>
-        <ul className="text-sm text-blue-800 space-y-1">
+      <div className="mt-6 p-4 bg-muted rounded-lg border border-border">
+        <h3 className="font-medium text-foreground mb-2">How to use:</h3>
+        <ul className="text-sm text-muted-foreground space-y-1">
           <li>• Click on any date to add an event</li>
-          <li>• Events are color-coded by type (Meeting: blue, Focus: green, etc.)</li>
+          <li>• Events are color-coded by type (Meeting: purple, Focus: green, etc.)</li>
           <li>• Up to 2 events show on each date, with "+more" indicator for additional events</li>
           <li>• Click the X next to existing events to delete them</li>
         </ul>
