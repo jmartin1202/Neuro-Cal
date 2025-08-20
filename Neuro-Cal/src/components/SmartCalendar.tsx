@@ -1,6 +1,8 @@
 import { useState, useCallback, useMemo } from "react";
 import { CalendarHeader } from "./CalendarHeader";
 import { CalendarGrid } from "./CalendarGrid";
+import { WeekView } from "./WeekView";
+import { DayView } from "./DayView";
 import { AIPanel } from "./AIPanel";
 import { CreateEventModal } from "./CreateEventModal";
 import { Event } from "./EventCard";
@@ -18,17 +20,62 @@ export const SmartCalendar = () => {
   const { toast } = useToast();
 
   const handlePrevMonth = useCallback(() => {
-    setCurrentDate(prev => new Date(prev.getFullYear(), prev.getMonth() - 1, 1));
-  }, []);
+    setCurrentDate(prev => {
+      const newDate = new Date(prev);
+      if (view === "month") {
+        newDate.setMonth(prev.getMonth() - 1);
+      } else if (view === "week") {
+        newDate.setDate(prev.getDate() - 7);
+      } else if (view === "day") {
+        newDate.setDate(prev.getDate() - 1);
+      }
+      return newDate;
+    });
+  }, [view]);
 
   const handleNextMonth = useCallback(() => {
-    setCurrentDate(prev => new Date(prev.getFullYear(), prev.getMonth() + 1, 1));
-  }, []);
+    setCurrentDate(prev => {
+      const newDate = new Date(prev);
+      if (view === "month") {
+        newDate.setMonth(prev.getMonth() + 1);
+      } else if (view === "week") {
+        newDate.setDate(prev.getDate() + 7);
+      } else if (view === "day") {
+        newDate.setDate(prev.getDate() + 1);
+      }
+      return newDate;
+    });
+  }, [view]);
 
   const handleDateClick = useCallback((date: Date) => {
     setSelectedDate(date);
     setIsCreateModalOpen(true);
   }, []);
+
+  const handleViewChange = useCallback((newView: "month" | "week" | "day") => {
+    setView(newView);
+    
+    // Adjust current date based on view
+    if (newView === "day") {
+      // For day view, set to today if not already on a specific day
+      const today = new Date();
+      if (currentDate.toDateString() !== today.toDateString()) {
+        setCurrentDate(today);
+      }
+    } else if (newView === "week") {
+      // For week view, ensure we're at the start of a week
+      const newDate = new Date(currentDate);
+      const day = newDate.getDay();
+      const diff = newDate.getDate() - day + (day === 0 ? -6 : 1);
+      newDate.setDate(diff);
+      setCurrentDate(newDate);
+    } else if (newView === "month") {
+      // For month view, ensure we're at the start of a month
+      const newDate = new Date(currentDate);
+      newDate.setDate(1);
+      setCurrentDate(newDate);
+    }
+  }, [currentDate]);
 
   const handleCreateEvent = useCallback(async (eventData: Omit<Event, 'id'>) => {
     // Create new event with unique ID
@@ -251,16 +298,35 @@ export const SmartCalendar = () => {
         onPrevMonth={handlePrevMonth}
         onNextMonth={handleNextMonth}
         view={view}
-        onViewChange={setView}
+        onViewChange={handleViewChange}
       />
       
       <div className={`flex flex-1 overflow-auto ${layoutClass}`}>
-        <CalendarGrid
-          currentDate={currentDate}
-          events={events}
-          selectedDate={selectedDate}
-          onDateClick={handleDateClick}
-        />
+        {/* Calendar Views */}
+        {view === "month" && (
+          <CalendarGrid
+            currentDate={currentDate}
+            events={events}
+            selectedDate={selectedDate}
+            onDateClick={handleDateClick}
+          />
+        )}
+        
+        {view === "week" && (
+          <WeekView
+            currentDate={currentDate}
+            events={events}
+            onDateClick={handleDateClick}
+          />
+        )}
+        
+        {view === "day" && (
+          <DayView
+            currentDate={currentDate}
+            events={events}
+            onDateClick={handleDateClick}
+          />
+        )}
         
         <AIPanel
           upcomingEvents={todaysEvents}

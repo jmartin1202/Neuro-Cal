@@ -26,6 +26,47 @@ export const CalendarHeader = ({
   const currentYear = currentDate.getFullYear();
   const isMobile = useIsMobile();
 
+  const getNavigationLabel = () => {
+    if (view === "month") {
+      return `${currentMonth} ${currentYear}`;
+    } else if (view === "week") {
+      const startOfWeek = new Date(currentDate);
+      const day = startOfWeek.getDay();
+      const diff = startOfWeek.getDate() - day + (day === 0 ? -6 : 1);
+      startOfWeek.setDate(diff);
+      
+      const endOfWeek = new Date(startOfWeek);
+      endOfWeek.setDate(startOfWeek.getDate() + 6);
+      
+      const startMonth = startOfWeek.toLocaleDateString('en-US', { month: 'short' });
+      const endMonth = endOfWeek.toLocaleDateString('en-US', { month: 'short' });
+      const startDay = startOfWeek.getDate();
+      const endDay = endOfWeek.getDate();
+      const year = startOfWeek.getFullYear();
+      
+      if (startMonth === endMonth) {
+        return `${startMonth} ${startDay}-${endDay}, ${year}`;
+      } else {
+        return `${startMonth} ${startDay} - ${endMonth} ${endDay}, ${year}`;
+      }
+    } else if (view === "day") {
+      return currentDate.toLocaleDateString('en-US', {
+        weekday: 'long',
+        month: 'long',
+        day: 'numeric',
+        year: 'numeric'
+      });
+    }
+    return `${currentMonth} ${currentYear}`;
+  };
+
+  const getNavigationButtonLabel = () => {
+    if (view === "month") return "Month";
+    if (view === "week") return "Week";
+    if (view === "day") return "Day";
+    return "Month";
+  };
+
   return (
     <div className="flex flex-col md:flex-row md:items-center justify-between p-4 md:p-6 bg-gradient-card border-b border-border space-y-4 md:space-y-0">
       <div className="flex items-center gap-3 md:gap-4">
@@ -52,7 +93,7 @@ export const CalendarHeader = ({
           </Button>
           <div className="min-w-[150px] md:min-w-[200px] text-center">
             <h2 className="text-lg md:text-xl font-semibold">
-              {isMobile ? `${currentMonth} ${currentYear}` : `${currentMonth} ${currentYear}`}
+              {getNavigationLabel()}
             </h2>
           </div>
           <Button variant="outline" size={isMobile ? "sm" : "sm"} onClick={onNextMonth}>
