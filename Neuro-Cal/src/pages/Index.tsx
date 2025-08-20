@@ -5,7 +5,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
-import { LogOut, LogIn, Calendar, Sparkles, Zap, Users, Clock, X, BarChart3, Crown, Star, Lock, Plus, Check, Badge, Brain, AlertTriangle, RefreshCw } from "lucide-react";
+import { LogOut, LogIn, Calendar, Sparkles, Zap, Users, Clock, X, BarChart3, Crown, Star, Lock, Plus, Check, Badge, Brain, AlertTriangle, RefreshCw, Code } from "lucide-react";
 import { useErrorPrevention } from "@/hooks/useErrorPrevention";
 import { ComponentSafetyWrapper } from "@/components/ComponentSafetyWrapper";
 
@@ -49,6 +49,7 @@ const Index = () => {
   const [showPricingModal, setShowPricingModal] = useState(false);
   const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
   const [events, setEvents] = useState<Event[]>([]);
+  const [isDeveloperMode, setIsDeveloperMode] = useState(false);
   const { toast } = useToast();
   const isMobile = useIsMobile();
 
@@ -86,7 +87,7 @@ const Index = () => {
   // Event handlers with error prevention
   const handleDateClick = useCallback((date: Date) => {
     try {
-      if (!user) {
+      if (!user && !isDeveloperMode) {
         safeSetShowPricingModal(true);
         return;
       }
@@ -95,7 +96,7 @@ const Index = () => {
     } catch (error) {
       errorPrevention.trackError(error instanceof Error ? error : String(error), 'handleDateClick');
     }
-  }, [user, safeSetShowPricingModal, safeSetSelectedDate, safeSetIsCreateModalOpen, errorPrevention]);
+  }, [user, isDeveloperMode, safeSetShowPricingModal, safeSetSelectedDate, safeSetIsCreateModalOpen, errorPrevention]);
 
   const handleCreateEvent = useCallback(async (eventData: Omit<Event, 'id'>) => {
     try {
@@ -122,11 +123,18 @@ const Index = () => {
 
   const handleAICreateEvent = useCallback((eventText: string) => {
     try {
-      if (!user) {
+      if (!user && !isDeveloperMode) {
         safeSetShowPricingModal(true);
         return;
       }
       // AI event creation logic would go here
+      if (isDeveloperMode) {
+        toast({
+          title: "AI Event Creation (Dev Mode)",
+          description: `Creating event: "${eventText}" - This would normally require authentication.`,
+        });
+        return;
+      }
       toast({
         title: "AI Event Creation",
         description: "This feature requires authentication.",
@@ -134,7 +142,7 @@ const Index = () => {
     } catch (error) {
       errorPrevention.trackError(error instanceof Error ? error : String(error), 'handleAICreateEvent');
     }
-  }, [user, toast, safeSetShowPricingModal, errorPrevention]);
+  }, [user, isDeveloperMode, toast, safeSetShowPricingModal, errorPrevention]);
 
   const handleAuthModeSwitch = useCallback(() => {
     try {
@@ -213,11 +221,15 @@ const Index = () => {
   // Safe button click handlers
   const handleCreateEventClick = useCallback(() => {
     try {
+      if (!user && !isDeveloperMode) {
+        safeSetShowPricingModal(true);
+        return;
+      }
       safeSetIsCreateModalOpen(true);
     } catch (error) {
       errorPrevention.trackError(error instanceof Error ? error : String(error), 'handleCreateEventClick');
     }
-  }, [safeSetIsCreateModalOpen, errorPrevention]);
+  }, [user, isDeveloperMode, safeSetIsCreateModalOpen, safeSetShowPricingModal, errorPrevention]);
 
   const handleSignInClick = useCallback(() => {
     try {
@@ -319,7 +331,19 @@ const Index = () => {
             </div>
           </div>
           <div className="header-actions">
-            {user ? (
+            {/* Developer Mode Toggle */}
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={() => setIsDeveloperMode(!isDeveloperMode)}
+              className={`btn ${isDeveloperMode ? 'bg-accent text-accent-foreground' : 'btn-outline'}`}
+              title="Toggle Developer Mode"
+            >
+              <Code className="h-4 w-4 mr-2" />
+              {isDeveloperMode ? 'Dev Mode ON' : 'Dev Mode'}
+            </Button>
+            
+            {(user || isDeveloperMode) ? (
               <>
                 <Button variant="outline" size="sm" onClick={handleCreateEventClick} className="btn btn-outline">
                   <Plus className="h-4 w-4 mr-2" />
@@ -331,10 +355,17 @@ const Index = () => {
                     CRM
                   </Button>
                 </Link>
-                <Button variant="outline" size="sm" onClick={handleLogout} className="btn btn-outline">
-                  <LogOut className="h-4 w-4 mr-2" />
-                  Logout
-                </Button>
+                {user ? (
+                  <Button variant="outline" size="sm" onClick={handleLogout} className="btn btn-outline">
+                    <LogOut className="h-4 w-4 mr-2" />
+                    Logout
+                  </Button>
+                ) : (
+                  <div className="bg-accent text-accent-foreground px-2 py-1 rounded-md text-xs font-medium flex items-center gap-1">
+                    <Code className="h-3 w-3" />
+                    Dev Mode
+                  </div>
+                )}
               </>
             ) : (
               <>
@@ -352,7 +383,7 @@ const Index = () => {
         </header>
 
         {/* Demo Mode Banner */}
-        {!user && (
+        {!user && !isDeveloperMode && (
           <div className="demo-banner">
             <div className="demo-content">
               <div className="demo-icon">i</div>
@@ -369,6 +400,36 @@ const Index = () => {
               <Star className="h-4 w-4 mr-2" />
               Get Started Free
             </Button>
+          </div>
+        )}
+
+        {/* Developer Mode Banner */}
+        {isDeveloperMode && (
+          <div className="demo-banner bg-accent/10 border-accent/30">
+            <div className="demo-content">
+              <Code className="h-6 w-6 text-accent flex-shrink-0" />
+              <div className="demo-text">
+                <h3>Developer Mode Enabled</h3>
+                <p>You can now test all features including AI, CRM, and premium functionality without authentication or subscriptions!</p>
+              </div>
+            </div>
+            <div className="flex gap-2">
+              <Link to="/crm">
+                <Button size="sm" variant="outline" className="border-accent text-accent">
+                  <Users className="h-4 w-4 mr-2" />
+                  Test CRM
+                </Button>
+              </Link>
+              <Button 
+                onClick={() => setIsDeveloperMode(false)}
+                size="sm"
+                variant="outline"
+                className="border-accent/50 text-accent/70"
+              >
+                <X className="h-4 w-4 mr-2" />
+                Exit Dev Mode
+              </Button>
+            </div>
           </div>
         )}
 
@@ -392,7 +453,7 @@ const Index = () => {
 
           {/* AI Panel */}
           <div className="space-y-4">
-            {!user ? (
+            {!user && !isDeveloperMode ? (
               <div className="demo-banner">
                 <div className="demo-content">
                   <Lock className="h-6 w-6 text-accent flex-shrink-0" />
