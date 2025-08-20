@@ -15,6 +15,7 @@ const AIPanel = lazy(() => import("@/components/AIPanel").then(module => ({ defa
 const CreateEventModal = lazy(() => import("@/components/CreateEventModal").then(module => ({ default: module.CreateEventModal })));
 const LoginForm = lazy(() => import("@/components/auth/LoginForm").then(module => ({ default: module.LoginForm })));
 const RegisterForm = lazy(() => import("@/components/auth/RegisterForm").then(module => ({ default: module.RegisterForm })));
+const CRMDashboard = lazy(() => import("@/components/CRMDashboard"));
 
 
 
@@ -84,7 +85,7 @@ const Index = () => {
   ]);
   const [isDeveloperMode, setIsDeveloperMode] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
-  const [activeTab, setActiveTab] = useState<'calendar' | 'settings'>('calendar');
+  const [activeTab, setActiveTab] = useState<'calendar' | 'crm' | 'settings'>('calendar');
   const [settings, setSettings] = useState({
     notifications: true,
     emailReminders: true,
@@ -634,7 +635,15 @@ const Index = () => {
                 <Calendar size={16} />
                 Calendar
               </button>
-
+              <button
+                onClick={() => setActiveTab('crm')}
+                className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors text-sm ${
+                  activeTab === 'crm' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                <Users size={16} />
+                CRM
+              </button>
               <button
                 onClick={() => setActiveTab('settings')}
                 className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors text-sm ${
@@ -963,9 +972,21 @@ const Index = () => {
             </>
           )}
 
-
-
-
+          {/* CRM Tab */}
+          {activeTab === 'crm' && (
+            <Suspense fallback={
+              <div className="p-4 bg-card rounded-lg border border-border">
+                <div className="space-y-3">
+                  <div className="h-6 w-32 bg-primary/20 rounded animate-pulse"></div>
+                  <div className="h-4 w-48 bg-muted rounded animate-pulse"></div>
+                  <div className="h-10 bg-muted rounded animate-pulse"></div>
+                  <div className="h-20 bg-muted rounded animate-pulse"></div>
+                </div>
+              </div>
+            }>
+              <CRMDashboard />
+            </Suspense>
+          )}
 
           {/* Settings Tab */}
           {activeTab === 'settings' && (
