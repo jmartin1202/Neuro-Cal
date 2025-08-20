@@ -4,7 +4,7 @@ services:
     name: neurocal-frontend
     env: static
     rootDir: Neuro-Cal
-    buildCommand: npm install && npm run build
+    buildCommand: npm install --ignore-scripts && npm run build
     staticPublishPath: ./dist
     routes:
       - type: rewrite
@@ -28,7 +28,7 @@ services:
     env: node
     plan: free
     rootDir: Neuro-Cal
-    buildCommand: npm install
+    buildCommand: npm install --ignore-scripts
     startCommand: npm start
     envVars:
       - key: NODE_ENV
