@@ -961,6 +961,7 @@ const Index = () => {
                         onDeleteEvent={handleDeleteEvent}
                         currentDate={currentDate}
                         onMonthChange={safeSetCurrentDate}
+                        viewMode={calendarViewMode}
                       />
                     </ComponentSafetyWrapper>
                   </Suspense>

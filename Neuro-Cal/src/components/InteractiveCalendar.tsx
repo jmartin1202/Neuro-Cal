@@ -13,6 +13,7 @@ interface InteractiveCalendarProps {
   onDeleteEvent?: (eventId: string) => void;
   currentDate?: Date;
   onMonthChange?: (date: Date) => void;
+  viewMode?: 'daily' | 'weekly' | 'monthly' | 'yearly';
 }
 
 const InteractiveCalendar = ({ 
@@ -20,7 +21,8 @@ const InteractiveCalendar = ({
   onCreateEvent, 
   onDeleteEvent,
   currentDate = new Date(),
-  onMonthChange
+  onMonthChange,
+  viewMode = 'monthly'
 }: InteractiveCalendarProps) => {
   const [selectedDate, setSelectedDate] = useState<{ day: number; dateKey: string } | null>(null);
   const [showEventModal, setShowEventModal] = useState(false);
@@ -63,14 +65,194 @@ const InteractiveCalendar = ({
     }
   };
 
-  const navigateMonth = useCallback((direction: number) => {
+  // Daily View Functions
+  const renderDailyView = () => {
+    const today = new Date(localCurrentDate);
+    const dayEvents = events.filter(event => 
+      event.date && event.date.toDateString() === today.toDateString()
+    ).sort((a, b) => (a.time || '').localeCompare(b.time || ''));
+
+    return (
+      <div className="p-4">
+        <div className="mb-4">
+          <h3 className="text-lg font-semibold text-foreground">
+            {today.toLocaleDateString('en-US', { 
+              weekday: 'long', 
+              year: 'numeric', 
+              month: 'long', 
+              day: 'numeric' 
+            })}
+          </h3>
+        </div>
+        
+        <div className="space-y-3">
+          {dayEvents.length === 0 ? (
+            <div className="text-center py-8 text-muted-foreground">
+              <Calendar className="w-12 h-12 mx-auto mb-2 opacity-50" />
+              <p>No events scheduled for today</p>
+              <p className="text-sm">Click on a date to add an event</p>
+            </div>
+          ) : (
+            dayEvents.map(event => (
+              <div key={event.id} className="flex items-center p-3 bg-card border border-border rounded-lg">
+                <div className={`w-3 h-3 rounded-full mr-3 ${getEventColor(event.type)}`}></div>
+                <div className="flex-1">
+                  <div className="font-medium text-foreground">{event.title}</div>
+                  <div className="text-sm text-muted-foreground">
+                    {event.time && `${event.time} • `}{event.duration}
+                    {event.location && ` • 📍 ${event.location}`}
+                  </div>
+                </div>
+                {onDeleteEvent && (
+                  <button
+                    onClick={() => onDeleteEvent(event.id)}
+                    className="text-destructive hover:text-destructive/80 p-1"
+                  >
+                    <X size={16} />
+                  </button>
+                )}
+              </div>
+            ))
+          )}
+        </div>
+      </div>
+    );
+  };
+
+  // Weekly View Functions
+  const renderWeeklyView = () => {
+    const startOfWeek = new Date(localCurrentDate);
+    const dayOfWeek = startOfWeek.getDay();
+    startOfWeek.setDate(startOfWeek.getDate() - dayOfWeek);
+    
+    const weekDays = [];
+    for (let i = 0; i < 7; i++) {
+      const date = new Date(startOfWeek);
+      date.setDate(startOfWeek.getDate() + i);
+      weekDays.push(date);
+    }
+
+    return (
+      <div className="p-4">
+        <div className="mb-4">
+          <h3 className="text-lg font-semibold text-foreground">
+            Week of {startOfWeek.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - {weekDays[6].toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+          </h3>
+        </div>
+        
+        <div className="grid grid-cols-7 gap-2">
+          {weekDays.map((date, index) => {
+            const dayEvents = events.filter(event => 
+              event.date && event.date.toDateString() === date.toDateString()
+            );
+            
+            return (
+              <div key={index} className="min-h-[120px] p-2 border border-border rounded-lg">
+                <div className="text-center mb-2">
+                  <div className="text-sm font-medium text-foreground">
+                    {date.toLocaleDateString('en-US', { weekday: 'short' })}
+                  </div>
+                  <div className={`text-lg font-bold ${
+                    date.toDateString() === new Date().toDateString() ? 'text-primary' : 'text-foreground'
+                  }`}>
+                    {date.getDate()}
+                  </div>
+                </div>
+                
+                <div className="space-y-1">
+                  {dayEvents.slice(0, 2).map(event => (
+                    <div key={event.id} className={`text-xs p-1 rounded ${getEventColor(event.type)} text-white`}>
+                      {event.title}
+                    </div>
+                  ))}
+                  {dayEvents.length > 2 && (
+                    <div className="text-xs text-muted-foreground text-center">
+                      +{dayEvents.length - 2} more
+                    </div>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    );
+  };
+
+  // Yearly View Functions
+  const renderYearlyView = () => {
+    const year = localCurrentDate.getFullYear();
+    const months = [];
+    
+    for (let month = 0; month < 12; month++) {
+      const monthDate = new Date(year, month, 1);
+      const monthEvents = events.filter(event => 
+        event.date && event.date.getFullYear() === year && event.date.getMonth() === month
+      );
+      
+      months.push({ month: month, date: monthDate, events: monthEvents });
+    }
+
+    return (
+      <div className="p-4">
+        <div className="mb-4">
+          <h3 className="text-lg font-semibold text-foreground">{year}</h3>
+        </div>
+        
+        <div className="grid grid-cols-3 gap-4">
+          {months.map(({ month, date, events: monthEvents }) => (
+            <div key={month} className="border border-border rounded-lg p-3">
+              <div className="text-center mb-2">
+                <h4 className="font-medium text-foreground">
+                  {date.toLocaleDateString('en-US', { month: 'long' })}
+                </h4>
+                <div className="text-sm text-muted-foreground">
+                  {monthEvents.length} event{monthEvents.length !== 1 ? 's' : ''}
+                </div>
+              </div>
+              
+              <div className="space-y-1">
+                {monthEvents.slice(0, 3).map(event => (
+                  <div key={event.id} className={`text-xs p-1 rounded ${getEventColor(event.type)} text-white truncate`}>
+                    {event.title}
+                  </div>
+                ))}
+                {monthEvents.length > 3 && (
+                  <div className="text-xs text-muted-foreground text-center">
+                    +{monthEvents.length - 3} more
+                  </div>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
+  const navigateDate = useCallback((direction: number) => {
     const newDate = new Date(localCurrentDate);
-    newDate.setMonth(localCurrentDate.getMonth() + direction);
+    
+    switch (viewMode) {
+      case 'daily':
+        newDate.setDate(localCurrentDate.getDate() + direction);
+        break;
+      case 'weekly':
+        newDate.setDate(localCurrentDate.getDate() + (direction * 7));
+        break;
+      case 'monthly':
+        newDate.setMonth(localCurrentDate.getMonth() + direction);
+        break;
+      case 'yearly':
+        newDate.setFullYear(localCurrentDate.getFullYear() + direction);
+        break;
+    }
+    
     setLocalCurrentDate(newDate);
     if (onMonthChange) {
       onMonthChange(newDate);
     }
-  }, [localCurrentDate, onMonthChange]);
+  }, [localCurrentDate, onMonthChange, viewMode]);
 
   const handleDateClick = useCallback((day: number) => {
     const dateKey = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
@@ -204,16 +386,36 @@ const InteractiveCalendar = ({
         </div>
         <div className="flex items-center gap-4">
           <button
-            onClick={() => navigateMonth(-1)}
+            onClick={() => navigateDate(-1)}
             className="w-8 h-8 border border-border bg-card rounded-md flex items-center justify-center cursor-pointer transition-all duration-150 ease-in-out text-muted-foreground hover:bg-muted"
           >
             ‹
           </button>
           <h2 className="text-xl font-semibold text-foreground">
-            {monthNames[currentMonth]} {currentYear}
+            {viewMode === 'daily' && localCurrentDate.toLocaleDateString('en-US', { 
+              weekday: 'long', 
+              year: 'numeric', 
+              month: 'long', 
+              day: 'numeric' 
+            })}
+            {viewMode === 'weekly' && `Week of ${(() => {
+              const startOfWeek = new Date(localCurrentDate);
+              const dayOfWeek = startOfWeek.getDay();
+              startOfWeek.setDate(startOfWeek.getDate() - dayOfWeek);
+              return startOfWeek.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            })()} - ${(() => {
+              const startOfWeek = new Date(localCurrentDate);
+              const dayOfWeek = startOfWeek.getDay();
+              startOfWeek.setDate(startOfWeek.getDate() - dayOfWeek);
+              const endOfWeek = new Date(startOfWeek);
+              endOfWeek.setDate(startOfWeek.getDate() + 6);
+              return endOfWeek.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+            })()}`}
+            {viewMode === 'monthly' && `${monthNames[currentMonth]} ${currentYear}`}
+            {viewMode === 'yearly' && `${currentYear}`}
           </h2>
           <button
-            onClick={() => navigateMonth(1)}
+            onClick={() => navigateDate(1)}
             className="w-8 h-8 border border-border bg-card rounded-md flex items-center justify-center cursor-pointer transition-all duration-150 ease-in-out text-muted-foreground hover:bg-muted"
           >
             ›
@@ -233,22 +435,27 @@ const InteractiveCalendar = ({
         </div>
       </div>
 
-      {/* Calendar Grid */}
-      <div className="border border-border rounded-lg overflow-hidden">
-        {/* Week headers */}
-        <div className="grid grid-cols-7 bg-primary">
-          {weekdays.map(day => (
-            <div key={day} className="p-3 text-center text-primary-foreground font-medium">
-              {day}
-            </div>
-          ))}
-        </div>
+      {/* Calendar Content */}
+      {viewMode === 'daily' && renderDailyView()}
+      {viewMode === 'weekly' && renderWeeklyView()}
+      {viewMode === 'monthly' && (
+        <div className="border border-border rounded-lg overflow-hidden">
+          {/* Week headers */}
+          <div className="grid grid-cols-7 bg-primary">
+            {weekdays.map(day => (
+              <div key={day} className="p-3 text-center text-primary-foreground font-medium">
+                {day}
+              </div>
+            ))}
+          </div>
 
-        {/* Calendar days */}
-        <div className="grid grid-cols-7">
-          {renderCalendarDays()}
+          {/* Calendar days */}
+          <div className="grid grid-cols-7">
+            {renderCalendarDays()}
+          </div>
         </div>
-      </div>
+      )}
+      {viewMode === 'yearly' && renderYearlyView()}
 
       {/* Event Input Modal */}
       {showEventModal && selectedDate && (
