@@ -10,40 +10,13 @@ import { useErrorPrevention } from "@/hooks/useErrorPrevention";
 import { ComponentSafetyWrapper } from "@/components/ComponentSafetyWrapper";
 
 // Lazy load components to isolate issues
-const CalendarHeader = lazy(() => import("@/components/CalendarHeader").then(module => ({ default: module.CalendarHeader })));
-const CalendarGrid = lazy(() => import("@/components/CalendarGrid").then(module => ({ default: module.CalendarGrid })));
+const SmartCalendar = lazy(() => import("@/components/SmartCalendar"));
 const AIPanel = lazy(() => import("@/components/AIPanel").then(module => ({ default: module.AIPanel })));
 const CreateEventModal = lazy(() => import("@/components/CreateEventModal").then(module => ({ default: module.CreateEventModal })));
 const LoginForm = lazy(() => import("@/components/auth/LoginForm").then(module => ({ default: module.LoginForm })));
 const RegisterForm = lazy(() => import("@/components/auth/RegisterForm").then(module => ({ default: module.RegisterForm })));
 
-// Loading fallbacks for each component
-const CalendarHeaderFallback = () => (
-  <div className="p-4 bg-gradient-card border-b border-border rounded-lg mb-4">
-    <div className="flex items-center justify-between">
-      <div className="flex items-center gap-3">
-        <div className="w-8 h-8 bg-gradient-primary rounded-lg animate-pulse"></div>
-        <div className="space-y-2">
-          <div className="h-6 w-32 bg-gradient-primary rounded animate-pulse"></div>
-          <div className="h-4 w-20 bg-muted rounded animate-pulse"></div>
-        </div>
-      </div>
-      <div className="flex gap-2">
-        <div className="h-8 w-8 bg-muted rounded animate-pulse"></div>
-        <div className="h-8 w-24 bg-muted rounded animate-pulse"></div>
-        <div className="h-8 w-8 bg-muted rounded animate-pulse"></div>
-      </div>
-    </div>
-  </div>
-);
 
-const CalendarGridFallback = () => (
-  <div className="grid grid-cols-7 gap-2 p-4">
-    {Array.from({ length: 35 }).map((_, i) => (
-      <div key={i} className="h-24 bg-muted rounded-lg animate-pulse"></div>
-    ))}
-  </div>
-);
 
 const AIPanelFallback = () => (
   <div className="p-4 bg-gradient-card rounded-lg">
@@ -408,41 +381,18 @@ const Index = () => {
         )}
 
         <div className="space-y-6">
-          {/* Calendar Header */}
+          {/* Smart Calendar */}
           <div>
-            <Suspense fallback={<CalendarHeaderFallback />}>
+            <Suspense fallback={<div className="p-4 bg-gradient-card rounded-lg animate-pulse">
+              <div className="h-96 bg-muted rounded-lg"></div>
+            </div>}>
               <ComponentSafetyWrapper
-                componentName="CalendarHeader"
+                componentName="SmartCalendar"
                 isolationLevel="moderate"
                 autoRecover={true}
                 retryCount={3}
               >
-                <CalendarHeader 
-                  currentDate={currentDate}
-                  onPrevMonth={handlePrevMonth}
-                  onNextMonth={handleNextMonth}
-                  view="month"
-                  onViewChange={handleViewChange}
-                />
-              </ComponentSafetyWrapper>
-            </Suspense>
-          </div>
-
-          {/* Calendar Grid */}
-          <div>
-            <Suspense fallback={<CalendarGridFallback />}>
-              <ComponentSafetyWrapper
-                componentName="CalendarGrid"
-                isolationLevel="moderate"
-                autoRecover={true}
-                retryCount={3}
-              >
-                <CalendarGrid 
-                  currentDate={currentDate}
-                  events={events}
-                  onDateClick={handleDateClick}
-                  selectedDate={selectedDate}
-                />
+                <SmartCalendar />
               </ComponentSafetyWrapper>
             </Suspense>
           </div>
