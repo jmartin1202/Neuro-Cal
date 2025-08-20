@@ -948,12 +948,13 @@ const Index = () => {
                   <Suspense fallback={<div className="p-4 bg-card rounded-lg animate-pulse border border-border">
                     <div className="h-96 bg-muted rounded-lg"></div>
                   </div>}>
-                    <ComponentSafetyWrapper
-                      componentName="InteractiveCalendar"
-                      isolationLevel="moderate"
-                      autoRecover={true}
-                      retryCount={3}
-                    >
+                                      <ComponentSafetyWrapper
+                    componentName="InteractiveCalendar"
+                    isolationLevel="moderate"
+                    autoRecover={true}
+                    retryCount={3}
+                    isDeveloperMode={isDeveloperMode}
+                  >
                       <InteractiveCalendar 
                         events={events}
                         onCreateEvent={handleCreateEvent}
@@ -1041,6 +1042,7 @@ const Index = () => {
                       isolationLevel="loose"
                       autoRecover={true}
                       retryCount={5}
+                      isDeveloperMode={isDeveloperMode}
                     >
                       <AIPanel 
                         upcomingEvents={events}
@@ -1344,6 +1346,7 @@ const Index = () => {
           isolationLevel="strict"
           autoRecover={false}
           retryCount={1}
+          isDeveloperMode={isDeveloperMode}
         >
           <CreateEventModal
             isOpen={isCreateModalOpen}
@@ -1425,6 +1428,7 @@ const Index = () => {
                     isolationLevel="moderate"
                     autoRecover={true}
                     retryCount={3}
+                    isDeveloperMode={isDeveloperMode}
                   >
                     <LoginForm />
                   </ComponentSafetyWrapper>
@@ -1436,6 +1440,7 @@ const Index = () => {
                     isolationLevel="moderate"
                     autoRecover={true}
                     retryCount={3}
+                    isDeveloperMode={isDeveloperMode}
                   >
                     <RegisterForm />
                   </ComponentSafetyWrapper>

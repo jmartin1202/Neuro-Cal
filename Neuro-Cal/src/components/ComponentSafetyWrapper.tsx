@@ -11,6 +11,7 @@ interface ComponentSafetyWrapperProps {
   showErrorDetails?: boolean;
   autoRecover?: boolean;
   isolationLevel?: 'strict' | 'moderate' | 'loose';
+  isDeveloperMode?: boolean;
 }
 
 interface ComponentSafetyWrapperState {
@@ -75,7 +76,8 @@ export const ComponentSafetyWrapper: React.FC<ComponentSafetyWrapperProps> = ({
   retryCount = 3,
   showErrorDetails = false,
   autoRecover = true,
-  isolationLevel = 'moderate'
+  isolationLevel = 'moderate',
+  isDeveloperMode = false
 }) => {
   const [state, setState] = useState<ComponentSafetyWrapperState>({
     hasError: false,
@@ -194,6 +196,12 @@ export const ComponentSafetyWrapper: React.FC<ComponentSafetyWrapperProps> = ({
   }
 
   if (state.retryAttempts >= retryCount) {
+    // In production mode, just show fallback or nothing
+    if (!isDeveloperMode) {
+      return fallback || null;
+    }
+    
+    // In developer mode, show detailed error message
     return (
       <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
         <div className="flex items-center gap-3 mb-3">
@@ -226,6 +234,12 @@ export const ComponentSafetyWrapper: React.FC<ComponentSafetyWrapperProps> = ({
     );
   }
 
+  // In production mode, just show fallback or nothing
+  if (!isDeveloperMode) {
+    return fallback || null;
+  }
+  
+  // In developer mode, show detailed error message
   return (
     <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
       <div className="flex items-center gap-3 mb-3">
