@@ -5,7 +5,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
-import { LogOut, LogIn, Calendar, Sparkles, Zap, Users, Clock, X, BarChart3, Crown, Star, Lock, Plus, Check, Badge, Brain, AlertTriangle, RefreshCw, Code, Settings } from "lucide-react";
+import { LogOut, LogIn, Calendar, Sparkles, Zap, Users, Clock, X, BarChart3, Crown, Star, Lock, Plus, Check, Badge, Brain, AlertTriangle, RefreshCw, Code, Settings, Bell, Palette, Globe } from "lucide-react";
 import { useErrorPrevention } from "@/hooks/useErrorPrevention";
 import { ComponentSafetyWrapper } from "@/components/ComponentSafetyWrapper";
 
@@ -82,6 +82,17 @@ const Index = () => {
     }
   ]);
   const [isDeveloperMode, setIsDeveloperMode] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
+  const [settings, setSettings] = useState({
+    notifications: true,
+    emailReminders: true,
+    darkMode: false,
+    timeZone: 'UTC-5',
+    language: 'English',
+    weekStart: 'Sunday',
+    autoSync: true,
+    defaultMeetingLength: 30
+  });
   const { toast } = useToast();
   const isMobile = useIsMobile();
 
@@ -328,6 +339,27 @@ const Index = () => {
     }
   }, [logout, errorPrevention]);
 
+  // Settings Functions
+  const updateSetting = useCallback((key: string, value: any) => {
+    try {
+      setSettings(prev => ({ ...prev, [key]: value }));
+      toast({
+        title: "Setting Updated",
+        description: `${key} has been updated successfully.`,
+      });
+    } catch (error) {
+      errorPrevention.trackError(error instanceof Error ? error : String(error), 'updateSetting');
+    }
+  }, [toast, errorPrevention]);
+
+  const toggleSettings = useCallback(() => {
+    try {
+      setShowSettings(prev => !prev);
+    } catch (error) {
+      errorPrevention.trackError(error instanceof Error ? error : String(error), 'toggleSettings');
+    }
+  }, [errorPrevention]);
+
   // Loading state
   if (isLoading) {
     return (
@@ -424,12 +456,15 @@ const Index = () => {
                     CRM
                   </Button>
                 </Link>
-                <Link to="/main">
-                  <Button variant="outline" size="sm" className="btn btn-outline">
-                    <Settings className="h-4 w-4 mr-2" />
-                    Main App
-                  </Button>
-                </Link>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={toggleSettings}
+                  className="btn btn-outline"
+                >
+                  <Settings className="h-4 w-4 mr-2" />
+                  Settings
+                </Button>
                 {user ? (
                   <Button variant="outline" size="sm" onClick={handleLogout} className="btn btn-outline">
                     <LogOut className="h-4 w-4 mr-2" />
@@ -497,13 +532,16 @@ const Index = () => {
                   <span className="sm:hidden">CRM</span>
                 </Button>
               </Link>
-              <Link to="/main">
-                <Button size="sm" variant="outline" className="border-accent text-accent w-full sm:w-auto">
-                  <Settings className="h-4 w-4 mr-2" />
-                  <span className="hidden sm:inline">Main App</span>
-                  <span className="sm:hidden">Main</span>
-                </Button>
-              </Link>
+              <Button 
+                size="sm" 
+                variant="outline" 
+                onClick={toggleSettings}
+                className="border-accent text-accent w-full sm:w-auto"
+              >
+                <Settings className="h-4 w-4 mr-2" />
+                <span className="hidden sm:inline">Settings</span>
+                <span className="sm:hidden">Settings</span>
+              </Button>
               <Button 
                 onClick={() => setIsDeveloperMode(false)}
                 size="sm"
@@ -607,6 +645,163 @@ const Index = () => {
                     </div>
                   </div>
                 ))}
+              </div>
+            </div>
+          )}
+
+          {/* Settings Section */}
+          {showSettings && (
+            <div className="space-y-6">
+              <div className="flex items-center justify-between">
+                <h2 className="text-2xl font-bold text-foreground">Settings</h2>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={toggleSettings}
+                  className="btn btn-outline"
+                >
+                  <X className="h-4 w-4 mr-2" />
+                  Close
+                </Button>
+              </div>
+
+              {/* Notifications */}
+              <div className="bg-card border border-border rounded-lg p-6">
+                <div className="flex items-center gap-3 mb-4">
+                  <Bell size={20} className="text-primary" />
+                  <h3 className="text-lg font-medium">Notifications</h3>
+                </div>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground">Push Notifications</span>
+                    <label className="relative inline-flex items-center cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={settings.notifications}
+                        onChange={(e) => updateSetting('notifications', e.target.checked)}
+                        className="sr-only peer"
+                      />
+                      <div className="w-11 h-6 bg-muted peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary/30 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-border after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                    </label>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground">Email Reminders</span>
+                    <label className="relative inline-flex items-center cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={settings.emailReminders}
+                        onChange={(e) => updateSetting('emailReminders', e.target.checked)}
+                        className="sr-only peer"
+                      />
+                      <div className="w-11 h-6 bg-muted peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary/30 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-border after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                    </label>
+                  </div>
+                </div>
+              </div>
+
+              {/* Appearance */}
+              <div className="bg-card border border-border rounded-lg p-6">
+                <div className="flex items-center gap-3 mb-4">
+                  <Palette size={20} className="text-primary" />
+                  <h3 className="text-lg font-medium">Appearance</h3>
+                </div>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground">Dark Mode</span>
+                    <label className="relative inline-flex items-center cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={settings.darkMode}
+                        onChange={(e) => updateSetting('darkMode', e.target.checked)}
+                        className="sr-only peer"
+                      />
+                      <div className="w-11 h-6 bg-muted peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary/30 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-border after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                    </label>
+                  </div>
+                  <div>
+                    <label className="block text-sm text-muted-foreground mb-2">Week Starts On</label>
+                    <select
+                      value={settings.weekStart}
+                      onChange={(e) => updateSetting('weekStart', e.target.value)}
+                      className="w-full p-2 border border-border rounded-lg focus:ring-2 focus:ring-primary bg-background text-foreground"
+                    >
+                      <option value="Sunday">Sunday</option>
+                      <option value="Monday">Monday</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              {/* Regional */}
+              <div className="bg-card border border-border rounded-lg p-6">
+                <div className="flex items-center gap-3 mb-4">
+                  <Globe size={20} className="text-primary" />
+                  <h3 className="text-lg font-medium">Regional Settings</h3>
+                </div>
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm text-muted-foreground mb-2">Time Zone</label>
+                    <select
+                      value={settings.timeZone}
+                      onChange={(e) => updateSetting('timeZone', e.target.value)}
+                      className="w-full p-2 border border-border rounded-lg focus:ring-2 focus:ring-primary bg-background text-foreground"
+                    >
+                      <option value="UTC-8">Pacific Time (UTC-8)</option>
+                      <option value="UTC-7">Mountain Time (UTC-7)</option>
+                      <option value="UTC-6">Central Time (UTC-6)</option>
+                      <option value="UTC-5">Eastern Time (UTC-5)</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm text-muted-foreground mb-2">Language</label>
+                    <select
+                      value={settings.language}
+                      onChange={(e) => updateSetting('language', e.target.value)}
+                      className="w-full p-2 border border-border rounded-lg focus:ring-2 focus:ring-primary bg-background text-foreground"
+                    >
+                      <option value="English">English</option>
+                      <option value="Spanish">Spanish</option>
+                      <option value="French">French</option>
+                      <option value="German">German</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              {/* Calendar Settings */}
+              <div className="bg-card border border-border rounded-lg p-6">
+                <div className="flex items-center gap-3 mb-4">
+                  <Calendar size={20} className="text-primary" />
+                  <h3 className="text-lg font-medium">Calendar Settings</h3>
+                </div>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground">Auto-sync Events</span>
+                    <label className="relative inline-flex items-center cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={settings.autoSync}
+                        onChange={(e) => updateSetting('autoSync', e.target.checked)}
+                        className="sr-only peer"
+                      />
+                      <div className="w-11 h-6 bg-muted peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary/30 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-border after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                    </label>
+                  </div>
+                  <div>
+                    <label className="block text-sm text-muted-foreground mb-2">Default Meeting Length (minutes)</label>
+                    <select
+                      value={settings.defaultMeetingLength}
+                      onChange={(e) => updateSetting('defaultMeetingLength', parseInt(e.target.value))}
+                      className="w-full p-2 border border-border rounded-lg focus:ring-2 focus:ring-primary bg-background text-foreground"
+                    >
+                      <option value={15}>15 minutes</option>
+                      <option value={30}>30 minutes</option>
+                      <option value={60}>1 hour</option>
+                      <option value={90}>1.5 hours</option>
+                      <option value={120}>2 hours</option>
+                    </select>
+                  </div>
+                </div>
               </div>
             </div>
           )}
