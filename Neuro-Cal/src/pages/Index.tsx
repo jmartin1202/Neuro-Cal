@@ -11,6 +11,7 @@ import { ComponentSafetyWrapper } from "@/components/ComponentSafetyWrapper";
 
 // Lazy load components to isolate issues
 const SmartCalendar = lazy(() => import("@/components/SmartCalendar"));
+const InteractiveCalendar = lazy(() => import("@/components/InteractiveCalendar"));
 const AIPanel = lazy(() => import("@/components/AIPanel").then(module => ({ default: module.AIPanel })));
 const CreateEventModal = lazy(() => import("@/components/CreateEventModal").then(module => ({ default: module.CreateEventModal })));
 const LoginForm = lazy(() => import("@/components/auth/LoginForm").then(module => ({ default: module.LoginForm })));
@@ -48,8 +49,41 @@ const Index = () => {
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [showPricingModal, setShowPricingModal] = useState(false);
   const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
-  const [events, setEvents] = useState<Event[]>([]);
+  const [events, setEvents] = useState<Event[]>([
+    // Sample events for demonstration
+    {
+      id: 'demo-1',
+      title: 'Team Meeting',
+      time: '09:00',
+      duration: '1 hour',
+      date: new Date(2025, 0, 15), // January 15, 2025
+      location: 'Conference Room A',
+      type: 'meeting',
+      color: 'bg-blue-500'
+    },
+    {
+      id: 'demo-2',
+      title: 'Focus Time',
+      time: '14:00',
+      duration: '2 hours',
+      date: new Date(2025, 0, 20), // January 20, 2025
+      location: 'Home Office',
+      type: 'focus',
+      color: 'bg-green-500'
+    },
+    {
+      id: 'demo-3',
+      title: 'Lunch Break',
+      time: '12:00',
+      duration: '1 hour',
+      date: new Date(2025, 0, 22), // January 22, 2025
+      location: 'Cafeteria',
+      type: 'break',
+      color: 'bg-yellow-500'
+    }
+  ]);
   const [isDeveloperMode, setIsDeveloperMode] = useState(false);
+  const [useInteractiveCalendar, setUseInteractiveCalendar] = useState(true);
   const { toast } = useToast();
   const isMobile = useIsMobile();
 
@@ -131,6 +165,22 @@ const Index = () => {
       });
     }
   }, [toast, safeSetEvents, safeSetIsCreateModalOpen, errorPrevention]);
+
+  const handleDeleteEvent = useCallback((eventId: string) => {
+    try {
+      safeSetEvents(prev => prev.filter(event => event.id !== eventId));
+      toast({
+        title: "Event Deleted",
+        description: "Event has been removed from your calendar.",
+      });
+    } catch (error) {
+      errorPrevention.trackError(error instanceof Error ? error : String(error), 'handleDeleteEvent');
+      toast({
+        title: "Error Deleting Event",
+        description: "Something went wrong. Please try again.",
+      });
+    }
+  }, [toast, safeSetEvents, errorPrevention]);
 
   const handleAICreateEvent = useCallback((eventText: string) => {
     try {
@@ -459,19 +509,59 @@ const Index = () => {
 
         {/* Main Content */}
         <main className="space-y-6">
-          {/* Smart Calendar */}
+          {/* Calendar Toggle */}
+          <div className="flex items-center justify-between">
+            <h2 className="text-xl font-semibold text-foreground">Calendar View</h2>
+            <div className="flex items-center gap-2">
+              <Button
+                variant={useInteractiveCalendar ? "default" : "outline"}
+                size="sm"
+                onClick={() => setUseInteractiveCalendar(true)}
+              >
+                <Calendar className="h-4 w-4 mr-2" />
+                Interactive
+              </Button>
+              <Button
+                variant={!useInteractiveCalendar ? "default" : "outline"}
+                size="sm"
+                onClick={() => setUseInteractiveCalendar(false)}
+              >
+                <Calendar className="h-4 w-4 mr-2" />
+                Classic
+              </Button>
+            </div>
+          </div>
+
+          {/* Calendar */}
           <div className="calendar-container">
             <Suspense fallback={<div className="p-4 bg-card rounded-lg animate-pulse border border-border">
               <div className="h-96 bg-muted rounded-lg"></div>
             </div>}>
-              <ComponentSafetyWrapper
-                componentName="SmartCalendar"
-                isolationLevel="moderate"
-                autoRecover={true}
-                retryCount={3}
-              >
-                <SmartCalendar events={events} />
-              </ComponentSafetyWrapper>
+              {useInteractiveCalendar ? (
+                <ComponentSafetyWrapper
+                  componentName="InteractiveCalendar"
+                  isolationLevel="moderate"
+                  autoRecover={true}
+                  retryCount={3}
+                >
+                  <InteractiveCalendar 
+                    events={events}
+                    onCreateEvent={handleCreateEvent}
+                    onDeleteEvent={handleDeleteEvent}
+                    currentDate={currentDate}
+                    onMonthChange={safeSetCurrentDate}
+                  />
+                </ComponentSafetyWrapper>
+              ) : (
+                <ComponentSafetyWrapper
+                  componentName="SmartCalendar"
+                  isolationLevel="moderate"
+                  autoRecover={true}
+                  retryCount={3}
+                >
+                  <SmartCalendar events={events} />
+                </ComponentSafetyWrapper>
+              )}
             </Suspense>
           </div>
 
