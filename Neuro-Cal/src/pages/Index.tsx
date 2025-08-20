@@ -19,9 +19,9 @@ const RegisterForm = lazy(() => import("@/components/auth/RegisterForm").then(mo
 
 
 const AIPanelFallback = () => (
-  <div className="p-4 bg-gradient-card rounded-lg">
+  <div className="p-4 bg-card rounded-lg border border-border">
     <div className="space-y-3">
-      <div className="h-6 w-32 bg-gradient-primary rounded animate-pulse"></div>
+      <div className="h-6 w-32 bg-primary/20 rounded animate-pulse"></div>
       <div className="h-4 w-48 bg-muted rounded animate-pulse"></div>
       <div className="h-10 bg-muted rounded animate-pulse"></div>
       <div className="h-20 bg-muted rounded animate-pulse"></div>
@@ -255,7 +255,7 @@ const Index = () => {
   // Loading state
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted flex items-center justify-center">
+      <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
           <p className="text-lg text-muted-foreground">Loading NeuroCal...</p>
@@ -267,20 +267,20 @@ const Index = () => {
   // Error state - show recovery options
   if (errorPrevention.isErrorState) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-yellow-50 to-orange-50 flex items-center justify-center p-4">
-        <div className="max-w-md w-full bg-white rounded-2xl shadow-2xl p-8 text-center">
-          <div className="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <AlertTriangle className="w-8 h-8 text-yellow-600" />
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+        <div className="max-w-md w-full bg-card rounded-2xl shadow-lg p-8 text-center border border-border">
+          <div className="w-16 h-16 bg-accent/20 rounded-full flex items-center justify-center mx-auto mb-4">
+            <AlertTriangle className="w-8 h-8 text-accent" />
           </div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">Component Error Detected</h1>
-          <p className="text-gray-600 mb-6">
+          <h1 className="text-2xl font-bold text-foreground mb-4">Component Error Detected</h1>
+          <p className="text-muted-foreground mb-6">
             We've detected some issues in the calendar component. Let's fix this!
           </p>
           
           <div className="space-y-3">
             <Button
               onClick={errorPrevention.attemptRecovery}
-              className="w-full bg-blue-600 hover:bg-blue-700"
+              className="w-full bg-primary hover:bg-primary-glow"
             >
               <RefreshCw className="w-4 h-4 mr-2" />
               Try to Fix
@@ -296,7 +296,7 @@ const Index = () => {
             </Button>
           </div>
           
-          <p className="text-xs text-gray-500 mt-4">
+          <p className="text-xs text-muted-foreground mt-4">
             Error count: {errorPrevention.errorCount}
           </p>
         </div>
@@ -307,83 +307,70 @@ const Index = () => {
   console.log("✅ About to render main JSX..."); // Debug log
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted">
-      {/* Header */}
-      <header className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-40">
-        <div className="container mx-auto px-3 md:px-4 py-3 md:py-4">
-          <div className="flex flex-col md:flex-row md:items-center justify-between space-y-3 md:space-y-0">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 md:w-10 md:h-10 bg-gradient-primary rounded-xl flex items-center justify-center">
-                <Brain className="w-4 h-4 md:w-6 md:h-6 text-white" />
-              </div>
-              <div>
-                <h1 className="text-lg md:text-xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-                  NeuroCal
-                </h1>
-                <p className="text-xs text-muted-foreground">AI-Powered Calendar</p>
-              </div>
-            </div>
-
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3">
-              {user ? (
-                <>
-                  <Button variant="outline" size="sm" onClick={handleCreateEventClick} className="touch-target">
-                    <Plus className="h-4 w-4 mr-2" />
-                    Create Event
-                  </Button>
-                  <Button variant="outline" size="sm" onClick={handleLogout} className="touch-target">
-                    <LogOut className="h-4 w-4 mr-2" />
-                    Logout
-                  </Button>
-                </>
-              ) : (
-                <>
-                  <Button variant="outline" size="sm" onClick={handleSignInClick} className="touch-target">
-                    <LogIn className="h-4 w-4 mr-2" />
-                    Sign In
-                  </Button>
-                  <Button onClick={handleUpgradeClick} className="touch-target">
-                    <Crown className="h-4 w-4 mr-2" />
-                    Upgrade
-                  </Button>
-                </>
-              )}
+    <div className="min-h-screen bg-background">
+      <div className="max-w-6xl mx-auto px-6 py-6">
+        {/* Header */}
+        <header className="header">
+          <div className="logo">
+            <div className="logo-icon">NC</div>
+            <div className="logo-text">
+              <div className="logo-title">NeuroCal</div>
+              <div className="logo-subtitle">AI-Powered Calendar</div>
             </div>
           </div>
-        </div>
-      </header>
+          <div className="header-actions">
+            {user ? (
+              <>
+                <Button variant="outline" size="sm" onClick={handleCreateEventClick} className="btn btn-outline">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Create Event
+                </Button>
+                <Button variant="outline" size="sm" onClick={handleLogout} className="btn btn-outline">
+                  <LogOut className="h-4 w-4 mr-2" />
+                  Logout
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button variant="outline" size="sm" onClick={handleSignInClick} className="btn btn-outline">
+                  <LogIn className="h-4 w-4 mr-2" />
+                  Sign In
+                </Button>
+                <Button onClick={handleUpgradeClick} className="btn btn-primary">
+                  <Crown className="h-4 w-4 mr-2" />
+                  Upgrade
+                </Button>
+              </>
+            )}
+          </div>
+        </header>
 
-      {/* Main Content */}
-      <main className="container mx-auto px-3 md:px-4 py-4 md:py-8">
         {/* Demo Mode Banner */}
         {!user && (
-          <div className="mb-6 p-3 md:p-4 bg-blue-50 border border-blue-200 rounded-lg">
-            <div className="flex flex-col md:flex-row items-start md:items-center gap-3">
-              <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
-                <Calendar className="h-4 w-4 text-blue-600" />
+          <div className="demo-banner">
+            <div className="demo-content">
+              <div className="demo-icon">i</div>
+              <div className="demo-text">
+                <h3>Demo Mode</h3>
+                <p>You're viewing the calendar in demo mode. Sign up for a free trial to save events and unlock AI features!</p>
               </div>
-              <div className="flex-1 text-center md:text-left">
-                <h3 className="font-semibold text-blue-900 text-sm md:text-base">Demo Mode</h3>
-                <p className="text-xs md:text-sm text-blue-700 mt-1">
-                  You're viewing the calendar in demo mode. Sign up for a free trial to save events and unlock AI features!
-                </p>
-              </div>
-              <Button 
-                onClick={handleGetStartedClick} 
-                size="sm" 
-                className="bg-blue-600 hover:bg-blue-700 touch-target w-full md:w-auto"
-              >
-                <Star className="h-4 w-4 mr-2" />
-                Get Started Free
-              </Button>
             </div>
+            <Button 
+              onClick={handleGetStartedClick} 
+              size="sm" 
+              className="btn btn-primary"
+            >
+              <Star className="h-4 w-4 mr-2" />
+              Get Started Free
+            </Button>
           </div>
         )}
 
-        <div className="space-y-6">
+        {/* Main Content */}
+        <main className="space-y-6">
           {/* Smart Calendar */}
-          <div>
-            <Suspense fallback={<div className="p-4 bg-gradient-card rounded-lg animate-pulse">
+          <div className="calendar-container">
+            <Suspense fallback={<div className="p-4 bg-card rounded-lg animate-pulse border border-border">
               <div className="h-96 bg-muted rounded-lg"></div>
             </div>}>
               <ComponentSafetyWrapper
@@ -400,24 +387,22 @@ const Index = () => {
           {/* AI Panel */}
           <div className="space-y-4">
             {!user ? (
-              <div className="p-3 md:p-4 bg-yellow-50 border border-yellow-300 rounded-lg">
-                <div className="flex flex-col md:flex-row items-start md:items-center gap-3">
-                  <Lock className="h-6 w-6 md:h-8 md:w-8 text-yellow-600 flex-shrink-0" />
-                  <div className="flex-1 text-center md:text-left">
-                    <h3 className="font-semibold text-yellow-900 text-sm md:text-base">Premium Feature</h3>
-                    <p className="text-xs md:text-sm text-yellow-700 mt-1">
-                      AI Event Creation requires Basic plan
-                    </p>
+              <div className="demo-banner">
+                <div className="demo-content">
+                  <Lock className="h-6 w-6 text-accent flex-shrink-0" />
+                  <div className="demo-text">
+                    <h3>Premium Feature</h3>
+                    <p>AI Event Creation requires Basic plan</p>
                   </div>
-                  <Button 
-                    onClick={handleUpgradeClick}
-                    size="sm"
-                    className="bg-yellow-600 hover:bg-yellow-700 touch-target w-full md:w-auto"
-                  >
-                    <Crown className="h-4 w-4 mr-2" />
-                    Upgrade to Basic
-                  </Button>
                 </div>
+                <Button 
+                  onClick={handleUpgradeClick}
+                  size="sm"
+                  className="btn btn-primary"
+                >
+                  <Crown className="h-4 w-4 mr-2" />
+                  Upgrade to Basic
+                </Button>
               </div>
             ) : (
               <Suspense fallback={<AIPanelFallback />}>
@@ -435,8 +420,8 @@ const Index = () => {
               </Suspense>
             )}
           </div>
-        </div>
-      </main>
+        </main>
+      </div>
 
       {/* Create Event Modal */}
       <Suspense fallback={<div>Loading modal...</div>}>
@@ -458,19 +443,19 @@ const Index = () => {
       {/* Simple Auth Modal */}
       {showAuthModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md relative">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md relative border border-border shadow-lg">
             <button 
               onClick={handleCloseAuthModal} 
-              className="absolute top-4 right-4 p-2 hover:bg-gray-100 rounded-full"
+              className="absolute top-4 right-4 p-2 hover:bg-warm-light rounded-full"
             >
-              <X className="h-5 w-5 text-gray-500" />
+              <X className="h-5 w-5 text-muted-foreground" />
             </button>
             
             <div className="text-center mb-6">
-              <h2 className="text-2xl font-bold text-gray-900">
+              <h2 className="text-2xl font-bold text-foreground">
                 {authMode === 'login' ? 'Welcome Back' : 'Create Account'}
               </h2>
-              <p className="text-gray-600 mt-2">
+              <p className="text-muted-foreground mt-2">
                 {authMode === 'login' 
                   ? 'Sign in to access your calendar' 
                   : 'Join NeuroCal to get started'
@@ -507,7 +492,7 @@ const Index = () => {
             <div className="mt-6 text-center">
               <button
                 onClick={handleAuthModeSwitch}
-                className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+                className="text-primary hover:text-primary-glow text-sm font-medium"
               >
                 {authMode === 'login' 
                   ? "Don't have an account? Sign up" 
@@ -522,50 +507,50 @@ const Index = () => {
       {/* Simple Pricing Modal */}
       {showPricingModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg p-8 max-w-4xl w-full relative">
+          <div className="bg-white rounded-lg p-8 max-w-4xl w-full relative border border-border shadow-lg">
             <button 
               onClick={handleClosePricingModal} 
-              className="absolute top-4 right-4 p-2 hover:bg-gray-100 rounded-full"
+              className="absolute top-4 right-4 p-2 hover:bg-warm-light rounded-full"
             >
-              <X className="h-5 w-5 text-gray-500" />
+              <X className="h-5 w-5 text-muted-foreground" />
             </button>
 
             <div className="text-center mb-8">
-              <h2 className="text-3xl font-bold text-gray-900 mb-4">Choose Your Plan</h2>
-              <p className="text-gray-600 text-lg">Start with a free trial, then choose the plan that fits your needs</p>
+              <h2 className="text-3xl font-bold text-foreground mb-4">Choose Your Plan</h2>
+              <p className="text-muted-foreground text-lg">Start with a free trial, then choose the plan that fits your needs</p>
             </div>
 
             <div className="grid md:grid-cols-3 gap-6">
               {/* Free Trial */}
-              <div className="border-2 border-blue-200 rounded-lg p-6 bg-blue-50 relative">
+              <div className="border-2 border-primary/30 rounded-lg p-6 bg-primary/5 relative">
                 <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-                  <Badge className="bg-blue-600 text-white px-3 py-1">Most Popular</Badge>
+                  <Badge className="bg-primary text-white px-3 py-1">Most Popular</Badge>
                 </div>
                 <div className="text-center">
-                  <h3 className="text-xl font-bold text-gray-900 mb-2">7-Day Free Trial</h3>
-                  <div className="text-3xl font-bold text-blue-600 mb-4">$0</div>
-                  <p className="text-gray-600 mb-6">Perfect for trying out all features</p>
+                  <h3 className="text-xl font-bold text-foreground mb-2">7-Day Free Trial</h3>
+                  <div className="text-3xl font-bold text-primary mb-4">$0</div>
+                  <p className="text-muted-foreground mb-6">Perfect for trying out all features</p>
                   <ul className="text-left space-y-2 mb-6">
                     <li className="flex items-center gap-2">
-                      <Check className="h-4 w-4 text-green-600" />
+                      <Check className="h-4 w-4 text-accent" />
                       Full calendar access
                     </li>
                     <li className="flex items-center gap-2">
-                      <Check className="h-4 w-4 text-green-600" />
+                      <Check className="h-4 w-4 text-accent" />
                       AI event creation
                     </li>
                     <li className="flex items-center gap-2">
-                      <Check className="h-4 w-4 text-green-600" />
+                      <Check className="h-4 w-4 text-accent" />
                       Event management
                     </li>
                     <li className="flex items-center gap-2">
-                      <Check className="h-4 w-4 text-green-600" />
+                      <Check className="h-4 w-4 text-accent" />
                       Calendar sync
                     </li>
                   </ul>
                   <Button 
                     onClick={() => handleSelectPlan('trial')} 
-                    className="w-full bg-blue-600 hover:bg-blue-700"
+                    className="w-full bg-primary hover:bg-primary-glow"
                   >
                     <Star className="h-4 w-4 mr-2" />
                     Start Free Trial
@@ -574,26 +559,26 @@ const Index = () => {
               </div>
 
               {/* Basic Plan */}
-              <div className="border border-gray-200 rounded-lg p-6 bg-white">
+              <div className="border border-border rounded-lg p-6 bg-card">
                 <div className="text-center">
-                  <h3 className="text-xl font-bold text-gray-900 mb-2">Basic Membership</h3>
-                  <div className="text-3xl font-bold text-gray-900 mb-4">$4.99<span className="text-lg text-gray-500">/month</span></div>
-                  <p className="text-gray-600 mb-6">Great for personal use</p>
+                  <h3 className="text-xl font-bold text-foreground mb-2">Basic Membership</h3>
+                  <div className="text-3xl font-bold text-foreground mb-4">$4.99<span className="text-lg text-muted-foreground">/month</span></div>
+                  <p className="text-muted-foreground mb-6">Great for personal use</p>
                   <ul className="text-left space-y-2 mb-6">
                     <li className="flex items-center gap-2">
-                      <Check className="h-4 w-4 text-green-600" />
+                      <Check className="h-4 w-4 text-accent" />
                       Everything in Free Trial
                     </li>
                     <li className="flex items-center gap-2">
-                      <Check className="h-4 w-4 text-green-600" />
+                      <Check className="h-4 w-4 text-accent" />
                       Advanced AI features
                     </li>
                     <li className="flex items-center gap-2">
-                      <Check className="h-4 w-4 text-green-600" />
+                      <Check className="h-4 w-4 text-accent" />
                       Priority support
                     </li>
                     <li className="flex items-center gap-2">
-                      <Check className="h-4 w-4 text-green-600" />
+                      <Check className="h-4 w-4 text-accent" />
                       Export capabilities
                     </li>
                   </ul>
@@ -609,35 +594,35 @@ const Index = () => {
               </div>
 
               {/* Pro Plan */}
-              <div className="border-2 border-purple-200 rounded-lg p-6 bg-purple-50 relative">
+              <div className="border-2 border-accent/30 rounded-lg p-6 bg-accent/5 relative">
                 <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-                  <Badge className="bg-purple-600 text-white px-3 py-1">Best Value</Badge>
+                  <Badge className="bg-accent text-white px-3 py-1">Best Value</Badge>
                 </div>
                 <div className="text-center">
-                  <h3 className="text-xl font-bold text-gray-900 mb-2">Pro Version</h3>
-                  <div className="text-3xl font-bold text-purple-600 mb-4">$9.99<span className="text-lg text-purple-500">/month</span></div>
-                  <p className="text-gray-600 mb-6">Perfect for power users & teams</p>
+                  <h3 className="text-xl font-bold text-foreground mb-2">Pro Version</h3>
+                  <div className="text-3xl font-bold text-accent mb-4">$9.99<span className="text-lg text-accent/70">/month</span></div>
+                  <p className="text-muted-foreground mb-6">Perfect for power users & teams</p>
                   <ul className="text-left space-y-2 mb-6">
                     <li className="flex items-center gap-2">
-                      <Check className="h-4 w-4 text-green-600" />
+                      <Check className="h-4 w-4 text-accent" />
                       Everything in Basic
                     </li>
                     <li className="flex items-center gap-2">
-                      <Check className="h-4 w-4 text-green-600" />
+                      <Check className="h-4 w-4 text-accent" />
                       Team collaboration
                     </li>
                     <li className="flex items-center gap-2">
-                      <Check className="h-4 w-4 text-green-600" />
+                      <Check className="h-4 w-4 text-accent" />
                       Advanced analytics
                     </li>
                     <li className="flex items-center gap-2">
-                      <Check className="h-4 w-4 text-green-600" />
+                      <Check className="h-4 w-4 text-accent" />
                       API access
                     </li>
                   </ul>
                   <Button 
                     onClick={() => handleSelectPlan('pro')} 
-                    className="w-full bg-purple-600 hover:bg-purple-700"
+                    className="w-full bg-accent hover:bg-accent/90"
                   >
                     <Zap className="h-4 w-4 mr-2" />
                     Choose Pro

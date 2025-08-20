@@ -69,12 +69,17 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
-				}
+				},
+				// Warm earth tone colors
+				'warm-brown': 'hsl(var(--warm-brown))',
+				'warm-beige': 'hsl(var(--warm-beige))',
+				'warm-gray': 'hsl(var(--warm-gray))',
+				'warm-light': 'hsl(var(--warm-light))'
 			},
 			backgroundImage: {
 				'gradient-primary': 'var(--gradient-primary)',
 				'gradient-card': 'var(--gradient-card)',
-				'gradient-ai': 'var(--gradient-ai)'
+				'gradient-accent': 'var(--gradient-accent)'
 			},
 			boxShadow: {
 				'sm': 'var(--shadow-sm)',
@@ -107,11 +112,22 @@ export default {
 					to: {
 						height: '0'
 					}
+				},
+				'fadeIn': {
+					from: {
+						opacity: '0',
+						transform: 'translateY(8px)'
+					},
+					to: {
+						opacity: '1',
+						transform: 'translateY(0)'
+					}
 				}
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
-				'accordion-up': 'accordion-up 0.2s ease-out'
+				'accordion-up': 'accordion-up 0.2s ease-out',
+				'fadeIn': 'fadeIn 0.3s ease-out'
 			}
 		}
 	},

@@ -75,33 +75,60 @@ const SmartCalendar = () => {
     });
   };
 
+  const isToday = (day: number) => {
+    const today = new Date();
+    return today.getDate() === day && 
+           today.getMonth() === currentDate.getMonth() && 
+           today.getFullYear() === currentDate.getFullYear();
+  };
+
   const renderMonthView = () => {
     const days = getDaysInMonth(currentDate);
     
     return (
-      <div className="bg-white rounded-lg">
-        <div className="grid grid-cols-7 gap-px bg-gray-200 rounded-t-lg overflow-hidden">
-          {daysOfWeek.map(day => (
-            <div key={day} className="bg-gray-50 p-2 md:p-3 text-center text-xs md:text-sm font-medium text-gray-700">
-              {day}
+      <div className="calendar-grid">
+        {daysOfWeek.map(day => (
+          <div key={day} className="calendar-header">
+            {day}
+          </div>
+        ))}
+        {days.map((day, index) => (
+          <div
+            key={index}
+            className={`calendar-cell ${
+              !day.isCurrentMonth ? 'other-month' : ''
+            } ${isToday(day.date) ? 'today' : ''}`}
+          >
+            <div className="cell-date">{day.date}</div>
+            <div className="cell-content">
+              <span className="add-event-text">Click to add event</span>
             </div>
-          ))}
-        </div>
-        <div className="grid grid-cols-7 gap-px bg-gray-200">
-          {days.map((day, index) => (
-            <div
-              key={index}
-              className={`bg-white p-2 md:p-4 min-h-16 md:min-h-24 ${
-                !day.isCurrentMonth ? 'text-gray-400' : 'text-gray-900'
-              } hover:bg-gray-50 cursor-pointer touch-target`}
-            >
-              <div className="font-medium text-sm md:text-base">{day.date}</div>
-              {day.isCurrentMonth && (
-                <div className="text-xs text-gray-400 mt-1 md:mt-2 hidden md:block">Click to add event</div>
-              )}
-            </div>
-          ))}
-        </div>
+            {/* Event dots for demonstration */}
+            {day.isCurrentMonth && day.date === 3 && (
+              <div className="event-dots">
+                <div className="event-dot"></div>
+                <div className="event-dot secondary"></div>
+              </div>
+            )}
+            {day.isCurrentMonth && day.date === 11 && (
+              <div className="event-dots">
+                <div className="event-dot tertiary"></div>
+              </div>
+            )}
+            {day.isCurrentMonth && day.date === 20 && (
+              <div className="event-dots">
+                <div className="event-dot quaternary"></div>
+              </div>
+            )}
+            {day.isCurrentMonth && day.date === 28 && (
+              <div className="event-dots">
+                <div className="event-dot"></div>
+                <div className="event-dot secondary"></div>
+                <div className="event-dot tertiary"></div>
+              </div>
+            )}
+          </div>
+        ))}
       </div>
     );
   };
@@ -111,30 +138,30 @@ const SmartCalendar = () => {
     const hours = Array.from({ length: 24 }, (_, i) => i);
     
     return (
-      <div className="bg-white rounded-lg overflow-hidden">
-        <div className="grid grid-cols-8 gap-px bg-gray-200">
-          <div className="bg-gray-50 p-2 md:p-3"></div>
+      <div className="bg-white rounded-lg overflow-hidden border border-border">
+        <div className="grid grid-cols-8 gap-px bg-border">
+          <div className="bg-muted p-2 md:p-3"></div>
           {weekDays.map((day, index) => (
-            <div key={index} className="bg-gray-50 p-2 md:p-3 text-center">
-              <div className="text-xs md:text-sm font-medium text-gray-700">
+            <div key={index} className="bg-muted p-2 md:p-3 text-center">
+              <div className="text-xs md:text-sm font-medium text-muted-foreground">
                 {daysOfWeek[day.getDay()]}
               </div>
-              <div className="text-sm md:text-lg font-semibold text-gray-900">
+              <div className="text-sm md:text-lg font-semibold text-foreground">
                 {day.getDate()}
               </div>
             </div>
           ))}
         </div>
-        <div className="grid grid-cols-8 gap-px bg-gray-200 max-h-96 overflow-y-auto">
+        <div className="grid grid-cols-8 gap-px bg-border max-h-96 overflow-y-auto">
           {hours.map(hour => (
             <React.Fragment key={hour}>
-              <div className="bg-white p-2 text-xs text-gray-500 border-r">
+              <div className="bg-white p-2 text-xs text-muted-foreground border-r border-border">
                 {hour === 0 ? '12 AM' : hour < 12 ? `${hour} AM` : hour === 12 ? '12 PM' : `${hour - 12} PM`}
               </div>
               {weekDays.map((_, dayIndex) => (
                 <div
                   key={`${hour}-${dayIndex}`}
-                  className="bg-white p-2 min-h-10 md:min-h-12 hover:bg-gray-50 cursor-pointer border-r border-b border-gray-100 touch-target"
+                  className="bg-white p-2 min-h-10 md:min-h-12 hover:bg-warm-light cursor-pointer border-r border-b border-border touch-target"
                 >
                 </div>
               ))}
@@ -150,28 +177,28 @@ const SmartCalendar = () => {
     const hours = Array.from({ length: 24 }, (_, i) => i);
     
     return (
-      <div className="bg-white rounded-lg overflow-hidden">
-        <div className="p-3 md:p-4 bg-gray-50 border-b">
+      <div className="bg-white rounded-lg overflow-hidden border border-border">
+        <div className="p-3 md:p-4 bg-muted border-b border-border">
           <div className="text-center">
-            <div className="text-xs md:text-sm font-medium text-gray-700">
+            <div className="text-xs md:text-sm font-medium text-muted-foreground">
               {daysOfWeek[today.getDay()]}
             </div>
-            <div className="text-xl md:text-2xl font-semibold text-gray-900">
+            <div className="text-xl md:text-2xl font-semibold text-foreground">
               {today.getDate()}
             </div>
-            <div className="text-xs md:text-sm text-gray-500">
+            <div className="text-xs md:text-sm text-muted-foreground">
               {monthNames[today.getMonth()]} {today.getFullYear()}
             </div>
           </div>
         </div>
         <div className="max-h-96 overflow-y-auto">
           {hours.map(hour => (
-            <div key={hour} className="flex border-b border-gray-100">
-              <div className="w-16 md:w-20 p-2 md:p-3 text-xs text-gray-500 bg-gray-50">
+            <div key={hour} className="flex border-b border-border">
+              <div className="w-16 md:w-20 p-2 md:p-3 text-xs text-muted-foreground bg-muted">
                 {hour === 0 ? '12 AM' : hour < 12 ? `${hour} AM` : hour === 12 ? '12 PM' : `${hour - 12} PM`}
               </div>
-              <div className="flex-1 p-2 md:p-3 min-h-12 md:min-h-16 hover:bg-gray-50 cursor-pointer touch-target">
-                <div className="text-xs text-gray-400">Click to add event</div>
+              <div className="flex-1 p-2 md:p-3 min-h-12 md:min-h-16 hover:bg-warm-light cursor-pointer touch-target">
+                <div className="text-xs text-muted-foreground">Click to add event</div>
               </div>
             </div>
           ))}
@@ -181,61 +208,48 @@ const SmartCalendar = () => {
   };
 
   return (
-    <div className="bg-gray-50 p-3 md:p-6">
-
-
-
-      {/* Calendar Header */}
-      <div className="bg-white rounded-lg shadow-sm mb-6">
-        <div className="p-4 flex flex-col md:flex-row md:items-center justify-between border-b space-y-4 md:space-y-0">
-          <div className="flex items-center space-x-3">
-          </div>
-          
-          {/* Navigation and View Controls */}
-          <div className="flex flex-col md:flex-row items-center space-y-3 md:space-y-0 md:space-x-4">
-            <div className="flex items-center space-x-2">
-              <button
-                onClick={() => navigateMonth(-1)}
-                className="p-3 md:p-2 hover:bg-gray-100 rounded touch-target"
-              >
-                ←
-              </button>
-              <h3 className="text-base md:text-lg font-medium text-gray-900 min-w-28 md:min-w-32 text-center">
-                {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}
-              </h3>
-              <button
-                onClick={() => navigateMonth(1)}
-                className="p-3 md:p-2 hover:bg-gray-100 rounded touch-target"
-              >
-                →
-              </button>
-            </div>
-            
-            {/* View Toggle Buttons */}
-            <div className="flex bg-gray-100 rounded-lg p-1">
-              {['Month', 'Week', 'Day'].map((view) => (
-                <button
-                  key={view}
-                  onClick={() => setCurrentView(view)}
-                  className={`px-3 md:px-4 py-2 text-sm font-medium rounded-md transition-colors touch-target ${
-                    currentView === view
-                      ? 'bg-blue-600 text-white shadow-sm'
-                      : 'text-gray-700 hover:text-gray-900 hover:bg-gray-200'
-                  }`}
-                >
-                  {view}
-                </button>
-              ))}
-            </div>
-          </div>
+    <div>
+      {/* Calendar Navigation */}
+      <div className="calendar-nav">
+        <div className="nav-controls">
+          <button
+            onClick={() => navigateMonth(-1)}
+            className="nav-btn"
+          >
+            ‹
+          </button>
+          <h2 className="month-year">
+            {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}
+          </h2>
+          <button
+            onClick={() => navigateMonth(1)}
+            className="nav-btn"
+          >
+            ›
+          </button>
         </div>
         
-        {/* Calendar Content */}
-        <div className="p-4">
-          {currentView === 'Month' && renderMonthView()}
-          {currentView === 'Week' && renderWeekView()}
-          {currentView === 'Day' && renderDayView()}
+        {/* View Toggle Buttons */}
+        <div className="view-controls">
+          {['Month', 'Week', 'Day'].map((view) => (
+            <button
+              key={view}
+              onClick={() => setCurrentView(view)}
+              className={`view-btn ${
+                currentView === view ? 'active' : ''
+              }`}
+            >
+              {view}
+            </button>
+          ))}
         </div>
+      </div>
+      
+      {/* Calendar Content */}
+      <div>
+        {currentView === 'Month' && renderMonthView()}
+        {currentView === 'Week' && renderWeekView()}
+        {currentView === 'Day' && renderDayView()}
       </div>
     </div>
   );

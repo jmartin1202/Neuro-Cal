@@ -2,129 +2,133 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Smart Calendar Design System - AI-Powered Theme */
+/* NeuroCal Design System - Warm Earth Tone Theme */
 
 @layer base {
   :root {
-    --background: 248 250% 99%;
-    --foreground: 223 84% 4.9%;
+    /* Base colors - Warm earth tones */
+    --background: 40 20% 98%; /* #faf9f7 */
+    --foreground: 0 0% 17%; /* #2c2c2c */
 
     --card: 0 0% 100%;
-    --card-foreground: 223 84% 4.9%;
+    --card-foreground: 0 0% 17%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 223 84% 4.9%;
+    --popover-foreground: 0 0% 17%;
 
-    /* AI-themed primary colors */
-    --primary: 239 84% 67%;
+    /* Primary colors - Muted purple */
+    --primary: 260 13% 39%; /* #6b5b73 */
     --primary-foreground: 0 0% 100%;
-    --primary-glow: 239 84% 75%;
+    --primary-glow: 260 13% 45%;
 
-    --secondary: 245 25% 95%;
-    --secondary-foreground: 223 84% 4.9%;
+    /* Secondary colors - Muted green */
+    --secondary: 80 12% 45%; /* #7a8471 */
+    --secondary-foreground: 0 0% 100%;
 
-    --muted: 245 25% 95%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --muted: 40 15% 95%; /* #f5f3f0 */
+    --muted-foreground: 40 10% 40%; /* #6b6560 */
 
-    --accent: 239 84% 67%;
+    /* Accent colors - Warm gold */
+    --accent: 40 25% 50%; /* #a0916a */
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 220 13% 91%;
-    --input: 220 13% 91%;
-    --ring: 239 84% 67%;
+    /* Border colors - Warm beige */
+    --border: 40 20% 90%; /* #e8e5e0 */
+    --input: 40 20% 90%;
+    --ring: 40 25% 50%;
 
     /* Calendar-specific colors */
-    --calendar-today: 239 84% 67%;
-    --calendar-event: 199 89% 48%;
-    --calendar-weekend: 215 20.2% 65.1%;
-    --calendar-selected: 239 84% 67%;
+    --calendar-today: 40 25% 50%; /* #a0916a */
+    --calendar-event: 260 13% 39%; /* #6b5b73 */
+    --calendar-weekend: 40 10% 40%; /* #6b6560 */
+    --calendar-selected: 40 25% 50%;
 
-    /* AI-themed gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(239 84% 67%), hsl(199 89% 48%));
-    --gradient-card: linear-gradient(145deg, hsl(0 0% 100%), hsl(245 25% 98%));
-    --gradient-ai: linear-gradient(135deg, hsl(239 84% 67% / 0.1), hsl(199 89% 48% / 0.1));
+    /* Warm gradients */
+    --gradient-primary: linear-gradient(135deg, #6b5b73, #7a8471);
+    --gradient-card: linear-gradient(145deg, #ffffff, #faf9f7);
+    --gradient-accent: linear-gradient(135deg, #a0916a, #8b7355);
 
-    /* Shadows */
-    --shadow-sm: 0 1px 2px 0 hsl(239 84% 67% / 0.05);
-    --shadow-md: 0 4px 6px -1px hsl(239 84% 67% / 0.1), 0 2px 4px -1px hsl(239 84% 67% / 0.06);
-    --shadow-lg: 0 10px 15px -3px hsl(239 84% 67% / 0.1), 0 4px 6px -2px hsl(239 84% 67% / 0.05);
-    --shadow-glow: 0 0 30px hsl(239 84% 67% / 0.3);
+    /* Shadows - Subtle and warm */
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.02);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.04);
+    --shadow-glow: 0 0 30px rgba(160, 145, 106, 0.2);
 
     /* Animation variables */
-    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    --transition-bounce: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    --transition-smooth: all 0.15s ease;
+    --transition-bounce: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
 
     --radius: 0.5rem;
 
-    --sidebar-background: 0 0% 98%;
+    /* Sidebar colors - Warm theme */
+    --sidebar-background: 40 20% 98%;
+    --sidebar-foreground: 0 0% 17%;
+    --sidebar-primary: 260 13% 39%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 40 15% 95%;
+    --sidebar-accent-foreground: 0 0% 17%;
+    --sidebar-border: 40 20% 90%;
+    --sidebar-ring: 40 25% 50%;
 
-    --sidebar-foreground: 240 5.3% 26.1%;
-
-    --sidebar-primary: 240 5.9% 10%;
-
-    --sidebar-primary-foreground: 0 0% 98%;
-
-    --sidebar-accent: 240 4.8% 95.9%;
-
-    --sidebar-accent-foreground: 240 5.9% 10%;
-
-    --sidebar-border: 220 13% 91%;
-
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    /* Additional warm colors */
+    --warm-brown: 30 20% 35%; /* #8b7355 */
+    --warm-beige: 40 15% 90%; /* #f0ede8 */
+    --warm-gray: 40 10% 55%; /* #8b8680 */
+    --warm-light: 40 20% 96%; /* #f8f7f5 */
   }
 
   .dark {
-    --background: 223 84% 4.9%;
-    --foreground: 248 250% 99%;
+    --background: 0 0% 17%;
+    --foreground: 40 20% 98%;
 
-    --card: 223 84% 4.9%;
-    --card-foreground: 248 250% 99%;
+    --card: 0 0% 17%;
+    --card-foreground: 40 20% 98%;
 
-    --popover: 223 84% 4.9%;
-    --popover-foreground: 248 250% 99%;
+    --popover: 0 0% 17%;
+    --popover-foreground: 40 20% 98%;
 
-    --primary: 239 84% 67%;
+    --primary: 260 13% 39%;
     --primary-foreground: 0 0% 100%;
-    --primary-glow: 239 84% 75%;
+    --primary-glow: 260 13% 45%;
 
-    --secondary: 215 27.9% 16.9%;
-    --secondary-foreground: 248 250% 99%;
+    --secondary: 80 12% 45%;
+    --secondary-foreground: 0 0% 100%;
 
-    --muted: 215 27.9% 16.9%;
-    --muted-foreground: 215 20.2% 65.1%;
+    --muted: 0 0% 25%;
+    --muted-foreground: 40 10% 60%;
 
-    --accent: 239 84% 67%;
+    --accent: 40 25% 50%;
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 248 250% 99%;
+    --destructive-foreground: 40 20% 98%;
 
-    --border: 215 27.9% 16.9%;
-    --input: 215 27.9% 16.9%;
-    --ring: 239 84% 67%;
+    --border: 0 0% 25%;
+    --input: 0 0% 25%;
+    --ring: 40 25% 50%;
 
     /* Calendar-specific colors for dark mode */
-    --calendar-today: 239 84% 67%;
-    --calendar-event: 199 89% 48%;
-    --calendar-weekend: 215 20.2% 65.1%;
-    --calendar-selected: 239 84% 67%;
+    --calendar-today: 40 25% 50%;
+    --calendar-event: 260 13% 39%;
+    --calendar-weekend: 40 10% 60%;
+    --calendar-selected: 40 25% 50%;
 
     /* Dark mode gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(239 84% 67%), hsl(199 89% 48%));
-    --gradient-card: linear-gradient(145deg, hsl(223 84% 4.9%), hsl(215 27.9% 16.9%));
-    --gradient-ai: linear-gradient(135deg, hsl(239 84% 67% / 0.1), hsl(199 89% 48% / 0.1));
+    --gradient-primary: linear-gradient(135deg, #6b5b73, #7a8471);
+    --gradient-card: linear-gradient(145deg, #2c2c2c, #3a3a3a);
+    --gradient-accent: linear-gradient(135deg, #a0916a, #8b7355);
 
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-background: 0 0% 25%;
+    --sidebar-foreground: 40 20% 98%;
+    --sidebar-primary: 40 25% 50%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-accent: 0 0% 20%;
+    --sidebar-accent-foreground: 40 20% 98%;
+    --sidebar-border: 0 0% 20%;
+    --sidebar-ring: 40 25% 50%;
   }
 }
 
@@ -137,10 +141,184 @@
     @apply bg-background text-foreground;
     height: 100%;
     overflow-x: hidden;
+    font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    line-height: 1.5;
+    font-weight: 400;
   }
 
   body {
     overflow-y: auto;
+  }
+}
+
+/* Custom component styles matching the HTML theme */
+@layer components {
+  /* Header styles */
+  .header {
+    @apply flex justify-between items-center bg-white border border-border rounded-xl p-5 mb-6 shadow-sm;
+  }
+
+  .logo {
+    @apply flex items-center gap-3;
+  }
+
+  .logo-icon {
+    @apply w-9 h-9 bg-primary rounded-lg flex items-center justify-center text-white text-base font-medium;
+  }
+
+  .logo-text {
+    @apply flex flex-col;
+  }
+
+  .logo-title {
+    @apply text-xl font-semibold text-foreground tracking-tight;
+  }
+
+  .logo-subtitle {
+    @apply text-xs text-warm-gray font-normal tracking-wide;
+  }
+
+  .header-actions {
+    @apply flex gap-3;
+  }
+
+  /* Button styles */
+  .btn {
+    @apply px-4 py-2 border border-border rounded-lg font-medium text-sm cursor-pointer transition-all duration-150 ease-in-out no-underline inline-flex items-center gap-1.5;
+  }
+
+  .btn-outline {
+    @apply bg-white text-warm-gray border-border hover:bg-warm-light hover:border-warm-beige;
+  }
+
+  .btn-primary {
+    @apply bg-primary text-white border-primary hover:bg-primary-glow hover:border-primary-glow;
+  }
+
+  /* Demo banner styles */
+  .demo-banner {
+    @apply bg-muted border border-border border-l-4 border-l-accent p-4 rounded-lg mb-6 flex items-center justify-between;
+  }
+
+  .demo-content {
+    @apply flex items-center gap-3;
+  }
+
+  .demo-icon {
+    @apply w-5 h-5 bg-accent rounded flex items-center justify-center text-white text-xs;
+  }
+
+  .demo-text h3 {
+    @apply text-sm font-semibold text-foreground mb-0.5;
+  }
+
+  .demo-text p {
+    @apply text-xs text-muted-foreground leading-relaxed;
+  }
+
+  /* Calendar container styles */
+  .calendar-container {
+    @apply bg-white border border-border rounded-xl p-7 shadow-sm;
+  }
+
+  /* Calendar navigation styles */
+  .calendar-nav {
+    @apply flex justify-between items-center mb-8 pb-6 border-b border-warm-beige;
+  }
+
+  .nav-controls {
+    @apply flex items-center gap-4;
+  }
+
+  .nav-btn {
+    @apply w-8 h-8 border border-border bg-white rounded-md flex items-center justify-center cursor-pointer transition-all duration-150 ease-in-out text-warm-gray text-sm hover:bg-warm-light hover:border-warm-beige;
+  }
+
+  .month-year {
+    @apply text-2xl font-semibold text-foreground tracking-tight;
+  }
+
+  .view-controls {
+    @apply flex bg-warm-light rounded-lg p-0.5 border border-border;
+  }
+
+  .view-btn {
+    @apply px-3.5 py-1.5 border-none bg-transparent rounded-md cursor-pointer font-medium text-xs transition-all duration-150 ease-in-out text-muted-foreground hover:text-foreground;
+  }
+
+  .view-btn.active {
+    @apply bg-white text-foreground shadow-sm;
+  }
+
+  /* Calendar grid styles */
+  .calendar-grid {
+    @apply grid grid-cols-7 gap-px bg-border rounded-lg overflow-hidden border border-border;
+  }
+
+  .calendar-header {
+    @apply bg-primary text-white p-4 text-center font-medium text-xs tracking-wide uppercase;
+  }
+
+  .calendar-cell {
+    @apply bg-white min-h-[100px] p-3 flex flex-col cursor-pointer transition-all duration-150 ease-in-out relative hover:bg-warm-light;
+  }
+
+  .calendar-cell.other-month {
+    @apply text-warm-beige bg-background hover:bg-muted;
+  }
+
+  .calendar-cell.today {
+    @apply bg-muted border-2 border-accent -m-px relative;
+  }
+
+  .calendar-cell.today .cell-date {
+    @apply text-warm-brown font-semibold;
+  }
+
+  .cell-date {
+    @apply text-sm font-medium mb-2 text-foreground;
+  }
+
+  .cell-content {
+    @apply text-xs text-warm-gray flex-grow flex items-center justify-center text-center leading-tight;
+  }
+
+  .calendar-cell.today .cell-content {
+    @apply text-warm-brown;
+  }
+
+  .add-event-text {
+    @apply opacity-0 transition-all duration-150 ease-in-out;
+  }
+
+  .calendar-cell:hover .add-event-text {
+    @apply opacity-100;
+  }
+
+  /* Event dots */
+  .event-dots {
+    @apply flex gap-1 mt-auto justify-start;
+  }
+
+  .event-dot {
+    @apply w-1 h-1 rounded-full bg-primary;
+  }
+
+  .event-dot.secondary {
+    @apply bg-secondary;
+  }
+
+  .event-dot.tertiary {
+    @apply bg-accent;
+  }
+
+  .event-dot.quaternary {
+    @apply bg-warm-brown;
+  }
+
+  /* Today indicator */
+  .today-indicator {
+    @apply absolute top-2 right-2 w-1.5 h-1.5 bg-accent rounded-full;
   }
 }
 
@@ -197,7 +375,7 @@
 @media (max-width: 768px) {
   /* Optimize calendar for mobile */
   .calendar-container {
-    padding: 0.75rem;
+    padding: 1.25rem;
   }
   
   /* Ensure buttons are touch-friendly */
@@ -252,6 +430,35 @@
     gap: 0.5rem;
     padding: 0.75rem;
   }
+
+  /* Mobile responsive adjustments */
+  .app-container {
+    padding: 1rem;
+  }
+
+  .header {
+    flex-direction: column;
+    gap: 1rem;
+    text-align: center;
+  }
+
+  .calendar-nav {
+    flex-direction: column;
+    gap: 1.25rem;
+  }
+
+  .calendar-cell {
+    min-height: 70px;
+    padding: 0.5rem;
+  }
+
+  .month-year {
+    font-size: 1.25rem;
+  }
+
+  .calendar-container {
+    padding: 1.25rem;
+  }
 }
 
 /* Ensure smooth scrolling on mobile */
@@ -265,4 +472,39 @@
     -webkit-overflow-scrolling: touch;
     scroll-behavior: smooth;
   }
+}
+
+/* Focus states for accessibility */
+.btn:focus,
+.nav-btn:focus,
+.view-btn:focus,
+.calendar-cell:focus {
+  outline: 2px solid #a0916a;
+  outline-offset: 2px;
+}
+
+/* Subtle animations */
+.calendar-container {
+  animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Typography improvements */
+.calendar-cell {
+  font-feature-settings: "tnum";
+}
+
+/* Clean borders and spacing */
+.calendar-cell + .calendar-cell {
+  border-left: none;
 }
