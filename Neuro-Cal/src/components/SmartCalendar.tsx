@@ -82,7 +82,7 @@ const SmartCalendar = () => {
       <div className="bg-white rounded-lg">
         <div className="grid grid-cols-7 gap-px bg-gray-200 rounded-t-lg overflow-hidden">
           {daysOfWeek.map(day => (
-            <div key={day} className="bg-gray-50 p-3 text-center text-sm font-medium text-gray-700">
+            <div key={day} className="bg-gray-50 p-2 md:p-3 text-center text-xs md:text-sm font-medium text-gray-700">
               {day}
             </div>
           ))}
@@ -91,13 +91,13 @@ const SmartCalendar = () => {
           {days.map((day, index) => (
             <div
               key={index}
-              className={`bg-white p-4 min-h-24 ${
+              className={`bg-white p-2 md:p-4 min-h-16 md:min-h-24 ${
                 !day.isCurrentMonth ? 'text-gray-400' : 'text-gray-900'
-              } hover:bg-gray-50 cursor-pointer`}
+              } hover:bg-gray-50 cursor-pointer touch-target`}
             >
-              <div className="font-medium">{day.date}</div>
+              <div className="font-medium text-sm md:text-base">{day.date}</div>
               {day.isCurrentMonth && (
-                <div className="text-xs text-gray-400 mt-2">Click to add event</div>
+                <div className="text-xs text-gray-400 mt-1 md:mt-2 hidden md:block">Click to add event</div>
               )}
             </div>
           ))}
@@ -113,13 +113,13 @@ const SmartCalendar = () => {
     return (
       <div className="bg-white rounded-lg overflow-hidden">
         <div className="grid grid-cols-8 gap-px bg-gray-200">
-          <div className="bg-gray-50 p-3"></div>
+          <div className="bg-gray-50 p-2 md:p-3"></div>
           {weekDays.map((day, index) => (
-            <div key={index} className="bg-gray-50 p-3 text-center">
-              <div className="text-sm font-medium text-gray-700">
+            <div key={index} className="bg-gray-50 p-2 md:p-3 text-center">
+              <div className="text-xs md:text-sm font-medium text-gray-700">
                 {daysOfWeek[day.getDay()]}
               </div>
-              <div className="text-lg font-semibold text-gray-900">
+              <div className="text-sm md:text-lg font-semibold text-gray-900">
                 {day.getDate()}
               </div>
             </div>
@@ -134,7 +134,7 @@ const SmartCalendar = () => {
               {weekDays.map((_, dayIndex) => (
                 <div
                   key={`${hour}-${dayIndex}`}
-                  className="bg-white p-2 min-h-12 hover:bg-gray-50 cursor-pointer border-r border-b border-gray-100"
+                  className="bg-white p-2 min-h-10 md:min-h-12 hover:bg-gray-50 cursor-pointer border-r border-b border-gray-100 touch-target"
                 >
                 </div>
               ))}
@@ -151,15 +151,15 @@ const SmartCalendar = () => {
     
     return (
       <div className="bg-white rounded-lg overflow-hidden">
-        <div className="p-4 bg-gray-50 border-b">
+        <div className="p-3 md:p-4 bg-gray-50 border-b">
           <div className="text-center">
-            <div className="text-sm font-medium text-gray-700">
+            <div className="text-xs md:text-sm font-medium text-gray-700">
               {daysOfWeek[today.getDay()]}
             </div>
-            <div className="text-2xl font-semibold text-gray-900">
+            <div className="text-xl md:text-2xl font-semibold text-gray-900">
               {today.getDate()}
             </div>
-            <div className="text-sm text-gray-500">
+            <div className="text-xs md:text-sm text-gray-500">
               {monthNames[today.getMonth()]} {today.getFullYear()}
             </div>
           </div>
@@ -167,10 +167,10 @@ const SmartCalendar = () => {
         <div className="max-h-96 overflow-y-auto">
           {hours.map(hour => (
             <div key={hour} className="flex border-b border-gray-100">
-              <div className="w-20 p-3 text-xs text-gray-500 bg-gray-50">
+              <div className="w-16 md:w-20 p-2 md:p-3 text-xs text-gray-500 bg-gray-50">
                 {hour === 0 ? '12 AM' : hour < 12 ? `${hour} AM` : hour === 12 ? '12 PM' : `${hour - 12} PM`}
               </div>
-              <div className="flex-1 p-3 min-h-16 hover:bg-gray-50 cursor-pointer">
+              <div className="flex-1 p-2 md:p-3 min-h-12 md:min-h-16 hover:bg-gray-50 cursor-pointer touch-target">
                 <div className="text-xs text-gray-400">Click to add event</div>
               </div>
             </div>
@@ -181,31 +181,31 @@ const SmartCalendar = () => {
   };
 
   return (
-    <div className="bg-gray-50 p-6">
+    <div className="bg-gray-50 p-3 md:p-6">
 
 
 
       {/* Calendar Header */}
       <div className="bg-white rounded-lg shadow-sm mb-6">
-        <div className="p-4 flex items-center justify-between border-b">
+        <div className="p-4 flex flex-col md:flex-row md:items-center justify-between border-b space-y-4 md:space-y-0">
           <div className="flex items-center space-x-3">
           </div>
           
           {/* Navigation and View Controls */}
-          <div className="flex items-center space-x-4">
+          <div className="flex flex-col md:flex-row items-center space-y-3 md:space-y-0 md:space-x-4">
             <div className="flex items-center space-x-2">
               <button
                 onClick={() => navigateMonth(-1)}
-                className="p-2 hover:bg-gray-100 rounded"
+                className="p-3 md:p-2 hover:bg-gray-100 rounded touch-target"
               >
                 ←
               </button>
-              <h3 className="text-lg font-medium text-gray-900 min-w-32 text-center">
+              <h3 className="text-base md:text-lg font-medium text-gray-900 min-w-28 md:min-w-32 text-center">
                 {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}
               </h3>
               <button
                 onClick={() => navigateMonth(1)}
-                className="p-2 hover:bg-gray-100 rounded"
+                className="p-3 md:p-2 hover:bg-gray-100 rounded touch-target"
               >
                 →
               </button>
@@ -217,7 +217,7 @@ const SmartCalendar = () => {
                 <button
                   key={view}
                   onClick={() => setCurrentView(view)}
-                  className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
+                  className={`px-3 md:px-4 py-2 text-sm font-medium rounded-md transition-colors touch-target ${
                     currentView === view
                       ? 'bg-blue-600 text-white shadow-sm'
                       : 'text-gray-700 hover:text-gray-900 hover:bg-gray-200'

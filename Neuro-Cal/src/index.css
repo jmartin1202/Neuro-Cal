@@ -229,6 +229,29 @@
     flex-direction: column;
     gap: 0.75rem;
   }
+  
+  /* Mobile calendar grid optimization */
+  .calendar-grid-mobile {
+    gap: 1px;
+  }
+  
+  /* Mobile touch targets */
+  .touch-target {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  /* Mobile text optimization */
+  .text-mobile-optimized {
+    font-size: 14px;
+    line-height: 1.4;
+  }
+  
+  /* Mobile spacing optimization */
+  .space-mobile-optimized {
+    gap: 0.5rem;
+    padding: 0.75rem;
+  }
 }
 
 /* Ensure smooth scrolling on mobile */

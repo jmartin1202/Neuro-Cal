@@ -310,39 +310,39 @@ const Index = () => {
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted">
       {/* Header */}
       <header className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-40">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
+        <div className="container mx-auto px-3 md:px-4 py-3 md:py-4">
+          <div className="flex flex-col md:flex-row md:items-center justify-between space-y-3 md:space-y-0">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-gradient-primary rounded-xl flex items-center justify-center">
-                <Brain className="w-6 h-6 text-white" />
+              <div className="w-8 h-8 md:w-10 md:h-10 bg-gradient-primary rounded-xl flex items-center justify-center">
+                <Brain className="w-4 h-4 md:w-6 md:h-6 text-white" />
               </div>
               <div>
-                <h1 className="text-xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+                <h1 className="text-lg md:text-xl font-bold bg-gradient-primary bg-clip-text text-transparent">
                   NeuroCal
                 </h1>
                 <p className="text-xs text-muted-foreground">AI-Powered Calendar</p>
               </div>
             </div>
 
-            <div className="flex items-center gap-3">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3">
               {user ? (
                 <>
-                  <Button variant="outline" size="sm" onClick={handleCreateEventClick}>
+                  <Button variant="outline" size="sm" onClick={handleCreateEventClick} className="touch-target">
                     <Plus className="h-4 w-4 mr-2" />
                     Create Event
                   </Button>
-                  <Button variant="outline" size="sm" onClick={handleLogout}>
+                  <Button variant="outline" size="sm" onClick={handleLogout} className="touch-target">
                     <LogOut className="h-4 w-4 mr-2" />
                     Logout
                   </Button>
                 </>
               ) : (
                 <>
-                  <Button variant="outline" size="sm" onClick={handleSignInClick}>
+                  <Button variant="outline" size="sm" onClick={handleSignInClick} className="touch-target">
                     <LogIn className="h-4 w-4 mr-2" />
                     Sign In
                   </Button>
-                  <Button onClick={handleUpgradeClick}>
+                  <Button onClick={handleUpgradeClick} className="touch-target">
                     <Crown className="h-4 w-4 mr-2" />
                     Upgrade
                   </Button>
@@ -354,24 +354,24 @@ const Index = () => {
       </header>
 
       {/* Main Content */}
-      <main className="container mx-auto px-4 py-8">
+      <main className="container mx-auto px-3 md:px-4 py-4 md:py-8">
         {/* Demo Mode Banner */}
         {!user && (
-          <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+          <div className="mb-6 p-3 md:p-4 bg-blue-50 border border-blue-200 rounded-lg">
+            <div className="flex flex-col md:flex-row items-start md:items-center gap-3">
+              <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
                 <Calendar className="h-4 w-4 text-blue-600" />
               </div>
-              <div className="flex-1">
-                <h3 className="font-semibold text-blue-900">Demo Mode</h3>
-                <p className="text-sm text-blue-700">
+              <div className="flex-1 text-center md:text-left">
+                <h3 className="font-semibold text-blue-900 text-sm md:text-base">Demo Mode</h3>
+                <p className="text-xs md:text-sm text-blue-700 mt-1">
                   You're viewing the calendar in demo mode. Sign up for a free trial to save events and unlock AI features!
                 </p>
               </div>
               <Button 
                 onClick={handleGetStartedClick} 
                 size="sm" 
-                className="bg-blue-600 hover:bg-blue-700"
+                className="bg-blue-600 hover:bg-blue-700 touch-target w-full md:w-auto"
               >
                 <Star className="h-4 w-4 mr-2" />
                 Get Started Free
@@ -400,19 +400,19 @@ const Index = () => {
           {/* AI Panel */}
           <div className="space-y-4">
             {!user ? (
-              <div className="p-4 bg-yellow-50 border border-yellow-300 rounded-lg">
-                <div className="flex items-center gap-3">
-                  <Lock className="h-8 w-8 text-yellow-600" />
-                  <div className="flex-1">
-                    <h3 className="font-semibold text-yellow-900">Premium Feature</h3>
-                    <p className="text-sm text-yellow-700">
+              <div className="p-3 md:p-4 bg-yellow-50 border border-yellow-300 rounded-lg">
+                <div className="flex flex-col md:flex-row items-start md:items-center gap-3">
+                  <Lock className="h-6 w-6 md:h-8 md:w-8 text-yellow-600 flex-shrink-0" />
+                  <div className="flex-1 text-center md:text-left">
+                    <h3 className="font-semibold text-yellow-900 text-sm md:text-base">Premium Feature</h3>
+                    <p className="text-xs md:text-sm text-yellow-700 mt-1">
                       AI Event Creation requires Basic plan
                     </p>
                   </div>
                   <Button 
                     onClick={handleUpgradeClick}
                     size="sm"
-                    className="bg-yellow-600 hover:bg-yellow-700"
+                    className="bg-yellow-600 hover:bg-yellow-700 touch-target w-full md:w-auto"
                   >
                     <Crown className="h-4 w-4 mr-2" />
                     Upgrade to Basic
