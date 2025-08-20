@@ -1201,45 +1201,7 @@ const Index = () => {
         </ComponentSafetyWrapper>
       </Suspense>
       
-      {/* Debug Info - Remove in production */}
-      {isDeveloperMode && (
-        <div className="fixed bottom-4 right-4 left-4 md:left-auto bg-accent/90 text-accent-foreground p-3 rounded-lg text-xs z-50 max-w-xs md:max-w-xs">
-          <div className="flex items-center justify-between mb-2">
-            <div className="font-semibold">🐛 Debug Info</div>
-            <button 
-              onClick={() => setIsDeveloperMode(false)}
-              className="text-accent-foreground/70 hover:text-accent-foreground"
-              title="Exit Dev Mode"
-            >
-              ✕
-            </button>
-          </div>
-          <div className="space-y-1">
-            <div className="flex justify-between">
-              <span>Modal:</span>
-              <span className={isCreateModalOpen ? 'text-green-300' : 'text-red-300'}>
-                {isCreateModalOpen ? 'Open' : 'Closed'}
-              </span>
-            </div>
-            <div className="flex justify-between">
-              <span>Date:</span>
-              <span className="text-accent-foreground/80">
-                {selectedDate ? selectedDate.toLocaleDateString() : 'None'}
-              </span>
-            </div>
-            <div className="flex justify-between">
-              <span>Events:</span>
-              <span className="text-accent-foreground/80">{events.length}</span>
-            </div>
-            <div className="flex justify-between">
-              <span>User:</span>
-              <span className={user ? 'text-green-300' : 'text-yellow-300'}>
-                {user ? 'Logged In' : 'Not Logged In'}
-              </span>
-            </div>
-          </div>
-        </div>
-      )}
+
 
       {/* Simple Auth Modal */}
       {showAuthModal && (
