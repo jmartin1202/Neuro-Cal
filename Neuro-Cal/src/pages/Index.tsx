@@ -573,6 +573,12 @@ const Index = () => {
                     CRM
                   </Button>
                 </Link>
+                <Link to="/calendar">
+                  <Button variant="outline" size="sm" className="btn btn-outline">
+                    <Calendar className="h-4 w-4 mr-2" />
+                    Enhanced Calendar
+                  </Button>
+                </Link>
                 {user ? (
                   <Button variant="outline" size="sm" onClick={handleLogout} className="btn btn-outline">
                     <LogOut className="h-4 w-4 mr-2" />
@@ -638,6 +644,13 @@ const Index = () => {
                   <Users className="h-4 w-4 mr-2" />
                   <span className="hidden sm:inline">Test CRM</span>
                   <span className="sm:hidden">CRM</span>
+                </Button>
+              </Link>
+              <Link to="/calendar">
+                <Button size="sm" variant="outline" className="border-accent text-accent w-full sm:w-auto">
+                  <Calendar className="h-4 w-4 mr-2" />
+                  <span className="hidden sm:inline">Test Enhanced Calendar</span>
+                  <span className="sm:hidden">Calendar</span>
                 </Button>
               </Link>
               <Button 
