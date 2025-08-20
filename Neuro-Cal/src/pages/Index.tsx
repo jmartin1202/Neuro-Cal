@@ -444,6 +444,17 @@ const Index = () => {
               </span>
             </Button>
             
+            {/* Settings Button - Available to all users */}
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={toggleSettings}
+              className="btn btn-outline"
+            >
+              <Settings className="h-4 w-4 mr-2" />
+              Settings
+            </Button>
+
             {(user || isDeveloperMode) ? (
               <>
                 <Button variant="outline" size="sm" onClick={handleCreateEventClick} className="btn btn-outline">
@@ -456,15 +467,6 @@ const Index = () => {
                     CRM
                   </Button>
                 </Link>
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  onClick={toggleSettings}
-                  className="btn btn-outline"
-                >
-                  <Settings className="h-4 w-4 mr-2" />
-                  Settings
-                </Button>
                 {user ? (
                   <Button variant="outline" size="sm" onClick={handleLogout} className="btn btn-outline">
                     <LogOut className="h-4 w-4 mr-2" />
@@ -664,6 +666,21 @@ const Index = () => {
                   Close
                 </Button>
               </div>
+
+              {/* Notice for non-authenticated users */}
+              {!user && !isDeveloperMode && (
+                <div className="bg-accent/10 border border-accent/30 rounded-lg p-4">
+                  <div className="flex items-center gap-3">
+                    <Lock className="h-5 w-5 text-accent" />
+                    <div>
+                      <h3 className="text-sm font-medium text-accent">Demo Mode</h3>
+                      <p className="text-xs text-accent/70">
+                        You're viewing settings in demo mode. Some features may require authentication to work properly.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
 
               {/* Notifications */}
               <div className="bg-card border border-border rounded-lg p-6">
