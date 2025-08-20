@@ -355,8 +355,13 @@ const Index = () => {
               className={`btn ${isDeveloperMode ? 'bg-accent text-accent-foreground' : 'btn-outline'}`}
               title="Toggle Developer Mode"
             >
-              <Code className="h-4 w-4 mr-2" />
-              {isDeveloperMode ? 'Dev Mode ON' : 'Dev Mode'}
+              <Code className="h-4 w-4 mr-1 sm:mr-2" />
+              <span className="hidden sm:inline">
+                {isDeveloperMode ? 'Dev Mode ON' : 'Dev Mode'}
+              </span>
+              <span className="sm:hidden">
+                {isDeveloperMode ? 'ON' : 'Dev'}
+              </span>
             </Button>
             
             {(user || isDeveloperMode) ? (
@@ -426,24 +431,27 @@ const Index = () => {
               <Code className="h-6 w-6 text-accent flex-shrink-0" />
               <div className="demo-text">
                 <h3>Developer Mode Enabled</h3>
-                <p>You can now test all features including AI, CRM, and premium functionality without authentication or subscriptions!</p>
+                <p className="hidden sm:block">You can now test all features including AI, CRM, and premium functionality without authentication or subscriptions!</p>
+                <p className="sm:hidden">Test all features without authentication!</p>
               </div>
             </div>
-            <div className="flex gap-2">
+            <div className="flex flex-col sm:flex-row gap-2">
               <Link to="/crm">
-                <Button size="sm" variant="outline" className="border-accent text-accent">
+                <Button size="sm" variant="outline" className="border-accent text-accent w-full sm:w-auto">
                   <Users className="h-4 w-4 mr-2" />
-                  Test CRM
+                  <span className="hidden sm:inline">Test CRM</span>
+                  <span className="sm:hidden">CRM</span>
                 </Button>
               </Link>
               <Button 
                 onClick={() => setIsDeveloperMode(false)}
                 size="sm"
                 variant="outline"
-                className="border-accent/50 text-accent/70"
+                className="border-accent/50 text-accent/70 w-full sm:w-auto"
               >
                 <X className="h-4 w-4 mr-2" />
-                Exit Dev Mode
+                <span className="hidden sm:inline">Exit Dev Mode</span>
+                <span className="sm:hidden">Exit</span>
               </Button>
             </div>
           </div>
@@ -509,22 +517,26 @@ const Index = () => {
             <div className="bg-accent/10 border border-accent/30 rounded-lg p-4">
               <h3 className="text-lg font-semibold text-accent mb-3 flex items-center gap-2">
                 <Code className="h-5 w-5" />
-                Developer Mode Events ({events.length})
+                <span className="hidden sm:inline">Developer Mode Events</span>
+                <span className="sm:hidden">Dev Events</span>
+                <span className="text-accent/70">({events.length})</span>
               </h3>
               <div className="space-y-2">
                 {events.map((event) => (
                   <div key={event.id} className="bg-white dark:bg-gray-800 rounded-md p-3 border border-accent/20">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <h4 className="font-medium text-foreground">{event.title}</h4>
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex-1 min-w-0">
+                        <h4 className="font-medium text-foreground truncate">{event.title}</h4>
                         <p className="text-sm text-muted-foreground">
-                          {event.date.toLocaleDateString()} at {event.time} ({event.duration})
+                          <span className="hidden sm:inline">{event.date.toLocaleDateString()}</span>
+                          <span className="sm:hidden">{event.date.toLocaleDateString('short')}</span>
+                          {' '}at {event.time} ({event.duration})
                         </p>
                         {event.location && (
-                          <p className="text-sm text-muted-foreground">📍 {event.location}</p>
+                          <p className="text-sm text-muted-foreground truncate">📍 {event.location}</p>
                         )}
                       </div>
-                      <div className={`w-4 h-4 rounded-full ${event.color}`}></div>
+                      <div className={`w-4 h-4 rounded-full ${event.color} flex-shrink-0`}></div>
                     </div>
                   </div>
                 ))}
@@ -553,13 +565,41 @@ const Index = () => {
       
       {/* Debug Info - Remove in production */}
       {isDeveloperMode && (
-        <div className="fixed bottom-4 right-4 bg-accent/90 text-accent-foreground p-3 rounded-lg text-xs max-w-xs z-50">
-          <div><strong>Debug Info:</strong></div>
-          <div>Modal Open: {isCreateModalOpen ? 'Yes' : 'No'}</div>
-          <div>Selected Date: {selectedDate ? selectedDate.toDateString() : 'None'}</div>
-          <div>Events Count: {events.length}</div>
-          <div>User: {user ? 'Logged In' : 'Not Logged In'}</div>
-          <div>Dev Mode: {isDeveloperMode ? 'ON' : 'OFF'}</div>
+        <div className="fixed bottom-4 right-4 left-4 md:left-auto bg-accent/90 text-accent-foreground p-3 rounded-lg text-xs z-50 max-w-xs md:max-w-xs">
+          <div className="flex items-center justify-between mb-2">
+            <div className="font-semibold">🐛 Debug Info</div>
+            <button 
+              onClick={() => setIsDeveloperMode(false)}
+              className="text-accent-foreground/70 hover:text-accent-foreground"
+              title="Exit Dev Mode"
+            >
+              ✕
+            </button>
+          </div>
+          <div className="space-y-1">
+            <div className="flex justify-between">
+              <span>Modal:</span>
+              <span className={isCreateModalOpen ? 'text-green-300' : 'text-red-300'}>
+                {isCreateModalOpen ? 'Open' : 'Closed'}
+              </span>
+            </div>
+            <div className="flex justify-between">
+              <span>Date:</span>
+              <span className="text-accent-foreground/80">
+                {selectedDate ? selectedDate.toLocaleDateString() : 'None'}
+              </span>
+            </div>
+            <div className="flex justify-between">
+              <span>Events:</span>
+              <span className="text-accent-foreground/80">{events.length}</span>
+            </div>
+            <div className="flex justify-between">
+              <span>User:</span>
+              <span className={user ? 'text-green-300' : 'text-yellow-300'}>
+                {user ? 'Logged In' : 'Not Logged In'}
+              </span>
+            </div>
+          </div>
         </div>
       )}
 
