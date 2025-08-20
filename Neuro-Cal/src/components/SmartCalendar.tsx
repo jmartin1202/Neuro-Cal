@@ -1,6 +1,11 @@
 import React, { useState } from 'react';
+import { Event } from './EventCard';
 
-const SmartCalendar = () => {
+interface SmartCalendarProps {
+  events?: Event[];
+}
+
+const SmartCalendar = ({ events = [] }: SmartCalendarProps) => {
   const [currentView, setCurrentView] = useState('Month');
   const [currentDate, setCurrentDate] = useState(new Date(2025, 7)); // August 2025
 
@@ -82,6 +87,15 @@ const SmartCalendar = () => {
            today.getFullYear() === currentDate.getFullYear();
   };
 
+  const getEventsForDate = (day: number) => {
+    return events.filter(event => {
+      const eventDate = new Date(event.date);
+      return eventDate.getDate() === day && 
+             eventDate.getMonth() === currentDate.getMonth() && 
+             eventDate.getFullYear() === currentDate.getFullYear();
+    });
+  };
+
   const renderMonthView = () => {
     const days = getDaysInMonth(currentDate);
     
@@ -103,30 +117,16 @@ const SmartCalendar = () => {
             <div className="cell-content">
               <span className="add-event-text">Click to add event</span>
             </div>
-            {/* Event dots for demonstration */}
-            {day.isCurrentMonth && day.date === 3 && (
-              <div className="event-dots">
-                <div className="event-dot"></div>
-                <div className="event-dot secondary"></div>
+            {/* Show actual events for this date */}
+            {day.isCurrentMonth && getEventsForDate(day.date).map((event, eventIndex) => (
+              <div key={eventIndex} className="event-dots">
+                <div 
+                  className="event-dot" 
+                  style={{ backgroundColor: event.color }}
+                  title={`${event.title} at ${event.time}`}
+                ></div>
               </div>
-            )}
-            {day.isCurrentMonth && day.date === 11 && (
-              <div className="event-dots">
-                <div className="event-dot tertiary"></div>
-              </div>
-            )}
-            {day.isCurrentMonth && day.date === 20 && (
-              <div className="event-dots">
-                <div className="event-dot quaternary"></div>
-              </div>
-            )}
-            {day.isCurrentMonth && day.date === 28 && (
-              <div className="event-dots">
-                <div className="event-dot"></div>
-                <div className="event-dot secondary"></div>
-                <div className="event-dot tertiary"></div>
-              </div>
-            )}
+            ))}
           </div>
         ))}
       </div>

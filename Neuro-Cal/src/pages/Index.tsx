@@ -105,7 +105,13 @@ const Index = () => {
         id: `event-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
       };
       
-      safeSetEvents(prev => [...prev, newEvent]);
+      console.log('Creating event in dev mode:', newEvent); // Debug log
+      
+      safeSetEvents(prev => {
+        const updatedEvents = [...prev, newEvent];
+        console.log('Updated events array:', updatedEvents); // Debug log
+        return updatedEvents;
+      });
       safeSetIsCreateModalOpen(false);
       
       toast({
@@ -446,7 +452,7 @@ const Index = () => {
                 autoRecover={true}
                 retryCount={3}
               >
-                <SmartCalendar />
+                <SmartCalendar events={events} />
               </ComponentSafetyWrapper>
             </Suspense>
           </div>
@@ -487,6 +493,34 @@ const Index = () => {
               </Suspense>
             )}
           </div>
+
+          {/* Developer Mode Events Display */}
+          {isDeveloperMode && events.length > 0 && (
+            <div className="bg-accent/10 border border-accent/30 rounded-lg p-4">
+              <h3 className="text-lg font-semibold text-accent mb-3 flex items-center gap-2">
+                <Code className="h-5 w-5" />
+                Developer Mode Events ({events.length})
+              </h3>
+              <div className="space-y-2">
+                {events.map((event) => (
+                  <div key={event.id} className="bg-white dark:bg-gray-800 rounded-md p-3 border border-accent/20">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h4 className="font-medium text-foreground">{event.title}</h4>
+                        <p className="text-sm text-muted-foreground">
+                          {event.date.toLocaleDateString()} at {event.time} ({event.duration})
+                        </p>
+                        {event.location && (
+                          <p className="text-sm text-muted-foreground">📍 {event.location}</p>
+                        )}
+                      </div>
+                      <div className={`w-4 h-4 rounded-full ${event.color}`}></div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </main>
       </div>
 
