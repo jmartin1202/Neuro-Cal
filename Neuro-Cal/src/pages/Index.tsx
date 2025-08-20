@@ -533,19 +533,23 @@ const Index = () => {
                   <ul className="text-left space-y-2 mb-6">
                     <li className="flex items-center gap-2">
                       <Check className="h-4 w-4 text-accent" />
-                      Full calendar access
+                      Basic calendar sync with Google Calendar, Outlook, and Apple Calendar
                     </li>
                     <li className="flex items-center gap-2">
                       <Check className="h-4 w-4 text-accent" />
-                      AI event creation
+                      Simple AI event creation with natural language ("Schedule meeting tomorrow at 2pm")
                     </li>
                     <li className="flex items-center gap-2">
                       <Check className="h-4 w-4 text-accent" />
-                      Event management
+                      Up to 10 AI-generated events during trial period
                     </li>
                     <li className="flex items-center gap-2">
                       <Check className="h-4 w-4 text-accent" />
-                      Calendar sync
+                      Basic email reminders and mobile app access
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <Check className="h-4 w-4 text-accent" />
+                      Limited customer support (FAQ and help articles only)
                     </li>
                   </ul>
                   <Button 
@@ -561,25 +565,29 @@ const Index = () => {
               {/* Basic Plan */}
               <div className="border border-border rounded-lg p-6 bg-card">
                 <div className="text-center">
-                  <h3 className="text-xl font-bold text-foreground mb-2">Basic Membership</h3>
+                  <h3 className="text-xl font-bold text-foreground mb-2">Basic Plan</h3>
                   <div className="text-3xl font-bold text-foreground mb-4">$4.99<span className="text-lg text-muted-foreground">/month</span></div>
                   <p className="text-muted-foreground mb-6">Great for personal use</p>
                   <ul className="text-left space-y-2 mb-6">
                     <li className="flex items-center gap-2">
                       <Check className="h-4 w-4 text-accent" />
-                      Everything in Free Trial
+                      Unlimited AI event creation and smart scheduling suggestions
                     </li>
                     <li className="flex items-center gap-2">
                       <Check className="h-4 w-4 text-accent" />
-                      Advanced AI features
+                      Calendar sync with major providers and basic conflict detection
                     </li>
                     <li className="flex items-center gap-2">
                       <Check className="h-4 w-4 text-accent" />
-                      Priority support
+                      Custom notification settings and email reminders
                     </li>
                     <li className="flex items-center gap-2">
                       <Check className="h-4 w-4 text-accent" />
-                      Export capabilities
+                      Integration with 1 third-party app (Zoom or Teams)
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <Check className="h-4 w-4 text-accent" />
+                      Standard email support with basic time tracking insights
                     </li>
                   </ul>
                   <Button 
@@ -599,25 +607,29 @@ const Index = () => {
                   <Badge className="bg-accent text-white px-3 py-1">Best Value</Badge>
                 </div>
                 <div className="text-center">
-                  <h3 className="text-xl font-bold text-foreground mb-2">Pro Version</h3>
+                  <h3 className="text-xl font-bold text-foreground mb-2">Pro Plan</h3>
                   <div className="text-3xl font-bold text-accent mb-4">$9.99<span className="text-lg text-accent/70">/month</span></div>
                   <p className="text-muted-foreground mb-6">Perfect for power users & teams</p>
                   <ul className="text-left space-y-2 mb-6">
                     <li className="flex items-center gap-2">
                       <Check className="h-4 w-4 text-accent" />
-                      Everything in Basic
+                      Advanced AI scheduling with smart buffer time and travel time calculations
                     </li>
                     <li className="flex items-center gap-2">
                       <Check className="h-4 w-4 text-accent" />
-                      Team collaboration
+                      Team collaboration features, shared calendars, and meeting room booking
                     </li>
                     <li className="flex items-center gap-2">
                       <Check className="h-4 w-4 text-accent" />
-                      Advanced analytics
+                      Detailed analytics dashboard with productivity insights and time tracking
                     </li>
                     <li className="flex items-center gap-2">
                       <Check className="h-4 w-4 text-accent" />
-                      API access
+                      AI meeting summaries, agenda suggestions, and automatic follow-up reminders
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <Check className="h-4 w-4 text-accent" />
+                      Priority chat support with advanced calendar sharing and export options
                     </li>
                   </ul>
                   <Button 
