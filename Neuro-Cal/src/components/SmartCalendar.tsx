@@ -189,28 +189,6 @@ const SmartCalendar = () => {
       <div className="bg-white rounded-lg shadow-sm mb-6">
         <div className="p-4 flex items-center justify-between border-b">
           <div className="flex items-center space-x-3">
-            <div className="w-6 h-6 bg-blue-600 rounded flex items-center justify-center">
-              <svg width="20" height="20" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-                <rect x="15" y="25" width="70" height="60" rx="6" ry="6" fill="#ffffff" stroke="#333333" strokeWidth="2"/>
-                <rect x="15" y="25" width="70" height="15" rx="6" ry="6" fill="#4a90e2"/>
-                <rect x="15" y="32" width="70" height="8" fill="#4a90e2"/>
-                <rect x="30" y="15" width="4" height="20" rx="2" ry="2" fill="#666666"/>
-                <rect x="66" y="15" width="4" height="20" rx="2" ry="2" fill="#666666"/>
-                <line x1="25" y1="50" x2="75" y2="50" stroke="#e0e0e0" strokeWidth="1"/>
-                <line x1="25" y1="60" x2="75" y2="60" stroke="#e0e0e0" strokeWidth="1"/>
-                <line x1="25" y1="70" x2="75" y2="70" stroke="#e0e0e0" strokeWidth="1"/>
-                <line x1="33" y1="40" x2="33" y2="80" stroke="#e0e0e0" strokeWidth="1"/>
-                <line x1="42" y1="40" x2="42" y2="80" stroke="#e0e0e0" strokeWidth="1"/>
-                <line x1="50" y1="40" x2="50" y2="80" stroke="#e0e0e0" strokeWidth="1"/>
-                <line x1="58" y1="40" x2="58" y2="80" stroke="#e0e0e0" strokeWidth="1"/>
-                <line x1="67" y1="40" x2="67" y2="80" stroke="#e0e0e0" strokeWidth="1"/>
-                <text x="29" y="48" fontFamily="Arial, sans-serif" fontSize="8" fontWeight="bold" fill="#333" textAnchor="middle">15</text>
-                <text x="46" y="58" fontFamily="Arial, sans-serif" fontSize="8" fontWeight="bold" fill="#4a90e2" textAnchor="middle">23</text>
-                <text x="54" y="68" fontFamily="Arial, sans-serif" fontSize="8" fontWeight="bold" fill="#333" textAnchor="middle">30</text>
-                <circle cx="46" cy="54" r="8" fill="#ff6b6b" opacity="0.8"/>
-                <text x="46" y="58" fontFamily="Arial, sans-serif" fontSize="8" fontWeight="bold" fill="#ffffff" textAnchor="middle">23</text>
-              </svg>
-            </div>
           </div>
           
           {/* Navigation and View Controls */}
