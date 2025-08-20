@@ -87,10 +87,15 @@ const Index = () => {
   // Event handlers with error prevention
   const handleDateClick = useCallback((date: Date) => {
     try {
+      console.log('Date clicked:', date, 'User:', user, 'Dev mode:', isDeveloperMode); // Debug log
+      
       if (!user && !isDeveloperMode) {
+        console.log('Showing pricing modal - no user and no dev mode'); // Debug log
         safeSetShowPricingModal(true);
         return;
       }
+      
+      console.log('Opening create event modal for date:', date); // Debug log
       safeSetSelectedDate(date);
       safeSetIsCreateModalOpen(true);
     } catch (error) {
@@ -227,10 +232,15 @@ const Index = () => {
   // Safe button click handlers
   const handleCreateEventClick = useCallback(() => {
     try {
+      console.log('Create event button clicked - User:', user, 'Dev mode:', isDeveloperMode); // Debug log
+      
       if (!user && !isDeveloperMode) {
+        console.log('Showing pricing modal - no user and no dev mode'); // Debug log
         safeSetShowPricingModal(true);
         return;
       }
+      
+      console.log('Opening create event modal'); // Debug log
       safeSetIsCreateModalOpen(true);
     } catch (error) {
       errorPrevention.trackError(error instanceof Error ? error : String(error), 'handleCreateEventClick');
@@ -540,6 +550,18 @@ const Index = () => {
           />
         </ComponentSafetyWrapper>
       </Suspense>
+      
+      {/* Debug Info - Remove in production */}
+      {isDeveloperMode && (
+        <div className="fixed bottom-4 right-4 bg-accent/90 text-accent-foreground p-3 rounded-lg text-xs max-w-xs z-50">
+          <div><strong>Debug Info:</strong></div>
+          <div>Modal Open: {isCreateModalOpen ? 'Yes' : 'No'}</div>
+          <div>Selected Date: {selectedDate ? selectedDate.toDateString() : 'None'}</div>
+          <div>Events Count: {events.length}</div>
+          <div>User: {user ? 'Logged In' : 'Not Logged In'}</div>
+          <div>Dev Mode: {isDeveloperMode ? 'ON' : 'OFF'}</div>
+        </div>
+      )}
 
       {/* Simple Auth Modal */}
       {showAuthModal && (
