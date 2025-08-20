@@ -5,6 +5,7 @@ import { AnalyticsProvider } from "@/components/AnalyticsProvider";
 import { GlobalErrorBoundary } from "@/components/GlobalErrorBoundary";
 import Index from "./pages/Index";
 import AnalyticsDashboard from "./pages/AnalyticsDashboard";
+import CRMDashboard from "./components/CRMDashboard";
 
 const App = () => {
   return (
@@ -16,6 +17,7 @@ const App = () => {
               <Route path="/" element={<Index />} />
               <Route path="/dashboard" element={<AnalyticsDashboard />} />
               <Route path="/analytics" element={<Navigate to="/dashboard" replace />} />
+              <Route path="/crm" element={<CRMDashboard />} />
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
             <Toaster />
