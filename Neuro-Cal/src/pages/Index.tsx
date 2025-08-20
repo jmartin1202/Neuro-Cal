@@ -325,6 +325,12 @@ const Index = () => {
                   <Plus className="h-4 w-4 mr-2" />
                   Create Event
                 </Button>
+                <Link to="/crm">
+                  <Button variant="outline" size="sm" className="btn btn-outline">
+                    <Users className="h-4 w-4 mr-2" />
+                    CRM
+                  </Button>
+                </Link>
                 <Button variant="outline" size="sm" onClick={handleLogout} className="btn btn-outline">
                   <LogOut className="h-4 w-4 mr-2" />
                   Logout
