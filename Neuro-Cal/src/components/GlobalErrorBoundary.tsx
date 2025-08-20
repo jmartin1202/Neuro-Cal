@@ -95,8 +95,105 @@ export class GlobalErrorBoundary extends Component<Props, State> {
     console.error('🚨 Error Info:', errorInfo);
     console.error('🚨 Error History:', this.errorHistory);
     
+    // Enhanced error logging with analytics
+    this.logErrorToAnalytics(error, errorInfo);
+    
     if (process.env.NODE_ENV === 'production') {
       console.log('📊 Error logged to monitoring service');
+    }
+  };
+
+  private logErrorToAnalytics = (error: Error, errorInfo: ErrorInfo) => {
+    try {
+      // Check if analytics is available
+      if (typeof window !== 'undefined' && (window as any).gtag) {
+        (window as any).gtag('event', 'error', {
+          event_category: 'error_boundary',
+          event_label: error.message,
+          value: this.state.retryCount,
+          custom_map: {
+            error_stack: error.stack,
+            component_stack: errorInfo.componentStack,
+            error_id: this.state.errorId,
+            retry_count: this.state.retryCount,
+            user_agent: navigator.userAgent,
+            url: window.location.href,
+            timestamp: new Date().toISOString(),
+          }
+        });
+      }
+
+      // Log to console with structured format
+      const errorLog = {
+        type: 'error_boundary',
+        error: {
+          message: error.message,
+          stack: error.stack,
+          name: error.name,
+        },
+        errorInfo: {
+          componentStack: errorInfo.componentStack,
+        },
+        context: {
+          errorId: this.state.errorId,
+          retryCount: this.state.retryCount,
+          userAgent: navigator.userAgent,
+          url: window.location.href,
+          timestamp: new Date().toISOString(),
+          errorHistory: this.errorHistory,
+        },
+        session: {
+          sessionId: this.getSessionId(),
+          userId: this.getUserId(),
+        }
+      };
+
+      console.group('🚨 Structured Error Log');
+      console.log('Error Details:', errorLog);
+      console.groupEnd();
+
+      // Store error in localStorage for debugging (development only)
+      if (process.env.NODE_ENV === 'development') {
+        this.storeErrorLocally(errorLog);
+      }
+
+    } catch (analyticsError) {
+      console.error('Failed to log error to analytics:', analyticsError);
+    }
+  };
+
+  private getSessionId = (): string => {
+    try {
+      return sessionStorage.getItem('sessionId') || 'unknown';
+    } catch {
+      return 'unknown';
+    }
+  };
+
+  private getUserId = (): string => {
+    try {
+      return localStorage.getItem('userId') || 'anonymous';
+    } catch {
+      return 'anonymous';
+    }
+  };
+
+  private storeErrorLocally = (errorLog: any) => {
+    try {
+      const errors = JSON.parse(localStorage.getItem('errorLogs') || '[]');
+      errors.push({
+        ...errorLog,
+        storedAt: new Date().toISOString(),
+      });
+      
+      // Keep only last 10 errors
+      if (errors.length > 10) {
+        errors.splice(0, errors.length - 10);
+      }
+      
+      localStorage.setItem('errorLogs', JSON.stringify(errors));
+    } catch {
+      // Silently fail if localStorage is not available
     }
   };
 

@@ -17,8 +17,15 @@ import {
   Zap,
   TrendingUp,
   TrendingDown,
-  MousePointer
+  MousePointer,
+  BarChart3,
+  Cpu,
+  MemoryStick,
+  Wifi,
+  HardDriveIcon
 } from 'lucide-react';
+import { usePerformanceMonitor } from '@/hooks/usePerformanceMonitor';
+import { performanceConfig } from '@/config/environment';
 
 interface PerformanceMetrics {
   coreWebVitals: {
@@ -54,7 +61,9 @@ interface PerformanceMetrics {
 }
 
 export const PerformanceMonitoring = () => {
-  const [metrics, setMetrics] = useState<PerformanceMetrics>({
+  const { metrics, isMonitoring, alerts, startMonitoring, stopMonitoring, clearAlerts } = usePerformanceMonitor();
+  
+  const [localMetrics, setLocalMetrics] = useState<PerformanceMetrics>({
     coreWebVitals: { lcp: 0, fid: 0, cls: 0, ttfb: 0 },
     pagePerformance: { loadTime: 0, domContentLoaded: 0, firstPaint: 0, firstContentfulPaint: 0 },
     resourcePerformance: { totalResources: 0, slowResources: 0, averageLoadTime: 0, largestResource: '' },
