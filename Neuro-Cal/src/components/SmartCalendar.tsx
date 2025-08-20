@@ -192,10 +192,6 @@ const SmartCalendar = () => {
             <div className="w-6 h-6 bg-blue-600 rounded flex items-center justify-center">
               <span className="text-white text-xs">📅</span>
             </div>
-            <div>
-              <h2 className="text-lg font-semibold text-gray-900">Smart Calendar</h2>
-              <p className="text-sm text-gray-500">✨ AI-Powered</p>
-            </div>
           </div>
           
           {/* Navigation and View Controls */}
