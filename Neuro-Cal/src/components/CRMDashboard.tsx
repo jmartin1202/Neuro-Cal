@@ -19,6 +19,15 @@ interface CRMDashboardData {
   new_leads: number;
   qualified_leads: number;
   pending_tasks: number;
+  // HubSpot-like metrics
+  total_companies: number;
+  active_deals: number;
+  pipeline_value: number;
+  conversion_rate: number;
+  average_deal_size: number;
+  sales_velocity: number;
+  lead_response_time: number;
+  customer_lifetime_value: number;
 }
 
 interface Contact {
@@ -68,15 +77,63 @@ interface Task {
   assigned_to_name: string;
 }
 
+interface Company {
+  id: string;
+  name: string;
+  industry: string;
+  company_size: string;
+  website: string;
+  address: string;
+  city: string;
+  state: string;
+  country: string;
+  annual_revenue: number;
+  employee_count: number;
+  founded_year: number;
+  status: string;
+  lead_score: number;
+  created_at: string;
+}
+
+interface EmailCampaign {
+  id: string;
+  name: string;
+  subject: string;
+  status: string;
+  sent_count: number;
+  open_rate: number;
+  click_rate: number;
+  conversion_rate: number;
+  created_at: string;
+}
+
+interface SalesActivity {
+  id: string;
+  type: string;
+  title: string;
+  description: string;
+  contact_id: string;
+  company_id: string;
+  deal_id: string;
+  date: string;
+  duration: number;
+  outcome: string;
+  notes: string;
+}
+
 const CRMDashboard: React.FC = () => {
   const [dashboardData, setDashboardData] = useState<CRMDashboardData | null>(null);
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [leads, setLeads] = useState<Lead[]>([]);
   const [deals, setDeals] = useState<Deal[]>([]);
   const [tasks, setTasks] = useState<Task[]>([]);
+  const [companies, setCompanies] = useState<Company[]>([]);
+  const [emailCampaigns, setEmailCampaigns] = useState<EmailCampaign[]>([]);
+  const [salesActivities, setSalesActivities] = useState<SalesActivity[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [activeTab, setActiveTab] = useState('overview');
   const { toast } = useToast();
 
   useEffect(() => {
@@ -85,6 +142,9 @@ const CRMDashboard: React.FC = () => {
     fetchLeads();
     fetchDeals();
     fetchTasks();
+    fetchCompanies();
+    fetchEmailCampaigns();
+    fetchSalesActivities();
   }, []);
 
   const fetchDashboardData = async () => {
@@ -164,6 +224,54 @@ const CRMDashboard: React.FC = () => {
       }
     } catch (error) {
       console.error('Error fetching tasks:', error);
+    }
+  };
+
+  const fetchCompanies = async () => {
+    try {
+      const response = await fetch('/api/crm/companies?limit=10', {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setCompanies(data.data);
+      }
+    } catch (error) {
+      console.error('Error fetching companies:', error);
+    }
+  };
+
+  const fetchEmailCampaigns = async () => {
+    try {
+      const response = await fetch('/api/crm/email-campaigns?limit=10', {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setEmailCampaigns(data.data);
+      }
+    } catch (error) {
+      console.error('Error fetching email campaigns:', error);
+    }
+  };
+
+  const fetchSalesActivities = async () => {
+    try {
+      const response = await fetch('/api/crm/sales-activities?limit=10', {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setSalesActivities(data.data);
+      }
+    } catch (error) {
+      console.error('Error fetching sales activities:', error);
     } finally {
       setLoading(false);
     }
@@ -302,16 +410,66 @@ const CRMDashboard: React.FC = () => {
       </div>
 
       {/* Main Content Tabs */}
-      <Tabs defaultValue="overview" className="space-y-4">
-        <TabsList>
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
+        <TabsList className="grid w-full grid-cols-8">
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="contacts">Contacts</TabsTrigger>
+          <TabsTrigger value="companies">Companies</TabsTrigger>
           <TabsTrigger value="leads">Leads</TabsTrigger>
           <TabsTrigger value="deals">Deals</TabsTrigger>
           <TabsTrigger value="tasks">Tasks</TabsTrigger>
+          <TabsTrigger value="marketing">Marketing</TabsTrigger>
+          <TabsTrigger value="sales">Sales</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="space-y-4">
+          {/* Enhanced Metrics Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium">Pipeline Value</CardTitle>
+                <DollarSign className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{formatCurrency(dashboardData?.pipeline_value || 0)}</div>
+                <p className="text-xs text-muted-foreground">Active deal pipeline</p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium">Conversion Rate</CardTitle>
+                <Target className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{dashboardData?.conversion_rate || 0}%</div>
+                <p className="text-xs text-muted-foreground">Lead to customer</p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium">Sales Velocity</CardTitle>
+                <TrendingUp className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{formatCurrency(dashboardData?.sales_velocity || 0)}</div>
+                <p className="text-xs text-muted-foreground">Revenue per day</p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium">Avg Deal Size</CardTitle>
+                <DollarSign className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{formatCurrency(dashboardData?.average_deal_size || 0)}</div>
+                <p className="text-xs text-muted-foreground">Per closed deal</p>
+              </CardContent>
+            </Card>
+          </div>
+
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Recent Contacts */}
             <Card>
@@ -535,6 +693,114 @@ const CRMDashboard: React.FC = () => {
                       <Badge className={getStatusColor(task.status)}>
                         {task.status}
                       </Badge>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="companies" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle>Companies</CardTitle>
+                  <CardDescription>Manage your company database and relationships</CardDescription>
+                </div>
+                <Button size="sm">Add Company</Button>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {companies.map((company) => (
+                  <div key={company.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50">
+                    <div>
+                      <p className="font-medium">{company.name}</p>
+                      <p className="text-sm text-gray-600">
+                        {company.industry} • {company.company_size}
+                      </p>
+                      <p className="text-xs text-gray-500">
+                        {company.city}, {company.state} • {company.employee_count} employees
+                      </p>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Badge className={getStatusColor(company.status)}>
+                        {company.status}
+                      </Badge>
+                      <Badge variant="outline">Score: {company.lead_score}</Badge>
+                      <Badge variant="secondary">{formatCurrency(company.annual_revenue)}</Badge>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="marketing" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle>Marketing</CardTitle>
+                  <CardDescription>Email campaigns, landing pages, and marketing analytics</CardDescription>
+                </div>
+                <Button size="sm">Create Campaign</Button>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {emailCampaigns.map((campaign) => (
+                  <div key={campaign.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50">
+                    <div>
+                      <p className="font-medium">{campaign.name}</p>
+                      <p className="text-sm text-gray-600">{campaign.subject}</p>
+                      <p className="text-xs text-gray-500">
+                        Sent: {campaign.sent_count} • Open: {campaign.open_rate}% • Click: {campaign.click_rate}%
+                      </p>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Badge className={getStatusColor(campaign.status)}>
+                        {campaign.status}
+                      </Badge>
+                      <Badge variant="outline">{campaign.conversion_rate}% conversion</Badge>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="sales" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle>Sales Activities</CardTitle>
+                  <CardDescription>Track calls, meetings, and sales interactions</CardDescription>
+                </div>
+                <Button size="sm">Log Activity</Button>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {salesActivities.map((activity) => (
+                  <div key={activity.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50">
+                    <div>
+                      <p className="font-medium">{activity.title}</p>
+                      <p className="text-sm text-gray-600">{activity.description}</p>
+                      <p className="text-xs text-gray-500">
+                        {activity.type} • {formatDate(activity.date)} • {activity.duration} min
+                      </p>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Badge className={getStatusColor(activity.outcome)}>
+                        {activity.outcome}
+                      </Badge>
+                      <Badge variant="outline">{activity.type}</Badge>
                     </div>
                   </div>
                 ))}
