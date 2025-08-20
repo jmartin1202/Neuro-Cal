@@ -5,7 +5,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
-import { LogOut, LogIn, Calendar, Sparkles, Zap, Users, Clock, X, BarChart3, Crown, Star, Lock, Plus, Check, Badge, Brain, AlertTriangle, RefreshCw, Code } from "lucide-react";
+import { LogOut, LogIn, Calendar, Sparkles, Zap, Users, Clock, X, BarChart3, Crown, Star, Lock, Plus, Check, Badge, Brain, AlertTriangle, RefreshCw, Code, Settings } from "lucide-react";
 import { useErrorPrevention } from "@/hooks/useErrorPrevention";
 import { ComponentSafetyWrapper } from "@/components/ComponentSafetyWrapper";
 
@@ -424,6 +424,12 @@ const Index = () => {
                     CRM
                   </Button>
                 </Link>
+                <Link to="/main">
+                  <Button variant="outline" size="sm" className="btn btn-outline">
+                    <Settings className="h-4 w-4 mr-2" />
+                    Main App
+                  </Button>
+                </Link>
                 {user ? (
                   <Button variant="outline" size="sm" onClick={handleLogout} className="btn btn-outline">
                     <LogOut className="h-4 w-4 mr-2" />
@@ -489,6 +495,13 @@ const Index = () => {
                   <Users className="h-4 w-4 mr-2" />
                   <span className="hidden sm:inline">Test CRM</span>
                   <span className="sm:hidden">CRM</span>
+                </Button>
+              </Link>
+              <Link to="/main">
+                <Button size="sm" variant="outline" className="border-accent text-accent w-full sm:w-auto">
+                  <Settings className="h-4 w-4 mr-2" />
+                  <span className="hidden sm:inline">Main App</span>
+                  <span className="sm:hidden">Main</span>
                 </Button>
               </Link>
               <Button 
