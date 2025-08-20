@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
 import { Input } from './ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
-import { Calendar, Users, TrendingUp, Target, CheckCircle, Clock, AlertCircle, DollarSign } from 'lucide-react';
+import { Calendar, Users, TrendingUp, Target, CheckCircle, Clock, AlertCircle, DollarSign, ArrowLeft, Home } from 'lucide-react';
 import { useToast } from './ui/use-toast';
 
 interface CRMDashboardData {
@@ -227,6 +228,17 @@ const CRMDashboard: React.FC = () => {
 
   return (
     <div className="space-y-6 p-6">
+      {/* Back to Home Button */}
+      <div className="flex items-center gap-4 mb-4">
+        <Link to="/">
+          <Button variant="outline" className="gap-2">
+            <ArrowLeft className="h-4 w-4" />
+            <Home className="h-4 w-4" />
+            Back to Home
+          </Button>
+        </Link>
+      </div>
+
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">CRM Dashboard</h1>
