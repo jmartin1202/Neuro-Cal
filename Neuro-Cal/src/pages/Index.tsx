@@ -1092,37 +1092,7 @@ const Index = () => {
             </div>
           )}
 
-          {/* Developer Mode Events Display */}
-          {isDeveloperMode && events.length > 0 && activeTab === 'calendar' && (
-            <div className="bg-accent/10 border border-accent/30 rounded-lg p-4">
-              <h3 className="text-lg font-semibold text-accent mb-3 flex items-center gap-2">
-                <Code className="h-5 w-5" />
-                <span className="hidden sm:inline">Developer Mode Events</span>
-                <span className="sm:hidden">Dev Events</span>
-                <span className="text-accent/70">({events.length})</span>
-              </h3>
-              <div className="space-y-2">
-                {events.map((event) => (
-                  <div key={event.id} className="bg-white dark:bg-gray-800 rounded-md p-3 border border-accent/20">
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="flex-1 min-w-0">
-                        <h4 className="font-medium text-foreground truncate">{event.title}</h4>
-                        <p className="text-sm text-muted-foreground">
-                          <span className="hidden sm:inline">{event.date.toLocaleDateString()}</span>
-                          <span className="sm:hidden">{event.date.toLocaleDateString('short')}</span>
-                          {' '}at {event.time} ({event.duration})
-                        </p>
-                        {event.location && (
-                          <p className="text-sm text-muted-foreground truncate">📍 {event.location}</p>
-                        )}
-                      </div>
-                      <div className={`w-4 h-4 rounded-full ${event.color} flex-shrink-0`}></div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
+
         </main>
       </div>
 
@@ -1133,7 +1103,6 @@ const Index = () => {
           isolationLevel="strict"
           autoRecover={false}
           retryCount={1}
-          isDeveloperMode={isDeveloperMode}
         >
           <CreateEventModal
             isOpen={isCreateModalOpen}
@@ -1177,7 +1146,6 @@ const Index = () => {
                     isolationLevel="moderate"
                     autoRecover={true}
                     retryCount={3}
-                    isDeveloperMode={isDeveloperMode}
                   >
                     <LoginForm />
                   </ComponentSafetyWrapper>
