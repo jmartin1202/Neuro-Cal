@@ -7,27 +7,33 @@ import { pool } from '../server.js';
 
 const router = express.Router();
 
-// Initialize AI clients conditionally
+// Initialize AI clients when needed
 let openai = null;
 let anthropic = null;
 
-if (process.env.OPENAI_API_KEY) {
-  openai = new OpenAI({
-    apiKey: process.env.OPENAI_API_KEY,
-  });
-  console.log('✅ OpenAI client initialized');
-} else {
-  console.log('⚠️  OpenAI client skipped - missing OPENAI_API_KEY');
-}
-
-if (process.env.ANTHROPIC_API_KEY) {
-  anthropic = new Anthropic({
-    apiKey: process.env.ANTHROPIC_API_KEY,
-  });
-  console.log('✅ Anthropic client initialized');
-} else {
-  console.log('⚠️  Anthropic client skipped - missing ANTHROPIC_API_KEY');
-}
+const initializeAIClients = () => {
+  if (!openai && process.env.OPENAI_API_KEY) {
+    try {
+      openai = new OpenAI({
+        apiKey: process.env.OPENAI_API_KEY,
+      });
+      console.log('✅ OpenAI client initialized');
+    } catch (error) {
+      console.log('⚠️  OpenAI client failed to initialize:', error.message);
+    }
+  }
+  
+  if (!anthropic && process.env.ANTHROPIC_API_KEY) {
+    try {
+      anthropic = new Anthropic({
+        apiKey: process.env.ANTHROPIC_API_KEY,
+      });
+      console.log('✅ Anthropic client initialized');
+    } catch (error) {
+      console.log('⚠️  Anthropic client failed to initialize:', error.message);
+    }
+  }
+};
 
 // AI-powered event creation from natural language
 router.post('/create-event', authenticateToken, [
@@ -43,6 +49,9 @@ router.post('/create-event', authenticateToken, [
 
     const { inputText, preferredDate, context } = req.body;
 
+    // Initialize AI clients if needed
+    initializeAIClients();
+    
     // Check if OpenAI client is available
     if (!openai) {
       return res.status(503).json({ error: 'AI service is not available. Please configure OpenAI API key.' });
@@ -106,15 +115,14 @@ router.post('/create-event', authenticateToken, [
 
     // Create event in database
     const eventResult = await pool.query(
-      `INSERT INTO events (
+      `INSERT INTO calendar_events (
         user_id, title, description, start_time, end_time, 
-        location, type, is_ai_suggested, ai_confidence
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) 
-      RETURNING id, title, start_time, end_time, location, type`,
+        location
+      ) VALUES ($1, $2, $3, $4, $5, $6) 
+      RETURNING id, title, start_time, end_time, location`,
       [
         req.user.id, eventData.title, eventData.description, 
-        startTime, endTime, eventData.location, eventData.type,
-        true, eventData.confidence
+        startTime, endTime, eventData.location
       ]
     );
 
@@ -130,17 +138,17 @@ router.post('/create-event', authenticateToken, [
       }
     }
 
-    // Log AI interaction
-    await pool.query(
-      `INSERT INTO ai_interactions (
-        user_id, interaction_type, input_text, ai_response, 
-        model_used, tokens_used, confidence_score
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7)`,
-      [
-        req.user.id, 'event_creation', inputText, aiResponse,
-        'gpt-4', completion.usage.total_tokens, eventData.confidence
-      ]
-    );
+    // Log AI interaction (commented out - table doesn't exist yet)
+    // await pool.query(
+    //   `INSERT INTO ai_interactions (
+    //     user_id, interaction_type, input_text, ai_response, 
+    //     model_used, tokens_used, confidence_score
+    //   ) VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+    //   [
+    //     req.user.id, 'event_creation', inputText, aiResponse,
+    //     'gpt-4', completion.usage.total_tokens, eventData.confidence
+    //   ]
+    // );
 
     res.status(201).json({
       message: 'Event created successfully with AI assistance',
@@ -150,7 +158,6 @@ router.post('/create-event', authenticateToken, [
         startTime: event.start_time,
         endTime: event.end_time,
         location: event.location,
-        type: event.type,
         isAiSuggested: true,
         confidence: eventData.confidence
       }
@@ -169,7 +176,7 @@ router.get('/suggestions', authenticateToken, async (req, res) => {
     
     // Get user's existing events and preferences
     const eventsResult = await pool.query(
-      `SELECT start_time, end_time, type FROM events 
+      `SELECT start_time, end_time FROM calendar_events 
        WHERE user_id = $1 AND DATE(start_time) = $2`,
       [req.user.id, date || new Date().toISOString().split('T')[0]]
     );
@@ -186,7 +193,7 @@ router.get('/suggestions', authenticateToken, async (req, res) => {
           content: `Analyze this user's schedule and suggest optimal times for a ${duration || '1 hour'} ${type || 'meeting'} on ${date || 'today'}.
           
           Existing events:
-          ${existingEvents.map(e => `${e.start_time} - ${e.end_time} (${e.type})`).join('\n')}
+          ${existingEvents.map(e => `${e.start_time} - ${e.end_time}`).join('\n')}
           
           Rules:
           - Avoid scheduling conflicts
@@ -221,21 +228,21 @@ router.get('/suggestions', authenticateToken, async (req, res) => {
       return res.status(500).json({ error: 'Failed to parse AI suggestions' });
     }
 
-    // Store suggestions in database
-    for (const suggestion of suggestions.suggestions) {
-      await pool.query(
-        `INSERT INTO smart_suggestions (
-          user_id, suggestion_type, title, description, 
-          suggested_time, priority
-        ) VALUES ($1, $2, $3, $4, $5, $6)`,
-        [
-          req.user.id, 'time_slot', 
-          `${type || 'Activity'} Suggestion`, 
-          suggestion.reason,
-          new Date(suggestion.startTime), 1
-        ]
-      );
-    }
+    // Store suggestions in database (commented out - table doesn't exist yet)
+    // for (const suggestion of suggestions.suggestions) {
+    //   await pool.query(
+    //     `INSERT INTO smart_suggestions (
+    //       user_id, suggestion_type, title, description, 
+    //       suggested_time, priority
+    //       ) VALUES ($1, $2, $3, $4, $5, $6)`,
+    //     [
+    //       req.user.id, 'time_slot', 
+    //       `${type || 'Activity'} Suggestion`, 
+    //       suggestion.reason,
+    //       new Date(suggestion.startTime), 1
+    //     ]
+    //   );
+    // }
 
     res.json({
       suggestions: suggestions.suggestions,
@@ -256,8 +263,8 @@ router.get('/insights', authenticateToken, async (req, res) => {
     
     // Get user's calendar data for analysis
     const eventsResult = await pool.query(
-      `SELECT title, type, start_time, end_time, location 
-       FROM events 
+      `SELECT title, start_time, end_time, location 
+       FROM calendar_events 
        WHERE user_id = $1 AND start_time >= NOW() - INTERVAL '${days} days'
        ORDER BY start_time DESC`,
       [req.user.id]
@@ -283,7 +290,7 @@ router.get('/insights', authenticateToken, async (req, res) => {
           content: `Analyze this user's calendar data and provide insights:
           
           Events (last ${days} days):
-          ${events.map(e => `${e.start_time}: ${e.title} (${e.type})`).join('\n')}
+          ${events.map(e => `${e.start_time}: ${e.title}`).join('\n')}
           
           Provide insights about:
           - Time distribution (meetings vs focus work)
@@ -323,20 +330,20 @@ router.get('/insights', authenticateToken, async (req, res) => {
       return res.status(500).json({ error: 'Failed to parse AI insights' });
     }
 
-    // Store insights in database
-    for (const insight of insights.insights) {
-      await pool.query(
-        `INSERT INTO ai_interactions (
-          user_id, interaction_type, input_text, ai_response, 
-          model_used, confidence_score
-        ) VALUES ($1, $2, $3, $4, $5, $6)`,
-        [
-          req.user.id, 'calendar_insights', 
-          `Analysis of ${days} days of calendar data`,
-          JSON.stringify(insight), 'claude-3-sonnet', 0.9
-        ]
-      );
-    }
+    // Store insights in database (commented out - table doesn't exist yet)
+    // for (const insight of insights.insights) {
+    //   await pool.query(
+    //     `INSERT INTO ai_interactions (
+    //       user_id, interaction_type, input_text, ai_response, 
+    //       model_used, confidence_score
+    //     ) VALUES ($1, $2, $3, $4, $5, $6)`,
+    //     [
+    //       req.user.id, 'calendar_insights', 
+    //       `Analysis of ${days} days of calendar data`,
+    //       JSON.stringify(insight), 'claude-3-sonnet', 0.9
+    //     ]
+    //   );
+    // }
 
     res.json(insights);
 
@@ -362,7 +369,7 @@ router.post('/meeting-prep', authenticateToken, [
     // Get event details
     const eventResult = await pool.query(
       `SELECT e.*, array_agg(ea.email) as attendee_emails
-       FROM events e
+       FROM calendar_events e
        LEFT JOIN event_attendees ea ON e.id = ea.event_id
        WHERE e.id = $1 AND e.user_id = $2
        GROUP BY e.id`,
@@ -394,7 +401,7 @@ router.post('/meeting-prep', authenticateToken, [
           content: `Meeting: ${event.title}
           Date: ${event.start_time}
           Duration: ${Math.round((new Date(event.end_time) - new Date(event.start_time)) / 60000)} minutes
-          Type: ${event.type}
+          Type: Meeting
           Attendees: ${event.attendee_emails?.join(', ') || 'None'}
           Description: ${event.description || 'No description'}
           
@@ -409,18 +416,18 @@ router.post('/meeting-prep', authenticateToken, [
 
     const aiResponse = completion.choices[0].message.content;
 
-    // Log AI interaction
-    await pool.query(
-      `INSERT INTO ai_interactions (
-        user_id, interaction_type, input_text, ai_response, 
-        model_used, tokens_used
-      ) VALUES ($1, $2, $3, $4, $5, $6)`,
-      [
-        req.user.id, 'meeting_preparation', 
-        `Meeting prep for: ${event.title}`,
-        aiResponse, 'gpt-4', completion.usage.total_tokens
-      ]
-    );
+    // Log AI interaction (commented out - table doesn't exist yet)
+    // await pool.query(
+    //   `INSERT INTO ai_interactions (
+    //     user_id, interaction_type, input_text, ai_response, 
+    //         model_used, tokens_used
+    //   ) VALUES ($1, $2, $3, $4, $5, $6)`,
+    //   [
+    //     req.user.id, 'meeting_preparation', 
+    //     `Meeting prep for: ${event.title}`,
+    //     aiResponse, 'gpt-4', completion.usage.total_tokens
+    //   ]
+    // );
 
     res.json({
       message: 'Meeting preparation generated successfully',

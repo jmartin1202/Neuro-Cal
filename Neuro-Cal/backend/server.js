@@ -10,6 +10,38 @@ import jwt from 'jsonwebtoken';
 // Load environment variables
 dotenv.config();
 
+// Initialize AI clients after environment variables are loaded
+let openai = null;
+let anthropic = null;
+
+if (process.env.OPENAI_API_KEY) {
+  try {
+    const OpenAI = (await import('openai')).default;
+    openai = new OpenAI({
+      apiKey: process.env.OPENAI_API_KEY,
+    });
+    console.log('✅ OpenAI client initialized');
+  } catch (error) {
+    console.log('⚠️  OpenAI client failed to initialize:', error.message);
+  }
+} else {
+  console.log('⚠️  OpenAI client skipped - missing OPENAI_API_KEY');
+}
+
+if (process.env.ANTHROPIC_API_KEY) {
+  try {
+    const Anthropic = (await import('@anthropic-ai/sdk')).default;
+    anthropic = new Anthropic({
+      apiKey: process.env.ANTHROPIC_API_KEY,
+    });
+    console.log('✅ Anthropic client initialized');
+  } catch (error) {
+    console.log('⚠️  Anthropic client failed to initialize:', error.message);
+  }
+} else {
+  console.log('⚠️  Anthropic client skipped - missing ANTHROPIC_API_KEY');
+}
+
 const app = express();
 
 // Database connection
@@ -80,14 +112,23 @@ app.use('*', (req, res) => {
 
 const PORT = process.env.PORT || 5001;
 
-app.listen(PORT, () => {
-  console.log('🚀 NeuroCal Backend running on port', PORT);
-  console.log('📊 Health check: http://localhost:' + PORT + '/health');
-  console.log('🔐 Authentication: Email/Password enabled');
-  console.log('💳 Billing: Stripe integration enabled');
-  
-  // Initialize cron jobs
-  initializeCronJobs();
-});
+const startServer = async () => {
+  try {
+    app.listen(PORT, () => {
+      console.log('🚀 NeuroCal Backend running on port', PORT);
+      console.log('📊 Health check: http://localhost:' + PORT + '/health');
+      console.log('🔐 Authentication: Email/Password enabled');
+      console.log('💳 Billing: Stripe integration enabled');
+      
+      // Initialize cron jobs
+      initializeCronJobs();
+    });
+  } catch (error) {
+    console.error('Failed to start server:', error);
+    process.exit(1);
+  }
+};
+
+startServer();
 
 export { pool };
