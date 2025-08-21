@@ -197,7 +197,7 @@ export const ComponentSafetyWrapper: React.FC<ComponentSafetyWrapperProps> = ({
 
   if (state.retryAttempts >= retryCount) {
     // In production mode, just show fallback or nothing
-    if (false) { // Dev Mode removed
+    if (false) { // Dev Mode removed - always show fallback
       return fallback || null;
     }
     

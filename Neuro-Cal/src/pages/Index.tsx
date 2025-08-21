@@ -937,7 +937,7 @@ const Index = () => {
               <h2 className="text-2xl font-bold text-foreground">Settings</h2>
 
               {/* Notice for non-authenticated users */}
-              {!user && !isDeveloperMode && (
+              {!user && (
                 <div className="bg-accent/10 border border-accent/30 rounded-lg p-4">
                   <div className="flex items-center gap-3">
                     <Lock className="h-5 w-5 text-accent" />
@@ -1157,7 +1157,6 @@ const Index = () => {
                     isolationLevel="moderate"
                     autoRecover={true}
                     retryCount={3}
-                    isDeveloperMode={isDeveloperMode}
                   >
                     <RegisterForm />
                   </ComponentSafetyWrapper>
