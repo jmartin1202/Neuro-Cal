@@ -11,7 +11,7 @@ interface ComponentSafetyWrapperProps {
   showErrorDetails?: boolean;
   autoRecover?: boolean;
   isolationLevel?: 'strict' | 'moderate' | 'loose';
-  isDeveloperMode?: boolean;
+
 }
 
 interface ComponentSafetyWrapperState {
@@ -77,7 +77,7 @@ export const ComponentSafetyWrapper: React.FC<ComponentSafetyWrapperProps> = ({
   showErrorDetails = false,
   autoRecover = true,
   isolationLevel = 'moderate',
-  isDeveloperMode = false
+
 }) => {
   const [state, setState] = useState<ComponentSafetyWrapperState>({
     hasError: false,
@@ -197,7 +197,7 @@ export const ComponentSafetyWrapper: React.FC<ComponentSafetyWrapperProps> = ({
 
   if (state.retryAttempts >= retryCount) {
     // In production mode, just show fallback or nothing
-    if (!isDeveloperMode) {
+    if (false) {
       return fallback || null;
     }
     

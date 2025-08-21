@@ -83,7 +83,7 @@ const Index = () => {
       color: 'bg-yellow-500'
     }
   ]);
-  const [isDeveloperMode, setIsDeveloperMode] = useState(false);
+
   const [showSettings, setShowSettings] = useState(false);
   const [activeTab, setActiveTab] = useState<'calendar' | 'crm' | 'settings'>('calendar');
   const [settings, setSettings] = useState({
@@ -174,10 +174,10 @@ const Index = () => {
   // Event handlers with error prevention
   const handleDateClick = useCallback((date: Date) => {
     try {
-      console.log('Date clicked:', date, 'User:', user, 'Dev mode:', isDeveloperMode); // Debug log
+      console.log('Date clicked:', date, 'User:', user); // Debug log
       
-      if (!user && !isDeveloperMode) {
-        console.log('Showing pricing modal - no user and no dev mode'); // Debug log
+      if (!user) {
+        console.log('Showing pricing modal - no user'); // Debug log
         safeSetShowPricingModal(true);
         return;
       }
@@ -188,7 +188,7 @@ const Index = () => {
     } catch (error) {
       errorPrevention.trackError(error instanceof Error ? error : String(error), 'handleDateClick');
     }
-  }, [user, isDeveloperMode, safeSetShowPricingModal, safeSetSelectedDate, safeSetIsCreateModalOpen, errorPrevention]);
+  }, [user, safeSetShowPricingModal, safeSetSelectedDate, safeSetIsCreateModalOpen, errorPrevention]);
 
   const handleCreateEvent = useCallback(async (eventData: Omit<Event, 'id'>) => {
     try {
@@ -237,18 +237,11 @@ const Index = () => {
 
   const handleAICreateEvent = useCallback((eventText: string) => {
     try {
-      if (!user && !isDeveloperMode) {
+      if (!user) {
         safeSetShowPricingModal(true);
         return;
       }
       // AI event creation logic would go here
-      if (isDeveloperMode) {
-        toast({
-          title: "AI Event Creation (Dev Mode)",
-          description: `Creating event: "${eventText}" - This would normally require authentication.`,
-        });
-        return;
-      }
       toast({
         title: "AI Event Creation",
         description: "This feature requires authentication.",
@@ -256,7 +249,7 @@ const Index = () => {
     } catch (error) {
       errorPrevention.trackError(error instanceof Error ? error : String(error), 'handleAICreateEvent');
     }
-  }, [user, isDeveloperMode, toast, safeSetShowPricingModal, errorPrevention]);
+  }, [user, toast, safeSetShowPricingModal, errorPrevention]);
 
   const handleAuthModeSwitch = useCallback(() => {
     try {
@@ -335,10 +328,10 @@ const Index = () => {
   // Safe button click handlers
   const handleCreateEventClick = useCallback(() => {
     try {
-      console.log('Create event button clicked - User:', user, 'Dev mode:', isDeveloperMode); // Debug log
+      console.log('Create event button clicked - User:', user); // Debug log
       
-      if (!user && !isDeveloperMode) {
-        console.log('Showing pricing modal - no user and no dev mode'); // Debug log
+      if (!user) {
+        console.log('Showing pricing modal - no user'); // Debug log
         safeSetShowPricingModal(true);
         return;
       }
@@ -348,7 +341,7 @@ const Index = () => {
     } catch (error) {
       errorPrevention.trackError(error instanceof Error ? error : String(error), 'handleCreateEventClick');
     }
-  }, [user, isDeveloperMode, safeSetIsCreateModalOpen, safeSetShowPricingModal, errorPrevention]);
+  }, [user, safeSetIsCreateModalOpen, safeSetShowPricingModal, errorPrevention]);
 
   const handleSignInClick = useCallback(() => {
     try {
@@ -607,22 +600,7 @@ const Index = () => {
             </div>
           </div>
           <div className="header-actions">
-            {/* Developer Mode Toggle */}
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              onClick={() => setIsDeveloperMode(!isDeveloperMode)}
-              className={`btn ${isDeveloperMode ? 'bg-accent text-accent-foreground' : 'btn-outline'}`}
-              title="Toggle Developer Mode"
-            >
-              <Code className="h-4 w-4 mr-1 sm:mr-2" />
-              <span className="hidden sm:inline">
-                {isDeveloperMode ? 'Dev Mode ON' : 'Dev Mode'}
-              </span>
-              <span className="sm:hidden">
-                {isDeveloperMode ? 'ON' : 'Dev'}
-              </span>
-            </Button>
+
             
             {/* Tab Navigation - Available to all users */}
             <div className="flex space-x-1 bg-muted rounded-lg p-1">
@@ -655,7 +633,7 @@ const Index = () => {
               </button>
             </div>
 
-            {(user || isDeveloperMode) ? (
+            {user ? (
               <>
                 <Button variant="outline" size="sm" onClick={handleCreateEventClick} className="btn btn-outline">
                   <Plus className="h-4 w-4 mr-2" />
@@ -696,7 +674,7 @@ const Index = () => {
         </header>
 
         {/* Demo Mode Banner */}
-        {!user && !isDeveloperMode && (
+        {!user && (
           <div className="demo-banner">
             <div className="demo-content">
               <div className="demo-icon">i</div>
@@ -716,40 +694,7 @@ const Index = () => {
           </div>
         )}
 
-        {/* Developer Mode Banner */}
-        {isDeveloperMode && (
-          <div className="demo-banner bg-accent/10 border-accent/30">
-            <div className="demo-content">
-              <Code className="h-6 w-6 text-accent flex-shrink-0" />
-              <div className="demo-text">
-                <h3>Developer Mode Enabled</h3>
-                <p className="hidden sm:block">You can now test all features including AI, CRM, and premium functionality without authentication or subscriptions!</p>
-                <p className="sm:hidden">Test all features without authentication!</p>
-              </div>
-            </div>
-            <div className="flex flex-col sm:flex-row gap-2">
-              <Link to="/crm">
-                <Button size="sm" variant="outline" className="border-accent text-accent w-full sm:w-auto">
-                  <Users className="h-4 w-4 mr-2" />
-                  <span className="hidden sm:inline">Test CRM</span>
-                  <span className="sm:hidden">CRM</span>
-                </Button>
-              </Link>
 
-
-              <Button 
-                onClick={() => setIsDeveloperMode(false)}
-                size="sm"
-                variant="outline"
-                className="border-accent/50 text-accent/70 w-full sm:w-auto"
-              >
-                <X className="h-4 w-4 mr-2" />
-                <span className="hidden sm:inline">Exit Dev Mode</span>
-                <span className="sm:hidden">Exit</span>
-              </Button>
-            </div>
-          </div>
-        )}
 
         {/* Main Content */}
         <main className="space-y-6">
