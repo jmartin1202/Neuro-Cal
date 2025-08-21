@@ -878,38 +878,33 @@ const Index = () => {
 
               {/* AI Panel */}
               <div className="space-y-4">
-                {!user ? (
-                  <div className="demo-banner">
-                    <div className="demo-content">
-                      <Lock className="h-6 w-6 text-accent flex-shrink-0" />
-                      <div className="demo-text">
-                        <h3>Premium Feature</h3>
-                        <p>AI Event Creation requires Basic plan</p>
+                <Suspense fallback={<AIPanelFallback />}>
+                  <ComponentSafetyWrapper
+                    componentName="AIPanel"
+                    isolationLevel="loose"
+                    autoRecover={true}
+                    retryCount={5}
+                  >
+                    <AIPanel 
+                      upcomingEvents={events}
+                      onCreateEvent={handleAICreateEvent} 
+                    />
+                  </ComponentSafetyWrapper>
+                </Suspense>
+                
+                {/* Demo Mode Notice */}
+                {!user && (
+                  <div className="bg-accent/10 border border-accent/30 rounded-lg p-4">
+                    <div className="flex items-center gap-3">
+                      <Sparkles className="h-5 w-5 text-accent" />
+                      <div>
+                        <h3 className="text-sm font-medium text-accent">Demo Mode - AI Enabled!</h3>
+                        <p className="text-xs text-accent/70">
+                          You're testing AI Event Creation in demo mode. Try natural language like "Schedule team meeting tomorrow at 2pm"
+                        </p>
                       </div>
                     </div>
-                    <Button 
-                      onClick={handleUpgradeClick}
-                      size="sm"
-                      className="btn btn-primary"
-                    >
-                      <Crown className="h-4 w-4 mr-2" />
-                      Upgrade to Basic
-                    </Button>
                   </div>
-                ) : (
-                  <Suspense fallback={<AIPanelFallback />}>
-                    <ComponentSafetyWrapper
-                      componentName="AIPanel"
-                      isolationLevel="loose"
-                      autoRecover={true}
-                      retryCount={5}
-                    >
-                      <AIPanel 
-                        upcomingEvents={events}
-                        onCreateEvent={handleAICreateEvent} 
-                      />
-                    </ComponentSafetyWrapper>
-                  </Suspense>
                 )}
               </div>
             </>
