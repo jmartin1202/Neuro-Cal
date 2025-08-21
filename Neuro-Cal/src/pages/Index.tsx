@@ -809,13 +809,12 @@ const Index = () => {
                   <Suspense fallback={<div className="p-4 bg-card rounded-lg animate-pulse border border-border">
                     <div className="h-96 bg-muted rounded-lg"></div>
                   </div>}>
-                                      <ComponentSafetyWrapper
-                    componentName="InteractiveCalendar"
-                    isolationLevel="moderate"
-                    autoRecover={true}
-                    retryCount={3}
-                    isDeveloperMode={isDeveloperMode}
-                  >
+                                                          <ComponentSafetyWrapper
+                      componentName="InteractiveCalendar"
+                      isolationLevel="moderate"
+                      autoRecover={true}
+                      retryCount={3}
+                    >
                       <InteractiveCalendar 
                         events={events}
                         onCreateEvent={handleCreateEvent}
@@ -879,7 +878,7 @@ const Index = () => {
 
               {/* AI Panel */}
               <div className="space-y-4">
-                {!user && !isDeveloperMode ? (
+                {!user ? (
                   <div className="demo-banner">
                     <div className="demo-content">
                       <Lock className="h-6 w-6 text-accent flex-shrink-0" />
@@ -904,7 +903,6 @@ const Index = () => {
                       isolationLevel="loose"
                       autoRecover={true}
                       retryCount={5}
-                      isDeveloperMode={isDeveloperMode}
                     >
                       <AIPanel 
                         upcomingEvents={events}
