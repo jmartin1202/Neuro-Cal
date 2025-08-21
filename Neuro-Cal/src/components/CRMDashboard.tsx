@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
@@ -122,6 +122,7 @@ interface SalesActivity {
 }
 
 const CRMDashboard: React.FC = () => {
+  const navigate = useNavigate();
   const [dashboardData, setDashboardData] = useState<CRMDashboardData | null>(null);
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [leads, setLeads] = useState<Lead[]>([]);
@@ -338,8 +339,12 @@ const CRMDashboard: React.FC = () => {
     <div className="space-y-6 p-6">
       {/* Back to Home Button */}
       <div className="flex items-center gap-4 mb-4">
-        <Link to="/">
-          <Button variant="outline" className="gap-2">
+        <Link to="/" className="no-underline">
+          <Button 
+            variant="outline" 
+            className="gap-2 hover:bg-gray-100 transition-colors"
+            onClick={() => navigate('/')}
+          >
             <ArrowLeft className="h-4 w-4" />
             <Home className="h-4 w-4" />
             Back to Home
