@@ -137,19 +137,16 @@ export const AIPanel = ({ upcomingEvents, onCreateEvent }: AIPanelProps) => {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          {/* Horizontal Input and Button Layout */}
-          <form onSubmit={handleSubmit} className="flex gap-3 items-end">
-            <div className="flex-1">
-              <Input
-                placeholder="Tell me what you want to schedule..."
-                value={inputText}
-                onChange={(e) => setInputText(e.target.value)}
-                className="bg-background/50"
-              />
-            </div>
+          <form onSubmit={handleSubmit} className="space-y-3">
+            <Input
+              placeholder="Tell me what you want to schedule..."
+              value={inputText}
+              onChange={(e) => setInputText(e.target.value)}
+              className="bg-background/50"
+            />
             <Button 
               type="submit" 
-              className="whitespace-nowrap" 
+              className="w-full" 
               disabled={isProcessing || !inputText.trim()}
             >
               {isProcessing ? (
@@ -212,15 +209,14 @@ export const AIPanel = ({ upcomingEvents, onCreateEvent }: AIPanelProps) => {
             </Card>
           )}
 
-          {/* Horizontal Quick Suggestions */}
           <div>
-            <h4 className="text-sm font-medium mb-3">Quick suggestions:</h4>
-            <div className="grid grid-cols-2 gap-2">
+            <h4 className="text-sm font-medium mb-2">Quick suggestions:</h4>
+            <div className="space-y-1">
               {suggestions.map((suggestion, index) => (
                 <button
                   key={index}
                   onClick={() => handleSuggestionClick(suggestion)}
-                  className="text-left text-xs text-muted-foreground hover:text-foreground transition-colors p-2 rounded-md hover:bg-background/50 border border-border/50 hover:border-border"
+                  className="w-full text-left text-xs text-muted-foreground hover:text-foreground transition-colors p-2 rounded-md hover:bg-background/50"
                 >
                   {suggestion}
                 </button>
