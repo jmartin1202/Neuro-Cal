@@ -339,17 +339,18 @@ const CRMDashboard: React.FC = () => {
     <div className="space-y-6 p-6">
       {/* Back to Home Button */}
       <div className="flex items-center gap-4 mb-4">
-        <Link to="/" className="no-underline">
-          <Button 
-            variant="outline" 
-            className="gap-2 hover:bg-gray-100 transition-colors"
-            onClick={() => navigate('/')}
-          >
-            <ArrowLeft className="h-4 w-4" />
-            <Home className="h-4 w-4" />
-            Back to Home
-          </Button>
-        </Link>
+        <Button 
+          variant="outline" 
+          className="gap-2 hover:bg-gray-100 transition-colors"
+          onClick={() => {
+            console.log('Back to Home button clicked');
+            navigate('/');
+          }}
+        >
+          <ArrowLeft className="h-4 w-4" />
+          <Home className="h-4 w-4" />
+          Back to Home
+        </Button>
       </div>
 
       <div className="flex items-center justify-between">
