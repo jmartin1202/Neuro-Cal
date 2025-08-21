@@ -106,6 +106,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const login = async (email: string, password: string) => {
     try {
       setError(null);
+      const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5001/api';
       const response = await fetch(`${API_BASE_URL}/auth/login`, {
         method: 'POST',
         headers: {
@@ -137,6 +138,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const register = async (email: string, password: string, firstName: string, lastName: string) => {
     try {
       setError(null);
+      const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5001/api';
       const response = await fetch(`${API_BASE_URL}/auth/register`, {
         method: 'POST',
         headers: {
